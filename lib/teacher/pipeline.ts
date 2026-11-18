@@ -55,6 +55,8 @@ export interface TurnResult {
     latencyMs: number;
     /** True when the model failed for good and a friendly fallback answer was returned instead. */
     degraded?: boolean;
+    /** Short technical code of the failure (never user text). */
+    degradedReason?: string;
     retrievalMs: number;
     llmMs: number;
   };
@@ -139,9 +141,9 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   let parsed;
   try {
     parsed = teacherResponseSchema.safeParse(await generate(messages));
-  } catch {
+  } catch (e) {
     const response = fallbackResponse(student.preferred_name);
-    return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, retrievalMs } };
+    return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, degradedReason: (e as Error).message.slice(0, 80), retrievalMs } };
   }
   if (!parsed.success) {
     schemaRetries = 1;
