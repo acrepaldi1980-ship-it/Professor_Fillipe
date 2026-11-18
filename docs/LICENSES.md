@@ -209,3 +209,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 8224adbd55ddde440d2461234590caf01c3c91b2d0a260b6c00703769077384b
 - Observações: —
+
+## bible_eng_rv_1895 — Revised Version (1895)
+- Autor(es) / tradutor(es) e anos de morte: sem autor individual identificado
+- Edição e ano de publicação: 1895
+- Licença: public_domain (public domain (pub 1895 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Revised Version, 1895 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/eng-rv_usfm.zip (direitos: https://ebible.org/eng-rv/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 69252651f89ed5922f650a9a965dff5cc88981708fe5dad87a392f734794208e
+- Observações: —
