@@ -219,3 +219,23 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 69252651f89ed5922f650a9a965dff5cc88981708fe5dad87a392f734794208e
 - Observações: —
+
+## bible_eng_douay_rheims_1899 — Douay-Rheims 1899
+- Autor(es) / tradutor(es) e anos de morte: sem autor individual identificado
+- Edição e ano de publicação: 1899
+- Licença: public_domain (public domain (pub 1899 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Douay-Rheims, edição americana de 1899 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/engDRA_usfm.zip (direitos: https://ebible.org/engDRA/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 28147740343e44cede8c86cffb91973f934ddd892a887f621f4df816ffc86834
+- Observações: —
+
+## bible_grc_patriarchal_1904 — Novo Testamento Grego (Patriarcal 1904)
+- Autor(es) / tradutor(es) e anos de morte: sem autor individual identificado
+- Edição e ano de publicação: 1904
+- Licença: public_domain (public domain (pub 1904 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Patriarchal Greek New Testament, 1904 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/grcbyz_usfm.zip (direitos: https://ebible.org/grcbyz/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: d349039838cf1d62f9302a7cefdabe51f9f0d5d504f1294f9a4c14843f14cc5b
+- Observações: —
