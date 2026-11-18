@@ -239,3 +239,23 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: d349039838cf1d62f9302a7cefdabe51f9f0d5d504f1294f9a4c14843f14cc5b
 - Observações: —
+
+## bible_grc_byzantine_rp2018 — Novo Testamento Grego (Bizantino, Robinson-Pierpont 2018)
+- Autor(es) / tradutor(es) e anos de morte: Maurice A. Robinson, William G. Pierpont ()
+- Edição e ano de publicação: 2018
+- Licença: cc0 (open license cc0). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Greek New Testament, Byzantine Text Form, Robinson-Pierpont 2018 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/grcmt_usfm.zip (direitos: https://ebible.org/grcmt/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 33b208ee58a1862696689dcd5db69ed0ae891cd08aea3c7c68a5055501874048
+- Observações: —
+
+## bible_grc_tischendorf — Novo Testamento Grego (Tischendorf, 8ª edição)
+- Autor(es) / tradutor(es) e anos de morte: Constantin von Tischendorf (1874)
+- Edição e ano de publicação: 1872
+- Licença: public_domain (public domain (pub 1872 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Tischendorf 8th edition Greek New Testament (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/grc-tisch_usfm.zip (direitos: https://ebible.org/grc-tisch/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: d1556165fa76caf4659ab4b4c3e76d2b8f5783467dc44edad91b699f9f5d78dd
+- Observações: —
