@@ -1,7 +1,7 @@
 # Especificação Funcional — App de Estudo Bíblico com o Professor Filipe
 
 > **Slogan:** "Entendes o que lês?" (Atos 8:30)
-> **Versão do documento:** 1.2 — 18/11/2026 (formato web primeiro, pronto para as lojas; avatar M17; ajustes de consistência)
+> **Versão do documento:** 1.3 — 18/11/2026 (formato web primeiro, pronto para as lojas; avatar M17; ajustes de consistência)
 > **Responsável pelo produto:** Anderson Crepaldi
 > **Leitor principal:** o Claude Code, que usa este documento como fonte da verdade para escrever o código. Leitores secundários: sócios, investidores, conselho teológico e futuros desenvolvedores.
 
@@ -282,7 +282,7 @@ Cada jornada descreve o caminho feliz. Os desvios e erros estão nos requisitos 
 ### J01 — Primeiro acesso
 
 1. Aluno abre o link (ou o app instalado) e vê a landing com o slogan e um botão "Começar".
-2. Cria conta (e-mail com link mágico, Google ou Apple).
+2. Cria conta (e-mail com link mágico ou Google; Apple entra antes das lojas, D-19).
 3. Aceita os termos e dá consentimento separado para dado religioso (M02).
 4. Entra na **entrevista guiada por voz** com o Professor Filipe (M03), com opção de responder por texto.
 5. Configura lente teológica, versão da Bíblia e obras (M04), com sugestões já preenchidas pela entrevista.
@@ -347,7 +347,7 @@ Cada jornada descreve o caminho feliz. Os desvios e erros estão nos requisitos 
 ### 8.1 M01 — Autenticação e conta (P0)
 
 **RF-M01-01 — Cadastro e login**
-- Métodos: e-mail com link mágico, Google e Apple (Supabase Auth).
+- Métodos: e-mail com link mágico e Google (Supabase Auth). O login com Apple fica para a Fase 2, antes de publicar nas lojas **(D-19, decidida em 18/11/2026: a conta de desenvolvedor Apple custa US$ 99 por ano)**.
 - Campos obrigatórios no cadastro: nome de exibição, e-mail, data de nascimento (para RN-09).
 - CA: login funciona nos três métodos; sessão persiste por 30 dias; logout limpa sessão local.
 
@@ -360,7 +360,7 @@ Cada jornada descreve o caminho feliz. Os desvios e erros estão nos requisitos 
 - CA: após confirmação dupla, a conta fica inacessível na hora; um job apaga os dados; o usuário recebe e-mail de confirmação.
 
 **RN-09 — Uso por menores**
-- Idade mínima: 13 anos. Entre 13 e 17 anos, o cadastro exige confirmação de ciência do responsável (caixa de seleção com e-mail do responsável opcional) **[DECISÃO D-08]**.
+- Idade mínima: 13 anos. Entre 13 e 17 anos, o cadastro exige confirmação de ciência do responsável (caixa de seleção com e-mail do responsável opcional). **D-08 decidida em 18/11/2026:** a caixa de ciência do responsável é obrigatória, o e-mail do responsável é opcional, e menores não assinam planos sem o responsável.
 - Usuários menores recebem o modo RA-22 automaticamente e não podem assinar planos sem o responsável.
 
 ### 8.2 M02 — Consentimento e privacidade (P0)
@@ -1151,8 +1151,8 @@ Regras obrigatórias desde a Fase 0, para que a ida às lojas seja só empacotam
 
 **10.6.3 Login**
 - Supabase Auth com token no cabeçalho; renovação automática do token.
-- Login com Apple disponível desde o MVP (exigência da Apple quando há login com Google).
-- URLs de retorno do OAuth configuradas para o domínio próprio, prontas para o esquema do app nativo (`app.<dominio>://auth/callback`) **[DECISÃO D-17]**.
+- Login com Apple: **adiado para a Fase 2 (D-19)**. A Apple exige oferecer login com Apple quando há login com Google; por isso ele entra antes da publicação nas lojas (prompt 2.5), e não no MVP web.
+- URLs de retorno do OAuth configuradas para o endereço do app, prontas para o esquema do app nativo (`app.<dominio>://auth/callback`). **D-17 decidida em 18/11/2026:** no MVP usa-se o endereço gratuito da Vercel (`*.vercel.app`); o domínio próprio é comprado antes do lançamento público e antes do prompt 2.5 (links profundos e verificação nas lojas).
 
 **10.6.4 Direitos de acesso (`entitlements`)**
 - O app nunca pergunta "o usuário pagou no Asaas?". Pergunta "o usuário tem o direito X?" à tabela `entitlements`.
@@ -1441,7 +1441,7 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | Tela | Elementos principais |
 | --- | --- |
 | Landing | Slogan, demonstração em vídeo, planos, "Começar" |
-| Login | Link mágico, Google, Apple |
+| Login | Link mágico, Google (Apple na Fase 2) |
 | Consentimento | Termos, privacidade, consentimento de dado religioso separado |
 | Entrevista | Avatar grande, microfone, legendas, respostas rápidas, barra de progresso (7 passos) |
 | Configuração | Lentes (cartões), versão da Bíblia, obras |
@@ -1497,7 +1497,7 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-05 | Fornecedor de ilustrações | Claude Code apresenta opções com preço | Prompt 1.9 |
 | D-06 | Definição do sermão "explicativo" | Anderson fornece a definição ou o tipo sai da lista | Antes do prompt 1.8 |
 | D-07 | Cronologia de referência do AT | Exibir datas com incerteza; escolher uma cronologia base | Prompt 1.9 |
-| D-08 | Regras para menores de 13 a 17 anos | Ciência do responsável; sem assinatura sem responsável | Prompt 1.1 |
+| D-08 | Regras para menores de 13 a 17 anos | **Decidida:** ciência do responsável (caixa obrigatória); sem assinatura sem responsável | Prompt 1.1 |
 | D-09 | Fornecedor de embeddings | Multilíngue, com bom desempenho em português | Prompt 0.1 |
 | D-10 | Compra dentro dos apps das lojas | Pesquisar regras atuais no Brasil | Prompt 2.5 |
 | D-11 | Tecnologia da imersão 3D | Web (React Three Fiber/WebGPU) ou nativa (Unity/Unreal) | Prompt 3.1 |
@@ -1507,4 +1507,5 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-15 | Versão principal da Bíblia em português (padrão para adultos) | Bíblia Livre 2018 (CC BY, sugerida, conforme RF-M04-02) ou Almeida 1911 (domínio público) | Prompt 0.1 |
 | D-16 | Quando ir para as lojas | Depois do beta validado e com assinantes pagando pela web | Prompt 2.5 |
 | D-18 | Visual e estilo do avatar do Professor Filipe (aparência, roupa, elemento-assinatura, 2D com Rive ou outra técnica, ilustrador contratado ou não) | 3 conceitos visuais apresentados no prompt 1.6b; recomendado 2D estilizado em Rive no MVP | Prompt 1.6b |
-| D-17 | Domínio próprio e identificador do app (ex.: `br.com.<dominio>.app`) | Comprar o domínio antes do prompt 1.1 | Prompt 1.1 |
+| D-17 | Domínio próprio e identificador do app (ex.: `br.com.<dominio>.app`) | **Decidida (provisória):** MVP em `*.vercel.app`; comprar o domínio antes do lançamento público e do prompt 2.5 | Prompt 1.1 |
+| D-19 | Login com Apple | **Decidida:** adiado para a Fase 2, antes das lojas (custo da conta Apple Developer) | Prompt 2.5 |

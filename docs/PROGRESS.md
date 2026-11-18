@@ -24,6 +24,10 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 | ID | Escolha | Data |
 | --- | --- | --- |
+| D-08 | Ciência do responsável obrigatória para 13 a 17 anos (e-mail do responsável opcional); sem assinatura de plano sem responsável; menores com modo RA-22 | 2026-11-18 |
+| D-17 | MVP em `*.vercel.app` (gratuito); domínio próprio antes do lançamento público e do prompt 2.5 | 2026-11-18 |
+| D-19 (nova) | Login com Apple adiado para a Fase 2 (custo US$ 99/ano); no MVP: link mágico e Google | 2026-11-18 |
+| D-13 | Em andamento: 3 direções visuais apresentadas, aguardando a escolha | 2026-11-18 |
 | D-02 | Três níveis: Haiku 5.5 (classificador), Sonnet 5.5 (conversa), Opus 5.5 só no profundo; no protótipo o profundo usa Sonnet | 2026-11-18 |
 | D-03 | Voz do professor: George (ElevenLabs, voz premade `JBFqnCBsd6RMkjVDRZzb`, modelo `eleven_multilingual_v2`, `language_code=pt`). Reavaliar vozes da biblioteca (pt-BR nativas) se for para o plano pago | 2026-11-18 |
 | Desvio do protótipo (D-02) | LLM do protótipo: Groq `openai/gpt-oss-120b` (gratuito) por adaptador trocável (`TEACHER_LLM_PROVIDER`); o Claude continua sendo o alvo (D-02) e entra antes do teste com a turma. Aprovado pelo Anderson ("1") | 2026-11-18 |

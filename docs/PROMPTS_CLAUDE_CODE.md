@@ -247,7 +247,7 @@ Leia o CLAUDE.md, o docs/PROGRESS.md e as seções 8.1 (M01), 8.2 (M02), 9 (mode
 
 Transforme o protótipo na base do produto:
 
-1. Autenticação (RF-M01-01 a 03): Supabase Auth com link mágico, Google e Apple; sessão de 30 dias; tela de login; middleware que protege as rotas autenticadas; exclusão de conta com dupla confirmação e job de remoção.
+1. Autenticação (RF-M01-01 a 03): Supabase Auth com link mágico e Google (Apple fica para o prompt 2.5, decisão D-19); sessão de 30 dias; tela de login; middleware que protege as rotas autenticadas; exclusão de conta com dupla confirmação e job de remoção.
 2. Menores (RN-09) — DECISÃO D-08: apresente as opções e espere.
 3. Banco completo: migrations de TODAS as tabelas das seções 9.1, 9.2, 9.3 e 9.4 (exceto as marcadas P1, que ficam para depois), com chaves, índices e Row Level Security. Gere docs/DATA_MODEL.md com o diagrama em Mermaid. Escreva testes que provam que um usuário não lê dados de outro.
 4. Criptografia dos campos sensíveis (profiles.ministry_role, preferences.lenses) conforme a seção 13.
