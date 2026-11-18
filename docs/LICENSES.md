@@ -259,3 +259,23 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: d1556165fa76caf4659ab4b4c3e76d2b8f5783467dc44edad91b699f9f5d78dd
 - Observações: —
+
+## bible_lat_vulgata_clementina — Vulgata Clementina (1598)
+- Autor(es) / tradutor(es) e anos de morte: Jerônimo ()
+- Edição e ano de publicação: 1598
+- Licença: public_domain (public domain (pub 1598 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Vulgata Clementina de 1598 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/latVUC_usfm.zip (direitos: https://ebible.org/latVUC/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 5d73ce3473e40b70cfcc976b967e0f259cbb031d6c0cd4f9798fbabf9f5b4e6c
+- Observações: —
+
+## bible_por_blpt_nt — Biblia Livre Para Todos (Novo Testamento)
+- Autor(es) / tradutor(es) e anos de morte: Free Bible Ministry, Inc. ()
+- Edição e ano de publicação: 2022
+- Licença: cc_by_sa (open license cc_by_sa). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Biblia Livre Para Todos © 2022 Free Bible Ministry, Inc., licença Creative Commons Atribuição-CompartilhaIgual 4.0 (CC BY-SA 4.0).
+- Fonte (URL): https://ebible.org/Scriptures/porblt_usfm.zip (direitos: https://ebible.org/porblt/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 88513d3c0e852f219ca64d040591b640858e8f8292fe9ef503bdcc94ca88811b
+- Observações: CC BY-SA e só Novo Testamento: mantida separada de qualquer texto próprio.
