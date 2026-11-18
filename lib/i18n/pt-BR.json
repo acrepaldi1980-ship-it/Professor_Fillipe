@@ -5,5 +5,22 @@
   "study.placeholder": "Escreva sua pergunta…",
   "study.send": "Enviar",
   "study.mic.start": "Tocar para falar",
-  "study.mic.stop": "Tocar para parar"
+  "study.mic.stop": "Tocar para parar",
+  "study.interrupt": "Interromper",
+  "study.status.idle": "Pronto para ouvir você",
+  "study.status.listening": "O professor está ouvindo",
+  "study.status.thinking": "O professor está pensando",
+  "study.status.speaking": "O professor está falando",
+  "study.empty": "Faça uma pergunta sobre a Bíblia, por voz ou por texto. Que tal começar por Atos 8?",
+  "study.error.mic": "Não consegui usar o microfone. Libere a permissão no navegador ou digite sua pergunta.",
+  "study.error.heard": "Não consegui ouvir. Tente de novo ou digite sua pergunta.",
+  "study.error.turn": "Não consegui responder agora. Tente de novo em instantes.",
+  "study.error.unavailable": "O professor ainda não está disponível neste ambiente (falta a chave de IA).",
+  "study.error.voice": "A voz falhou, mas a resposta está escrita aqui.",
+  "study.you": "Você",
+  "study.teacher": "Professor Filipe",
+  "study.sources": "Fontes",
+  "study.flag": "Isso está errado?",
+  "study.verse.close": "Fechar",
+  "study.textonly": "Só texto"
 }

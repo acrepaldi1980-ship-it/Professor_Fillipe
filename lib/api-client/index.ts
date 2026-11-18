@@ -29,3 +29,73 @@ export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return (await res.json()) as T;
 }
+
+// ---- Teacher, voice and Bible endpoints (spec 10.5) ----
+import type { TeacherResponse } from "@/lib/teacher/schema";
+
+export interface TurnMeta {
+  intent: string;
+  tier: string;
+  words: number;
+  latencyMs: number;
+}
+
+/** One teacher turn over SSE. Calls onStructured once with the validated contract. */
+export async function teacherTurn(
+  body: { sessionId: string; text: string; intent?: string },
+  signal?: AbortSignal,
+): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
+  const res = await apiFetch("/teacher/turn", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!res.ok || !res.body) throw new Error(`api_error_${res.status}`);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let response: TeacherResponse | null = null;
+  let meta: TurnMeta | null = null;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i: number;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const block = buf.slice(0, i);
+      buf = buf.slice(i + 2);
+      const event = /^event: (.+)$/m.exec(block)?.[1];
+      const data = /^data: (.+)$/m.exec(block)?.[1];
+      if (!event || !data) continue;
+      if (event === "structured") response = JSON.parse(data);
+      else if (event === "done") meta = JSON.parse(data);
+      else if (event === "error") throw new Error("turn_failed");
+    }
+  }
+  if (!response) throw new Error("turn_failed");
+  return { response, meta: meta ?? { intent: "ask", tier: "fast", words: 0, latencyMs: 0 } };
+}
+
+export async function transcribeAudio(audio: Blob): Promise<{ text: string; confidence?: number }> {
+  const form = new FormData();
+  form.set("audio", audio, "audio.webm");
+  const res = await apiFetch("/voice/transcribe", { method: "POST", body: form });
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return res.json();
+}
+
+export async function speakSentence(text: string, signal?: AbortSignal): Promise<Blob> {
+  const res = await apiFetch("/voice/speak", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return res.blob();
+}
+
+export async function getBibleVerses(version: string, ref: string) {
+  return apiJson<{ version: string; ref: string; verses: { ref: string; text: string }[] }>(`/bible/${version}/${ref}`);
+}
