@@ -1,7 +1,7 @@
 # Especificação Funcional — App de Estudo Bíblico com o Professor Filipe
 
 > **Slogan:** "Entendes o que lês?" (Atos 8:30)
-> **Versão do documento:** 1.1 — 18/11/2026 (formato web primeiro, pronto para as lojas)
+> **Versão do documento:** 1.2 — 18/11/2026 (formato web primeiro, pronto para as lojas; avatar M17; ajustes de consistência)
 > **Responsável pelo produto:** Anderson Crepaldi
 > **Leitor principal:** o Claude Code, que usa este documento como fonte da verdade para escrever o código. Leitores secundários: sócios, investidores, conselho teológico e futuros desenvolvedores.
 
@@ -520,7 +520,7 @@ Regras do contrato:
 - `visuals` no máximo 2 por turno.
 - `next_options` de 2 a 4 itens.
 - `level_signal`: `lower`, `same` ou `higher`.
-- `avatar_cue` (opcional): expressão do avatar no turno (8.17.2, RF-M17-03); quando houver `pastoral_flag`, é sempre `empathetic`.
+- `avatar_cue` (opcional, presente no contrato desde o MVP): expressão do avatar no turno (8.17.2). No MVP a interface usa só `empathetic` (sempre que houver `pastoral_flag`) e `pointing` (quando o turno abre um visual); as demais expressões entram na Fase 2 (RF-M17-03).
 - `mode_payload`: objeto específico de cada modo (8.7), por exemplo a parte do plano de aula atualizada neste turno.
 - Validação com Zod; se falhar, o motor tenta uma correção automática (1 vez) e, se ainda falhar, usa só o texto com aviso discreto.
 
@@ -880,7 +880,7 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 - CA: a boca para em até 100 ms quando o áudio para ou é interrompido.
 
 **RF-M17-03 — Expressão guiada pela resposta (P1)**
-- A saída estruturada do motor (8.5.5) ganha o campo opcional `avatar_cue` (`neutral`, `happy`, `surprised`, `thoughtful`, `empathetic`, `pointing`), que dispara a expressão e o gesto do turno.
+- O campo opcional `avatar_cue` da saída estruturada (8.5.5), já presente no contrato desde o MVP, passa a disparar todas as expressões e gestos do turno (`neutral`, `happy`, `surprised`, `thoughtful`, `empathetic`, `pointing`). No MVP, só `empathetic` e `pointing` são usados pela interface (ver 8.5.5).
 
 **RF-M17-04 — Onde aparece**
 - Entrevista guiada (grande, centro da tela), conversa em todos os modos (topo ou lateral, tamanho médio), botão flutuante de voz (pequeno), revisão por voz, cartão de boas-vindas, estados vazios ("Seu caderno ainda está vazio..."), telas de erro, notificações (ícone), landing page, ícone do app e tela de abertura.
@@ -991,7 +991,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | Empacotamento nas lojas (Fase 2) | Capacitor (Android e iOS), usando o mesmo código das telas |
 | UI | Componentes próprios + Radix UI para acessibilidade; Framer Motion para animações |
 | Avatar | Rive (2D com máquina de estados) no MVP; modelo 3D do mesmo personagem na Fase 3 (D-18) |
-| Estado | React Server Components + TanStack Query no cliente |
+| Estado | TanStack Query no cliente para as telas do app; React Server Components só nas páginas públicas (landing, termos, fontes e licenças), conforme 10.6.1 |
 | Back-end | Rotas de API do Next.js (Node runtime para streaming) |
 | Banco | Supabase: Postgres, Auth, Storage, pgvector, Row Level Security |
 | IA | API da Anthropic (Claude), SDK oficial, streaming e tool use |
@@ -1101,25 +1101,25 @@ Todas as rotas abaixo ficam sob o prefixo **`/api/v1`** (ex.: `POST /api/v1/teac
 
 | Método e rota | Função | Entrada | Saída |
 | --- | --- | --- | --- |
-| `POST /api/sessions` | Cria sessão | `{ mode, topic? }` | `{ sessionId }` |
-| `POST /api/teacher/turn` | Um turno do professor (streaming SSE) | `{ sessionId, text, intent? }` | eventos: `speech_delta`, `structured`, `done`, `error` |
-| `POST /api/voice/transcribe` | Transcrição | áudio | `{ text, confidence }` |
-| `POST /api/voice/speak` | Síntese em streaming | `{ text, voiceId }` | áudio em blocos |
-| `POST /api/sessions/:id/close` | Fechamento (M09) | — | `{ summaryAudioUrl, mindMap, cards[] }` |
-| `GET /api/review/today` | Cartões do dia | — | `cards[]` |
-| `POST /api/review/answer` | Avalia resposta | `{ cardId, text }` | `{ grade, feedback, nextDue }` |
-| `GET /api/bible/:version/:ref` | Texto bíblico | — | versos |
-| `GET /api/bible/original/:ref` | Original com morfologia | — | palavras |
-| `GET /api/search` | Busca na base (admin e depuração) | `q`, filtros | trechos |
-| `POST /api/visuals/illustration` | Gera ou reaproveita ilustração | `{ prompt }` | `{ url }` |
-| `GET /api/visuals/map/:routeId` | Rota de mapa | — | GeoJSON + passos |
-| `GET /api/visuals/timeline/:id` | Linha do tempo | — | eventos |
-| `POST /api/export/pdf` | Exporta item em PDF | `{ kind, id }` | `{ url }` |
-| `POST /api/payments/checkout` | Inicia pagamento | `{ planId, cycle, method }` | `{ checkoutUrl \| pixQrCode }` |
-| `POST /api/payments/webhook` | Webhook do Asaas | evento | 200 |
-| `POST /api/account/export` | Exportar meus dados | — | 202 |
-| `DELETE /api/account` | Excluir conta | confirmação | 202 |
-| `POST /api/flags` | "Isso está errado?" | `{ messageId, reason }` | 201 |
+| `POST /api/v1/sessions` | Cria sessão | `{ mode, topic? }` | `{ sessionId }` |
+| `POST /api/v1/teacher/turn` | Um turno do professor (streaming SSE) | `{ sessionId, text, intent? }` | eventos: `speech_delta`, `structured`, `done`, `error` |
+| `POST /api/v1/voice/transcribe` | Transcrição | áudio | `{ text, confidence }` |
+| `POST /api/v1/voice/speak` | Síntese em streaming | `{ text, voiceId }` | áudio em blocos |
+| `POST /api/v1/sessions/:id/close` | Fechamento (M09) | — | `{ summaryAudioUrl, mindMap, cards[] }` |
+| `GET /api/v1/review/today` | Cartões do dia | — | `cards[]` |
+| `POST /api/v1/review/answer` | Avalia resposta | `{ cardId, text }` | `{ grade, feedback, nextDue }` |
+| `GET /api/v1/bible/:version/:ref` | Texto bíblico | — | versos |
+| `GET /api/v1/bible/original/:ref` | Original com morfologia | — | palavras |
+| `GET /api/v1/search` | Busca na base (admin e depuração) | `q`, filtros | trechos |
+| `POST /api/v1/visuals/illustration` | Gera ou reaproveita ilustração | `{ prompt }` | `{ url }` |
+| `GET /api/v1/visuals/map/:routeId` | Rota de mapa | — | GeoJSON + passos |
+| `GET /api/v1/visuals/timeline/:id` | Linha do tempo | — | eventos |
+| `POST /api/v1/export/pdf` | Exporta item em PDF | `{ kind, id }` | `{ url }` |
+| `POST /api/v1/payments/checkout` | Inicia pagamento | `{ planId, cycle, method }` | `{ checkoutUrl \| pixQrCode }` |
+| `POST /api/v1/payments/webhook` | Webhook do Asaas | evento | 200 |
+| `POST /api/v1/account/export` | Exportar meus dados | — | 202 |
+| `DELETE /api/v1/account` | Excluir conta | confirmação | 202 |
+| `POST /api/v1/flags` | "Isso está errado?" | `{ messageId, reason }` | 201 |
 
 Todas as rotas autenticadas validam a sessão, o plano e os limites antes de chamar serviços pagos.
 
@@ -1504,7 +1504,7 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-12 | Encarregado de dados (DPO) | Nome e contato | Antes do beta |
 | D-13 | Identidade visual | Três propostas no prompt 1.1 | Prompt 1.1 |
 | D-14 | Nome final do app e do professor | "Professor Filipe" provisório; verificar marca no INPI | Antes do beta |
-| D-15 | Edição da Almeida padrão | Bíblia Livre 2018 sugerida | Prompt 0.1 |
+| D-15 | Versão principal da Bíblia em português (padrão para adultos) | Bíblia Livre 2018 (CC BY, sugerida, conforme RF-M04-02) ou Almeida 1911 (domínio público) | Prompt 0.1 |
 | D-16 | Quando ir para as lojas | Depois do beta validado e com assinantes pagando pela web | Prompt 2.5 |
 | D-18 | Visual e estilo do avatar do Professor Filipe (aparência, roupa, elemento-assinatura, 2D com Rive ou outra técnica, ilustrador contratado ou não) | 3 conceitos visuais apresentados no prompt 1.6b; recomendado 2D estilizado em Rive no MVP | Prompt 1.6b |
 | D-17 | Domínio próprio e identificador do app (ex.: `br.com.<dominio>.app`) | Comprar o domínio antes do prompt 1.1 | Prompt 1.1 |

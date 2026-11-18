@@ -2,7 +2,7 @@
 
 > **Para que serve este guia:** levar você, passo a passo, da pasta vazia até o app completo. Cada prompt é para copiar e colar no Claude Code, **um por vez**, na ordem.
 > **Arquivo irmão:** `ESPECIFICACAO_FUNCIONAL.md`. Os prompts apontam para as seções dela, e é isso que dá precisão ao Claude Code.
-> **Versão:** 1.1 — 18/11/2026
+> **Versão:** 1.2 — 18/11/2026
 > **Formato:** web primeiro (app instalável pelo navegador, vendido direto, fora das lojas), já construído para ir para as lojas depois só com empacotamento. Ver seções 4.0 e 10.6 da especificação.
 
 ---
@@ -61,7 +61,7 @@
 | --- | --- | --- |
 | Preparação | 00 | Projeto organizado, CLAUDE.md e Git |
 | Fase 0 — Protótipo | 0.1, 0.2 | Professor falando por voz, testado com a turma |
-| Fase 1 — MVP | 1.1 a 1.14 | App completo no navegador, com pagamento, pronto para o beta |
+| Fase 1 — MVP | 1.1 a 1.14 (inclui 1.6b) | App completo no navegador, com pagamento, pronto para o beta |
 | Fase 2 — Robusto | 2.1 a 2.7 | Plano Igreja, ensaio, lojas, 3D ampliado, trilhas |
 | Fase 3 — Imersão | 3.1 a 3.5 | Ambientes 3D caminháveis e realidade virtual |
 | Utilitários | U1 a U6 | Corrigir, retomar, revisar, avaliar, mudar escopo, publicar |
@@ -142,7 +142,7 @@ ETAPA 2 — Decisões (PARE e pergunte)
 Apresente opções, com preço aproximado e prós e contras, para:
 - D-04 fornecedor de voz (STT e TTS em pt-BR, com streaming e baixa latência);
 - D-09 fornecedor de embeddings multilíngue;
-- D-15 edição da Almeida/Bíblia em português para o protótipo (mostre a licença de cada uma);
+- D-15 versão principal da Bíblia em português (Bíblia Livre 2018 ou Almeida 1911; mostre a licença de cada uma);
 - D-02 confirme os modelos padrão da seção 8.5.3;
 - D-03 voz do professor (me deixe ouvir amostras se o fornecedor permitir).
 Espere minhas respostas e registre-as em docs/PROGRESS.md.
@@ -161,7 +161,7 @@ ETAPA 5 — Busca
 
 ETAPA 6 — Motor mínimo do professor
 - lib/teacher com: montagem do prompt (camadas 11.1, 11.3 com versão fixa, 11.4 Estudo livre, 11.5 trechos), chamada à API da Anthropic com streaming e com a ferramenta teacher_response (contrato 8.5.5, validado com Zod), verificação de citações (8.5.6) e memória da sessão em memória do servidor.
-- Rota POST /api/teacher/turn com streaming (SSE).
+- Rota POST /api/v1/teacher/turn com streaming (SSE).
 
 ETAPA 7 — Voz
 - lib/voice com a interface VoiceProvider (transcribe e synthesize) e o fornecedor escolhido.
@@ -296,14 +296,14 @@ Leia o CLAUDE.md, o docs/PROGRESS.md e as seções 8.10 (inteira) e 14.1 a 14.3 
 5. Referências cruzadas (Treasury of Scripture Knowledge via OpenBible, CC BY) em cross_refs.
 6. Mapeamento de versificação entre versões (quando a numeração difere), usando o TVTMS do STEPBible.
 7. Parser de referências completo: os 200 casos da seção 8.10.5 e 16.1.
-8. Rotas GET /api/bible/:version/:ref e GET /api/bible/original/:ref.
+8. Rotas GET /api/v1/bible/:version/:ref e GET /api/v1/bible/original/:ref.
 9. Tela "Fontes e licenças" pública, gerada a partir da tabela works.
 
 Critérios: todas as versões da tabela 14.2 carregadas e consultáveis; João 1:1 aparece no grego com Strong; 200 testes do parser passando; nenhuma obra sem ficha.
 Atualize docs/PROGRESS.md e faça commit.
 ```
 
-**Como testar:** abra `/api/bible/por_blivre_2018/JHN.3.16` e `/api/bible/original/JHN.1.1`; abra a tela "Fontes e licenças".
+**Como testar:** abra `/api/v1/bible/por_blivre_2018/JHN.3.16` e `/api/v1/bible/original/JHN.1.1`; abra a tela "Fontes e licenças".
 
 **Se der errado:** se uma fonte tiver licença confusa, deixe fora e siga; o importante é não importar nada duvidoso.
 
@@ -433,18 +433,64 @@ Atualize docs/PROGRESS.md e faça commit.
 
 ---
 
+### Prompt 1.6b — Avatar do Professor Filipe
+
+**Objetivo:** o rosto do app: personagem definido, avatar 2D animado com estados e boca sincronizada com a voz, presente em todas as telas em que o professor fala.
+
+**Antes de colar:** 1.6 concluído (a voz definitiva é usada na sincronia de boca). Identidade visual (D-13) já escolhida no prompt 1.1. Decida se pretende contratar um ilustrador ou animador para a arte final (faz parte de D-18).
+
+**Prompt:**
+
+```text
+Leia o CLAUDE.md, o docs/PROGRESS.md e as seções 5 (RA-01 a RA-03, RA-17, RA-20 e RA-23), 8.5.5 (avatar_cue), 8.17 (M17, inteira), 12 (RNF-01 e RNF-14) e 17 da especificação.
+
+ETAPA 1 — Bíblia do personagem
+- Gere docs/PERSONAGEM_FILIPE.md com todos os itens da tabela 8.17.1, incluindo 10 a 15 bordões curtos e a lista do que ele nunca faz.
+
+ETAPA 2 — DECISÃO D-18 (PARE e pergunte)
+- Apresente 3 conceitos visuais do personagem, cada um com uma imagem de referência renderizada (rosto, corpo inteiro, ícone em 48 px, fundo claro e fundo escuro) na identidade visual escolhida em D-13.
+- Compare a técnica: Rive (recomendada na 8.17.3) e Lottie com camadas controladas por código, com prós, contras e custo.
+- Diga o que dá para fazer aqui com qualidade provisória e o que recomenda encomendar a um ilustrador ou animador (com um briefing pronto para enviar a ele em docs/PERSONAGEM_FILIPE.md).
+- Espere minha escolha e registre em docs/PROGRESS.md.
+
+ETAPA 3 — Componente do avatar
+- components/teacher/Avatar com a interface setState(state), setCue(cue) e attachAudio(stream) (8.17.3), substituindo o marcador provisório do prompt 1.1 em todas as telas.
+- Estados de RF-M17-01: idle, listening, thinking, speaking, happy, empathetic, pointing; transições ≤ 300 ms.
+- Sincronia de boca (RF-M17-02): visemas do fornecedor de voz quando existirem; senão, amplitude do áudio. O áudio chega pela interface AudioPlayer de lib/platform, nunca direto do navegador.
+- No MVP, ligue só os cues empathetic (sempre que pastoral_flag for true) e pointing (quando o turno abrir um visual), conforme 8.5.5.
+- "Reduzir movimento": só troca de expressão, sem movimentos contínuos. Avatar com aria-hidden e o estado anunciado em texto.
+- Modo compacto (o aluno reduz o avatar a um ícone animado), salvo nas preferências.
+
+ETAPA 4 — Onde aparece (RF-M17-04, parte do MVP)
+- Conversa em todos os modos, botão flutuante de voz, revisão por voz, estados vazios, telas de erro, ícone do app e tela de abertura. A entrevista e o cartão de boas-vindas usam o avatar no prompt 1.7; a landing, no prompt 1.14.
+
+ETAPA 5 — Desempenho e testes
+- Meça e cumpra RNF-14: arquivo ≤ 500 KB, 60 quadros por segundo em celular intermediário (emulação), boca para em até 100 ms após o fim ou a interrupção do áudio.
+- Confirme que o avatar não piora RNF-01 (carregamento sem bloquear o início da fala).
+- Testes Vitest da máquina de estados e Playwright de uma conversa com interrupção.
+
+Critérios: o professor ouve, pensa e fala com a boca sincronizada; para de mexer a boca ao ser interrompido; fica com expressão acolhedora numa mensagem de sofrimento; aponta para o painel quando abre um mapa.
+Atualize docs/PROGRESS.md, docs/STORE_DATA_INVENTORY.md (se algo mudar) e faça commit.
+```
+
+**Como testar:** converse por voz e repare na boca acompanhando a fala; interrompa o professor; ative "reduzir movimento" no celular e veja o avatar parar de se mexer, mantendo as expressões; reduza o avatar para o modo compacto.
+
+**Se der errado:** se a boca ficar atrasada, peça "Meça o atraso entre o áudio e a boca e ajuste a sincronia até ficar abaixo de 100 ms". Se o personagem não ficar bom, peça só o briefing para o ilustrador e siga com a versão provisória.
+
+---
+
 ### Prompt 1.7 — Entrevista guiada, configuração e primeira aula
 
 **Objetivo:** a experiência de primeiro acesso completa (jornada J01).
 
-**Antes de colar:** 1.6 concluído.
+**Antes de colar:** 1.6b concluído.
 
 **Prompt:**
 
 ```text
 Leia o CLAUDE.md, o docs/PROGRESS.md e as seções 7 (J01), 8.3 (M03), 8.4 (M04) e 17 da especificação.
 
-1. Entrevista por voz com o roteiro exato de RF-M03-01, conduzida pelo Professor Filipe com reação natural a cada resposta, alternativa por texto e botões de resposta rápida, barra de progresso de 7 passos. A pergunta 4 só aparece com consentimento de dado religioso.
+1. Entrevista por voz com o roteiro exato de RF-M03-01, conduzida pelo Professor Filipe (avatar grande no centro da tela, RF-M17-04) com reação natural a cada resposta, alternativa por texto e botões de resposta rápida, barra de progresso de 7 passos. A pergunta 4 só aparece com consentimento de dado religioso.
 2. Cálculo de nível de RF-M03-02, com testes (mesmas respostas geram o mesmo nível).
 3. Configuração (M04): lentes com explicação de uma frase e escolha de até 3; versão principal e comparação; obras filtradas pela lente; preferências de experiência. Tudo editável depois em Conta.
 4. Cartão de boas-vindas animado (RF-M03-03), respeitando "reduzir movimento".
@@ -645,7 +691,7 @@ Leia o CLAUDE.md, o docs/PROGRESS.md e as seções 12, 16 e 17 da especificaçã
 2. Testes ponta a ponta de todas as jornadas J01 a J07 em celular, tablet e desktop (Playwright com emulação).
 3. Acessibilidade (RNF-05) e desempenho (RNF-04): rode Lighthouse e corrija até atingir as metas.
 4. Rode todos os evals e confirme os limiares da seção 16.2. Se algum falhar, pare e me mostre.
-5. Landing page pública com o slogan, demonstração em vídeo (deixe o espaço para eu gravar), planos e cadastro.
+5. Landing page pública com o avatar do Professor Filipe (RF-M17-04), o slogan, demonstração em vídeo (deixe o espaço para eu gravar), planos e cadastro.
 6. Coleta de feedback no fim da sessão ("Como foi essa aula?").
 7. Deploy de produção (Vercel + Supabase de produção), domínio, variáveis de produção, Asaas em produção, backup ativo.
 8. Gere docs/BETA_CHECKLIST.md com tudo o que eu preciso conferir manualmente antes de abrir para a primeira turma (inclua revisão jurídica dos termos e a revisão do conselho teológico).
@@ -721,11 +767,9 @@ O app foi construído para ser empacotado sem reescrita. Agora faça a migraçã
 Critério: builds de teste no TestFlight e no teste interno do Google Play, com login, voz, notificação e assinatura funcionando. Atualize docs/PROGRESS.md e faça commit.
 ```
 
-**Como testar:** instale pelo TestFlight e pelo teste interno do Google Play; entre com a mesma conta que você usa na web e confira se a assinatura aparece; receba uma notificação de revisão.
+**Como testar:** instale pelo TestFlight e pelo teste interno do Google Play; entre com a mesma conta que você usa na web e confira se a assinatura aparece; receba uma notificação de revisão; faça a jornada J01 inteira no app nativo.
 
 **Se der errado:** recusa da Apple por "funcionalidade mínima" ou "pagamento": cole o motivo exato da recusa no U1 e peça a correção e o texto de resposta para a equipe de revisão da loja.
-
-**Como testar:** instale pelo TestFlight e pelo teste interno; faça a jornada J01 no app nativo.
 
 ### Prompt 2.6 — Biblioteca 3D e visuais ampliados
 
@@ -870,4 +914,5 @@ O Claude Code não resolve estes itens sozinho. São eles que costumam definir o
 - [ ] Orçamento mensal de IA, voz e imagens e acompanhamento do custo por usuário.
 - [ ] Negociar licenças de versões modernas e de editoras (SBB, Biblica, CPAD, Vida Nova) quando houver usuários e números para mostrar.
 - [ ] Contas de desenvolvedor Apple e Google para a Fase 2.
+- [ ] Ilustrador ou animador para a arte final do avatar do Professor Filipe, se escolhido em D-18 (prompt 1.6b).
 - [ ] Consultor de arqueologia bíblica e artista 3D (ou orçamento de modelos) para a Fase 3.
