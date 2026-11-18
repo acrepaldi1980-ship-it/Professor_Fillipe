@@ -253,3 +253,38 @@ export function formatRefPt(ref: string): string {
   }
   return `${base}-${y.name} ${y.c}${y.vs ? ":" + y.vs : ""}`;
 }
+
+/**
+ * Expands canonical refs to verse level so exact-reference search can match overlaps:
+ * "ACT.8.26-ACT.8.28" -> ACT.8.26, ACT.8.27, ACT.8.28. Cross-chapter ranges keep both endpoints.
+ * Every verse also adds its chapter key ("ACT.8") so chapter-level mentions match too.
+ */
+export function expandRefs(refs: string[], maxSpan = 200): string[] {
+  const out = new Set<string>();
+  for (const ref of refs) {
+    const [a, b] = ref.split("-");
+    const [bk, ch, vs] = a.split(".");
+    if (!b) {
+      out.add(ref);
+      if (vs) out.add(`${bk}.${ch}`);
+      continue;
+    }
+    const [bk2, ch2, vs2] = b.split(".");
+    if (bk === bk2 && ch === ch2 && vs && vs2) {
+      const from = Number(vs);
+      const to = Math.min(Number(vs2), from + maxSpan);
+      for (let n = from; n <= to; n++) out.add(`${bk}.${ch}.${n}`);
+      out.add(`${bk}.${ch}`);
+    } else {
+      out.add(a);
+      out.add(b);
+      if (vs) out.add(`${bk}.${ch}`);
+      if (vs2) out.add(`${bk2}.${ch2}`);
+      if (!vs && !vs2 && bk === bk2) {
+        // chapter range: GEN.1-GEN.3 -> GEN.1, GEN.2, GEN.3
+        for (let c = Number(ch); c <= Number(ch2) && c - Number(ch) <= maxSpan; c++) out.add(`${bk}.${c}`);
+      }
+    }
+  }
+  return [...out];
+}

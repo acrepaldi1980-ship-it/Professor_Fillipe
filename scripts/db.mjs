@@ -29,8 +29,10 @@ export async function migrate(dir = "supabase/migrations") {
 }
 
 if (process.argv[1] && process.argv[1].endsWith("db.mjs")) {
-  const cmd = process.argv[2];
-  if (cmd === "migrate") await migrate();
-  else if (cmd === "query") console.log(JSON.stringify(await sql(process.argv[3]), null, 2));
-  else console.log("usage: node scripts/db.mjs migrate | query '<sql>'");
+  (async () => {
+    const cmd = process.argv[2];
+    if (cmd === "migrate") await migrate();
+    else if (cmd === "query") console.log(JSON.stringify(await sql(process.argv[3]), null, 2));
+    else console.log("usage: node scripts/db.mjs migrate | query '<sql>'");
+  })();
 }

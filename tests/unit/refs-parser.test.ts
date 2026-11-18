@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BOOKS } from "@/lib/knowledge/books";
-import { findReferences, formatRefPt, parseReference } from "@/lib/knowledge/refs-parser";
+import { expandRefs, findReferences, formatRefPt, parseReference } from "@/lib/knowledge/refs-parser";
 
 describe("books data", () => {
   it("has 66 books and 1189 chapters", () => {
@@ -181,5 +181,18 @@ describe("formatRefPt", () => {
     expect(formatRefPt("PSA.23")).toBe("Salmos 23");
     expect(formatRefPt("GEN.1-GEN.3")).toBe("Gênesis 1-3");
     expect(formatRefPt("JHN.3.16-JHN.4.2")).toBe("João 3:16-4:2");
+  });
+});
+
+describe("expandRefs", () => {
+  it("expands same-chapter ranges to verses and adds the chapter key", () => {
+    expect(expandRefs(["ACT.8.26-ACT.8.28"]).sort()).toEqual(["ACT.8", "ACT.8.26", "ACT.8.27", "ACT.8.28"]);
+  });
+  it("keeps single verses and adds their chapter", () => {
+    expect(expandRefs(["JHN.3.16"]).sort()).toEqual(["JHN.3", "JHN.3.16"]);
+  });
+  it("expands chapter ranges and keeps cross-chapter endpoints", () => {
+    expect(expandRefs(["GEN.1-GEN.3"]).sort()).toEqual(["GEN.1", "GEN.2", "GEN.3"]);
+    expect(expandRefs(["JHN.3.16-JHN.4.2"]).sort()).toEqual(["JHN.3", "JHN.3.16", "JHN.4", "JHN.4.2"]);
   });
 });
