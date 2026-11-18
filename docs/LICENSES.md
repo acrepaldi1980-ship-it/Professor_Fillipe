@@ -179,3 +179,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 69ff87d19976bfc2306cb11ffeffd9fe0b4163eac9bd09da7f687b53a4de90f5
 - Observações: —
+
+## bible_spa_sencillo_2026 — La Biblia en Español Sencillo 2026
+- Autor(es) / tradutor(es) e anos de morte: AudioBiblia.org ()
+- Edição e ano de publicação: 2026
+- Licença: cc0 (open license cc0). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): La Biblia en Español Sencillo 2026 (domínio público, segundo o eBible.org).
+- Fonte (URL): https://ebible.org/Scriptures/spabes_usfm.zip (direitos: https://ebible.org/spabes/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 45c412d35fd1cbcf51ad4405ed0c3dea840cb7db39b157c0bbebd244fe51c578
+- Observações: —
