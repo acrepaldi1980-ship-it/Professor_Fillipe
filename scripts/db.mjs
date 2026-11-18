@@ -12,7 +12,7 @@ export async function sql(query) {
     body: JSON.stringify({ query }),
   });
   const body = await res.text();
-  if (!res.ok) throw new Error(`SQL failed (${res.status}): ${body.slice(0, 500)}`);
+  if (!res.ok) throw new Error(`SQL failed (${res.status}): ${body.slice(0, 6000)}`);
   return JSON.parse(body);
 }
 
