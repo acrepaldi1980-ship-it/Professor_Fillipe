@@ -33,7 +33,7 @@ async function main() {
   const versions = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_VERSIONS;
   const emb = getEmbeddingProvider();
   for (const versionId of versions) {
-    const [ver] = await sql(`select v.id, v.language, w.id work_id, w.license, w.name from bible_versions v join works w on w.id=v.work_id where v.id='${versionId}'`);
+    const [ver] = await sql(`select v.id, v.language, w.id work_id, w.license, v.name from bible_versions v join works w on w.id=v.work_id where v.id='${versionId}'`);
     if (!ver) {
       console.log(`SKIP ${versionId}: not found`);
       continue;
