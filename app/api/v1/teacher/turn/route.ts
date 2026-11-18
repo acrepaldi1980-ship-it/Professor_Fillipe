@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         controller.enqueue(enc.encode(sse("done", meta)));
       } catch (e) {
         console.error(JSON.stringify({ evt: "turn_error", code: (e as Error).message.slice(0, 80) }));
-        controller.enqueue(enc.encode(sse("error", { code: "turn_failed" })));
+        controller.enqueue(enc.encode(sse("error", { code: "turn_failed", detail: (e as Error).message.slice(0, 160) })));
       } finally {
         controller.close();
       }
