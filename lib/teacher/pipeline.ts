@@ -22,6 +22,8 @@ export interface TurnDeps {
   getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
   /** Context budget in tokens for retrieved chunks (spec: ~6000; smaller for free-tier prototype models). */
   contextTokens?: number;
+  /** Keep only the last N messages of history (free-tier prototype). */
+  historyMessages?: number;
   /** Optional: English keywords for the question, to reach English works from a Portuguese question. */
   rewriteQuery?(question: string): Promise<string | null>;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
@@ -106,18 +108,20 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   // 5) Prompt and 6) generation.
   const notice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
-  let system = buildSystemPrompt({ student, bible, chunks, verses, notice });
+  const small = !!deps.contextTokens && deps.contextTokens < 4000;
+  const maxChunkChars = small ? 1300 : undefined;
+  let system = buildSystemPrompt({ student, bible, chunks, verses, notice, maxChunkChars });
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   const generate = async (msgs: ChatMessage[]) => {
     try {
       return await deps.llm.generate({ system, messages: msgs, tier });
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice });
+      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars });
       return deps.llm.generate({ system, messages: msgs, tier });
     }
   };
-  const history = memory.get(input.sessionId);
+  const history = memory.get(input.sessionId).slice(-(deps.historyMessages ?? 24));
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
   const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
 

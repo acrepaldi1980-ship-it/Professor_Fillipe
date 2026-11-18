@@ -37,11 +37,37 @@ export const teacherResponseSchema = z.object({
 export type TeacherResponse = z.infer<typeof teacherResponseSchema>;
 export type Citation = TeacherResponse["citations"][number];
 
-/** JSON schema for the forced `teacher_response` tool (spec 11.6). */
+/** Compact JSON schema for the forced `teacher_response` tool (spec 11.6). Hand-written and flat to save tokens on free-tier
+ *  models (the generated schema cost ~700 tokens per turn); the Zod schema above remains the source of truth for validation. */
 export function teacherToolJsonSchema() {
-  const { $schema: _ignored, ...schema } = z.toJSONSchema(teacherResponseSchema, { io: "input" }) as Record<string, unknown>;
-  void _ignored;
-  return schema;
+  const s = { type: "string" };
+  return {
+    type: "object",
+    properties: {
+      speech: s,
+      display_markdown: s,
+      citations: {
+        type: "array",
+        items: { type: "object", properties: { type: { enum: ["bible", "work"] }, ref: s, version_id: s, work_id: s, chunk_id: s, label: s }, required: ["type"] },
+      },
+      visuals: {
+        type: "array",
+        maxItems: 2,
+        items: { type: "object", properties: { kind: { enum: ["map", "timeline", "illustration", "model3d"] }, map_id: s, timeline_id: s, prompt: s, model_id: s }, required: ["kind"] },
+      },
+      next_options: {
+        type: "array",
+        minItems: 2,
+        maxItems: 4,
+        items: { type: "object", properties: { label: s, intent: { enum: [...INTENTS] } }, required: ["label", "intent"] },
+      },
+      lens_divergence: { type: "object", properties: { present: { type: "boolean" }, summary: { type: ["string", "null"] } } },
+      pastoral_flag: { type: "boolean" },
+      level_signal: { enum: ["lower", "same", "higher"] },
+      avatar_cue: { enum: [...AVATAR_CUES] },
+    },
+    required: ["speech", "next_options"],
+  };
 }
 
 export function countWords(text: string): number {
