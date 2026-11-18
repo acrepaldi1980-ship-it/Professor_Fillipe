@@ -199,3 +199,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 0f3c1122422adba66cf1e0c98e11db117beebbe40994d2d8afb5e80cc84942cf
 - Observações: —
+
+## bible_eng_msb — Majority Standard Bible
+- Autor(es) / tradutor(es) e anos de morte: sem autor individual identificado
+- Edição e ano de publicação: não informado
+- Licença: cc0 (open license cc0). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Majority Standard Bible (dedicada ao domínio público pelo Berean Bible Translation Committee).
+- Fonte (URL): https://ebible.org/Scriptures/engmsb_usfm.zip (direitos: https://ebible.org/engmsb/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 8224adbd55ddde440d2461234590caf01c3c91b2d0a260b6c00703769077384b
+- Observações: —
