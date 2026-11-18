@@ -13,6 +13,7 @@ export function groqModels(): string[] {
 export class GroqTeacherLlm implements TeacherLlm {
   async generate({ system, messages }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     let lastStatus = 0;
+    let lastDetail = "";
     for (const model of groqModels()) {
       const doFetch = () =>
         fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -21,7 +22,7 @@ export class GroqTeacherLlm implements TeacherLlm {
           body: JSON.stringify({
             model,
             temperature: 0.4,
-            max_completion_tokens: 2500,
+            max_completion_tokens: 1200,
             ...(model.includes("gpt-oss") ? { reasoning_effort: "low" } : {}),
             messages: [{ role: "system", content: system }, ...messages],
             tools: [
@@ -43,6 +44,7 @@ export class GroqTeacherLlm implements TeacherLlm {
         res = await doFetch();
       }
       lastStatus = res.status;
+      if (!res.ok) lastDetail = await res.clone().text().then((t) => { try { const e = JSON.parse(t).error; return `${e?.code ?? e?.type ?? ""} ${String(e?.message ?? "").replace(/organization `[^`]+`/, "org").slice(0, 70)}`; } catch { return ""; } }).catch(() => "");
       if (res.status === 413) throw new Error("llm_failed_413"); // request too large: the pipeline shrinks the context and retries
       if (res.status === 429 || res.status === 400 || res.status === 404) continue; // limit, tool-call failure or model gone: next model
       if (!res.ok) break;
@@ -55,7 +57,7 @@ export class GroqTeacherLlm implements TeacherLlm {
         continue;
       }
     }
-    throw new Error(`llm_failed_${lastStatus || "empty"}`);
+    throw new Error(`llm_failed_${lastStatus || "empty"}${lastDetail ? ": " + lastDetail.trim() : ""}`);
   }
 }
 
