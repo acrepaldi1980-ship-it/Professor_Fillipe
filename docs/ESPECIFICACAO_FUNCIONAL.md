@@ -78,7 +78,7 @@
 
 ### 2.2 Proposta de valor
 
-Um **professor de teologia por voz**, chamado **Professor Filipe**, que:
+Um **professor de teologia por voz, com avatar animado próprio**, chamado **Professor Filipe**: um assistente virtual com rosto, voz e personalidade que vira a identidade da marca dentro e fora do app (seção 8.17). Ele:
 
 1. Conversa como um amigo, de forma didática, curta e interativa, usando princípios de aprendizagem de adultos.
 2. Ensina dentro da **linha teológica escolhida** pelo aluno, sem esconder as outras.
@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M17 Avatar do Professor Filipe | Avatar 2D animado com estados, expressões e sincronia de boca com a voz |
 
 ### 4.3 Fase 2 — Produto robusto (P1, 3–5 meses)
 
@@ -219,6 +220,7 @@ Estas regras valem para **todo** prompt de sistema, todo modo e toda fase. O pro
 
 - **RA-01 — Quem ele é:** Professor Filipe, professor de Bíblia e teologia, acolhedor, didático e de humor leve. Inspirado no Filipe de Atos 8, que explicou as Escrituras conversando pelo caminho.
 - **RA-02 — Transparência:** quando perguntado, diz com naturalidade que é uma inteligência artificial criada para ajudar no estudo da Bíblia. Nunca afirma ser humano, pastor ou ter diploma.
+- **RA-23 — Avatar:** o Professor Filipe tem um avatar animado que é o rosto do app (seção 8.17). O avatar é um personagem original, estilizado e claramente não realista, para não parecer uma pessoa real nem um vídeo de alguém de verdade. Não representa o apóstolo Filipe, Jesus nem nenhum personagem bíblico: é um professor dos dias de hoje inspirado no exemplo de Filipe.
 - **RA-03 — Tom:** trata o aluno pelo nome, usa "você", evita jargão sem explicar e nunca é arrogante, irônico com a fé do aluno ou com outras tradições.
 
 ### 5.2 Didática (andragogia)
@@ -507,6 +509,7 @@ O modelo devolve, por ferramenta (tool use) ou JSON validado, o seguinte objeto.
   "lens_divergence": { "present": false, "summary": null },
   "pastoral_flag": false,
   "level_signal": "same",
+  "avatar_cue": "thoughtful",
   "mode_payload": null
 }
 ```
@@ -517,6 +520,7 @@ Regras do contrato:
 - `visuals` no máximo 2 por turno.
 - `next_options` de 2 a 4 itens.
 - `level_signal`: `lower`, `same` ou `higher`.
+- `avatar_cue` (opcional): expressão do avatar no turno (8.17.2, RF-M17-03); quando houver `pastoral_flag`, é sempre `empathetic`.
 - `mode_payload`: objeto específico de cada modo (8.7), por exemplo a parte do plano de aula atualizada neste turno.
 - Validação com Zod; se falhar, o motor tenta uma correção automática (1 vez) e, se ainda falhar, usa só o texto com aviso discreto.
 
@@ -842,6 +846,60 @@ Rota `/admin`, só para o papel `admin` (e `reviewer` nas telas de revisão).
 - Desempenho: ≥ 30 quadros por segundo em Android intermediário; carregamento por zonas.
 - Realidade virtual: teletransporte e rotação em passos para conforto.
 - Tecnologia: definida no prompt 3.1 **[DECISÃO D-11]**.
+- O guia é o **mesmo personagem do avatar** (8.17), em versão 3D com os mesmos traços, roupas e cores.
+
+### 8.17 M17 — Avatar do Professor Filipe (P0 2D, P1 completo, P2 3D)
+
+O avatar é o assistente virtual com rosto: aparece em todas as telas em que o professor fala e é a cara da marca em redes sociais, materiais e anúncios.
+
+#### 8.17.1 Bíblia do personagem (documento de referência)
+
+Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Anderson **[DECISÃO D-18]**. Conteúdo mínimo:
+
+| Item | Definição inicial (ajustável) |
+| --- | --- |
+| Quem é | Professor de Bíblia dos dias de hoje, acolhedor e bem-humorado; inspirado no Filipe de Atos 8, mas não é o apóstolo |
+| Aparência | Homem brasileiro, aparência entre 40 e 50 anos, rosto simpático e expressivo, traços que funcionem bem em tamanho pequeno (ícone) |
+| Estilo | Ilustração estilizada (não realista), cores da identidade visual do app (D-13) |
+| Roupa | Casual-arrumada (camisa, suéter ou colete), com um elemento-assinatura fixo e reconhecível (ex.: óculos, cachecol, Bíblia gasta debaixo do braço) |
+| Personalidade | Acolhedor, didático, humor leve, curioso, nunca arrogante (RA-01 a RA-03) |
+| Frase-assinatura | "Entendes o que lês?" |
+| Expressões de bordão | Lista de 10 a 15 aberturas e reações curtas, variadas, para não repetir ("Boa pergunta!", "Olha que interessante...") |
+| Voz | A mesma voz do TTS escolhida em D-03 |
+| O que ele nunca faz | Não usa trajes clericais de nenhuma denominação específica (para não ser associado a uma só igreja); não aparece rezando ou pregando em púlpito; não aparece com aparência de personagem bíblico; não é sexualizado nem caricato |
+| Diversidade de uso | Funciona em fundo claro e escuro, em tamanho de ícone (48 px) e em tela cheia |
+
+#### 8.17.2 Requisitos
+
+**RF-M17-01 — Estados do avatar (P0)**
+- `idle` (respiração e piscadas sutis), `listening` (inclina a cabeça, olhar atento), `thinking` (olhar para cima, mão no queixo), `speaking` (boca sincronizada com a voz), `happy` (comemoração curta, ex.: acerto na revisão), `empathetic` (expressão acolhedora, usada no limite pastoral RA-17), `pointing` (aponta para o painel de visuais quando abre mapa, linha do tempo ou 3D).
+- Transições suaves entre estados (≤ 300 ms).
+
+**RF-M17-02 — Sincronia de boca (P0)**
+- Boca animada a partir da voz do professor: se o fornecedor de TTS entregar visemas (formas de boca por fonema) com tempo, usa os visemas; senão, usa a amplitude do áudio em tempo real.
+- CA: a boca para em até 100 ms quando o áudio para ou é interrompido.
+
+**RF-M17-03 — Expressão guiada pela resposta (P1)**
+- A saída estruturada do motor (8.5.5) ganha o campo opcional `avatar_cue` (`neutral`, `happy`, `surprised`, `thoughtful`, `empathetic`, `pointing`), que dispara a expressão e o gesto do turno.
+
+**RF-M17-04 — Onde aparece**
+- Entrevista guiada (grande, centro da tela), conversa em todos os modos (topo ou lateral, tamanho médio), botão flutuante de voz (pequeno), revisão por voz, cartão de boas-vindas, estados vazios ("Seu caderno ainda está vazio..."), telas de erro, notificações (ícone), landing page, ícone do app e tela de abertura.
+- Modo compacto: o aluno pode reduzir o avatar a um ícone animado, para focar no conteúdo.
+
+**RF-M17-05 — Kit de marca (P1)**
+- Poses estáticas em alta resolução para redes sociais, figurinhas para WhatsApp (12 a 20, com frases do personagem), modelo de post e de story, vídeo curto de apresentação do personagem (com narração embutida no próprio vídeo).
+
+**RF-M17-06 — Versão 3D (P2)**
+- Modelo 3D do mesmo personagem, com animação facial, para ser o guia nos ambientes imersivos (8.16) e, opcionalmente, substituir o 2D nas telas.
+
+#### 8.17.3 Requisitos técnicos
+
+- Formato recomendado para o 2D: **Rive** (animação vetorial com máquina de estados, leve, roda no navegador e no Capacitor). Alternativa: Lottie com camadas controladas por código. A escolha final faz parte de D-18.
+- Arquivo do avatar ≤ 500 KB; 60 quadros por segundo em celular intermediário; não pode atrasar o início da fala (RNF-01).
+- Respeita "reduzir movimento": nesse caso, só troca de expressão, sem movimentos contínuos.
+- Acessibilidade: o avatar é decorativo para leitores de tela (`aria-hidden`), e o estado atual ("o professor está ouvindo") é anunciado em texto.
+- Componente único `components/teacher/Avatar` com a interface `setState(state)`, `setCue(cue)` e `attachAudio(stream)`, usado em todas as telas.
+- Produção do personagem: o Claude Code gera o conceito, a bíblia do personagem e uma versão provisória; a arte final com animação de qualidade é recomendada com um ilustrador/animador (ver checklist).
 
 ---
 
@@ -932,6 +990,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | Cliente da API | `lib/api-client`: cliente tipado gerado a partir dos esquemas Zod; é o único caminho das telas para os dados |
 | Empacotamento nas lojas (Fase 2) | Capacitor (Android e iOS), usando o mesmo código das telas |
 | UI | Componentes próprios + Radix UI para acessibilidade; Framer Motion para animações |
+| Avatar | Rive (2D com máquina de estados) no MVP; modelo 3D do mesmo personagem na Fase 3 (D-18) |
 | Estado | React Server Components + TanStack Query no cliente |
 | Back-end | Rotas de API do Next.js (Node runtime para streaming) |
 | Banco | Supabase: Postgres, Auth, Storage, pgvector, Row Level Security |
@@ -1239,6 +1298,7 @@ Definida com o esquema JSON da seção 8.5.5. O modelo é obrigado a chamá-la (
 | RNF-11 | Observabilidade | Erros no Sentry; latência e custo por turno registrados |
 | RNF-12 | Backup | Backup diário do banco, retenção de 30 dias |
 | RNF-13 | Portabilidade para as lojas | Build estático do app passando no CI; nenhuma chamada direta a API do navegador fora de `lib/platform`; API só em `/api/v1` com token no cabeçalho (seção 10.6) |
+| RNF-14 | Desempenho do avatar | Arquivo ≤ 500 KB; 60 quadros por segundo em celular intermediário; boca para em até 100 ms após o fim do áudio |
 
 ---
 
@@ -1374,7 +1434,7 @@ Os evals rodam a cada mudança de prompt e de modelo; o relatório vai para `eva
 
 ### 17.1 Direção visual
 
-Acolhedora e moderna, legível para todas as idades. Três propostas de identidade visual são apresentadas no prompt 1.1 **[DECISÃO D-13]**. Modo claro e escuro. Avatar ilustrado do Professor Filipe com estados ouvindo, pensando e falando.
+Acolhedora e moderna, legível para todas as idades. Três propostas de identidade visual são apresentadas no prompt 1.1 **[DECISÃO D-13]**. Modo claro e escuro. O avatar do Professor Filipe (8.17) é o centro da identidade: a paleta e a tipografia do app conversam com ele, e ele aparece no ícone, na tela de abertura, na landing page e nas redes sociais.
 
 ### 17.2 Lista de telas
 
@@ -1446,4 +1506,5 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-14 | Nome final do app e do professor | "Professor Filipe" provisório; verificar marca no INPI | Antes do beta |
 | D-15 | Edição da Almeida padrão | Bíblia Livre 2018 sugerida | Prompt 0.1 |
 | D-16 | Quando ir para as lojas | Depois do beta validado e com assinantes pagando pela web | Prompt 2.5 |
+| D-18 | Visual e estilo do avatar do Professor Filipe (aparência, roupa, elemento-assinatura, 2D com Rive ou outra técnica, ilustrador contratado ou não) | 3 conceitos visuais apresentados no prompt 1.6b; recomendado 2D estilizado em Rive no MVP | Prompt 1.6b |
 | D-17 | Domínio próprio e identificador do app (ex.: `br.com.<dominio>.app`) | Comprar o domínio antes do prompt 1.1 | Prompt 1.1 |
