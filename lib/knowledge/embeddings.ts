@@ -26,7 +26,9 @@ export class LocalE5Provider implements EmbeddingProvider {
 
   private load(): Promise<Extractor> {
     this.extractor ??= (async () => {
-      const { pipeline } = await import("@huggingface/transformers");
+      const { pipeline, env } = await import("@huggingface/transformers");
+      // Serverless file systems are read-only except /tmp: cache the downloaded model there.
+      if (process.env.VERCEL || process.env.TRANSFORMERS_CACHE_DIR) env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? "/tmp/hf-cache";
       return (await pipeline("feature-extraction", this.model, {
         dtype: "q8",
       })) as unknown as Extractor;
