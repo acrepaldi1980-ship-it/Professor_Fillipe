@@ -169,3 +169,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 02a28e412ac61d1683b18352557fbf73afd6cfe1a1d6da3d9b56c78a5b2c2d33
 - Observações: —
+
+## bible_spa_biblia_libre_mundo — Santa Biblia libre para el mundo
+- Autor(es) / tradutor(es) e anos de morte: David Williams, Michael Paul Johnson ()
+- Edição e ano de publicação: não informado
+- Licença: cc0 (open license cc0). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Santa Biblia libre para el mundo (domínio público, segundo o eBible.org; tradução em revisão).
+- Fonte (URL): https://ebible.org/Scriptures/spablm_usfm.zip (direitos: https://ebible.org/spablm/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 69ff87d19976bfc2306cb11ffeffd9fe0b4163eac9bd09da7f687b53a4de90f5
+- Observações: —
