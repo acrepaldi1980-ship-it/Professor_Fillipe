@@ -473,9 +473,9 @@ Entrada (texto ou transcrição de voz)
 
 #### 8.5.3 Escolha de modelo
 
-- Variáveis: `TEACHER_MODEL_FAST` (conversa) e `TEACHER_MODEL_DEEP` (aprofundamento, geração de materiais e avaliação).
+- Variáveis: `TEACHER_MODEL_CLASSIFIER` (tarefas curtas: moderação, classificação de intenção, detecção de crise pastoral), `TEACHER_MODEL_FAST` (conversa) e `TEACHER_MODEL_DEEP` (aprofundamento, geração de materiais e avaliação).
 - Usa o modelo profundo quando: modo Aprofundar; geração de plano de aula, esboço, resumo final ou cartões; avaliação de nível; ou o turno pede comparação de 3+ tradições.
-- Padrões sugeridos: `claude-sonnet-5-5` (rápido) e `claude-opus-5-5` (profundo) **[DECISÃO D-02]**.
+- Padrões (D-02, decidida em 18/11/2026): `claude-haiku-5-5` (classificador), `claude-sonnet-5-5` (rápido) e `claude-opus-5-5` (profundo). No protótipo (Fase 0), o profundo também usa Sonnet; Opus só entra se os evals mostrarem ganho que justifique o custo.
 
 #### 8.5.4 Memória
 
