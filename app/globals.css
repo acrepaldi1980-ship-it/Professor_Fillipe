@@ -126,10 +126,16 @@ h3 {
 /* touch targets of at least 44px on interactive controls (spec 10.6.5) */
 button,
 a[role="button"],
-input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 select,
 textarea {
   min-height: 44px;
+}
+
+/* checkboxes keep their own size; their <label> provides the 44px touch area */
+label:has(> input[type="checkbox"]) {
+  min-height: 44px;
+  align-items: center;
 }
 
 :focus-visible {

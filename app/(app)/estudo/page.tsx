@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
-import { getBibleVerses, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
+import { createSession, getBibleVerses, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -24,6 +25,7 @@ const SPEECH_LEVEL = 0.06;
 const MAX_RECORD_MS = 30_000;
 
 export default function StudyPage() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [state, setState] = useState<AvatarState>("idle");
   const [level, setLevel] = useState(0);
@@ -37,9 +39,20 @@ export default function StudyPage() {
   const playId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
 
+  // The conversation lives in a server-side session: /estudo?s=<id> (query string keeps the screen exportable for Capacitor).
   useEffect(() => {
-    sessionId.current = crypto.randomUUID();
-  }, []);
+    const existing = new URLSearchParams(window.location.search).get("s");
+    if (existing) {
+      sessionId.current = existing;
+      return;
+    }
+    void createSession("free")
+      .then(({ sessionId: id }) => {
+        sessionId.current = id;
+        router.replace(`/estudo?s=${id}`);
+      })
+      .catch(() => router.replace("/login"));
+  }, [router]);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -87,10 +100,12 @@ export default function StudyPage() {
         else setState(response.pastoral_flag ? "empathetic" : response.visuals.length ? "pointing" : "idle");
       } catch (e) {
         setState("idle");
-        setError((e as Error).message === "api_error_503" ? t("study.error.unavailable") : t("study.error.turn"));
+        const msg = (e as Error).message;
+        if (msg === "api_error_401") return router.replace("/login");
+        setError(msg === "api_error_503" ? t("study.error.unavailable") : t("study.error.turn"));
       }
     },
-    [speak, stopSpeaking, textOnly],
+    [speak, stopSpeaking, textOnly, router],
   );
 
   const stopRecordingAndSend = useCallback(async () => {

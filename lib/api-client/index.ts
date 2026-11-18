@@ -99,3 +99,22 @@ export async function speakSentence(text: string, signal?: AbortSignal): Promise
 export async function getBibleVerses(version: string, ref: string) {
   return apiJson<{ version: string; ref: string; verses: { ref: string; text: string }[] }>(`/bible/${version}/${ref}`);
 }
+
+// ---- Account, profile and sessions ----
+export interface MeResponse {
+  user: { id: string; email?: string };
+  profile: { display_name: string | null; preferred_name: string | null; birth_date: string | null; is_minor: boolean; ui_prefs: Record<string, unknown>; role: string } | null;
+  consents: Record<string, { granted: boolean; version: string }>;
+  termsVersion: string;
+  onboarding: { needsConsent: boolean; needsReligiousChoice: boolean };
+}
+
+export const getMe = () => apiJson<MeResponse>("/me");
+export const saveMe = (body: Record<string, unknown>) => apiJson<{ ok: true }>("/me", { method: "PUT", body: JSON.stringify(body) });
+export const saveConsent = (kind: string, granted: boolean) => apiJson<{ ok: true }>("/consents", { method: "POST", body: JSON.stringify({ kind, granted }) });
+export const createSession = (mode = "free") => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode }) });
+export async function deleteAccount(): Promise<void> {
+  const res = await apiFetch("/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "EXCLUIR" }) });
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+}
+export const getConfig = () => apiJson<{ minVersion: string; flags: Record<string, boolean> }>("/config");
