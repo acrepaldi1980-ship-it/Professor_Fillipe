@@ -159,3 +159,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 8f7b348e0963428d59788ad971a7090f75afbc710e6896f99f95bd27f3748d5a
 - Observações: CC BY-SA: manter separada e não misturar com texto próprio do app. Links de versículos do original foram reduzidos ao rótulo e as referências extraídas para chunks.refs.
+
+## bible_spa_biblia_libre_latam — Santa Biblia libre Latinoamericano
+- Autor(es) / tradutor(es) e anos de morte: sem autor individual identificado
+- Edição e ano de publicação: não informado
+- Licença: cc0 (open license cc0). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Santa Biblia libre Latinoamericano (domínio público, segundo o eBible.org; tradução em revisão).
+- Fonte (URL): https://ebible.org/Scriptures/spabll_usfm.zip (direitos: https://ebible.org/spabll/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 02a28e412ac61d1683b18352557fbf73afd6cfe1a1d6da3d9b56c78a5b2c2d33
+- Observações: —
