@@ -189,3 +189,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 45c412d35fd1cbcf51ad4405ed0c3dea840cb7db39b157c0bbebd244fe51c578
 - Observações: —
+
+## bible_eng_webster — Noah Webster Bible
+- Autor(es) / tradutor(es) e anos de morte: Noah Webster (1843)
+- Edição e ano de publicação: 1833
+- Licença: public_domain (public domain (pub 1833 <= 1931; deaths <= 1955)). Verificada na página de direitos do eBible.org.
+- Crédito exigido (texto exato): Noah Webster Bible, 1833 (domínio público).
+- Fonte (URL): https://ebible.org/Scriptures/engwebster_usfm.zip (direitos: https://ebible.org/engwebster/copyright.htm)
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 0f3c1122422adba66cf1e0c98e11db117beebbe40994d2d8afb5e80cc84942cf
+- Observações: —
