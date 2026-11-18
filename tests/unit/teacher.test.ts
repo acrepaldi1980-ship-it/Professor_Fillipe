@@ -181,6 +181,15 @@ describe("runTurn", () => {
     expect(out.response.next_options.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("keeps the answer it already has when an optional extra pass fails (e.g. rate limit on the shorter-version call)", async () => {
+    const long = Array.from({ length: 200 }, () => "palavra").join(" ") + "?";
+    let calls = 0;
+    const llm: TeacherLlm = { generate: async () => { calls++; if (calls === 1) return good({ speech: long }); throw new Error("llm_failed_429"); } };
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, { ...deps([good()]), llm });
+    expect(out.meta.degraded).toBeUndefined();
+    expect(out.response.speech).toContain("palavra");
+  });
+
   it("uses the deep tier for deepening intents", async () => {
     const d = deps([good()]);
     const out = await runTurn({ sessionId: "s1", text: "Aprofunda isso" }, d);

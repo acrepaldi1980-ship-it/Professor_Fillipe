@@ -126,6 +126,14 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
 
   const tLlm = Date.now();
+  // Optional extra passes (retry, shorter version, rewrite) must never break a turn that already has an answer.
+  const tryGenerate = async (msgs: ChatMessage[]) => {
+    try {
+      return await generate(msgs);
+    } catch {
+      return null;
+    }
+  };
   let schemaRetries = 0;
   let parsed;
   try {
@@ -137,7 +145,8 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (!parsed.success) {
     schemaRetries = 1;
     const hint = `Sua resposta anterior não seguiu o contrato (${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}). Responda de novo chamando teacher_response corretamente.`;
-    parsed = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
+    const retry = await tryGenerate([...messages, { role: "user", content: hint }]);
+    if (retry) parsed = teacherResponseSchema.safeParse(retry);
   }
   if (!parsed.success) throw new Error("teacher_response_invalid");
 
@@ -147,8 +156,9 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (countWords(parsed.data.speech) > limit) {
     lengthRewrites = 1;
     const hint = `Sua fala tem ${countWords(parsed.data.speech)} palavras. Reduza a "speech" para no máximo ${limit} palavras, sem resumo nem desafio, e termine com uma pergunta ou escolha. O texto longo pode ir em display_markdown.`;
-    const shorter = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
-    if (shorter.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
+    const shorterRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
+    const shorter = shorterRaw ? teacherResponseSchema.safeParse(shorterRaw) : null;
+    if (shorter?.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
   }
   const llmMs = Date.now() - tLlm;
 
@@ -159,8 +169,9 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (ver.invalidSpeechRefs.length) {
     speechRewrites = 1;
     const hint = `Atenção: você citou referências que não existem ou não estão nas fontes (${ver.invalidSpeechRefs.join(", ")}). Reformule sem elas e diga que não encontrou isso nas fontes, se for o caso.`;
-    const again = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
-    if (again.success) ver = await verifyCitations(repairWorkCitations(again.data, chunks), { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
+    const againRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
+    const again = againRaw ? teacherResponseSchema.safeParse(againRaw) : null;
+    if (again?.success) ver = await verifyCitations(repairWorkCitations(again.data, chunks), { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
     if (ver.invalidSpeechRefs.length) {
       // Last resort: do not speak an unverified reference.
       ver = { ...ver, response: { ...ver.response, speech: "Não encontrei essa passagem nas minhas fontes. Quer me dizer o livro e o capítulo de novo, ou prefere que eu sugira um texto parecido?" } };

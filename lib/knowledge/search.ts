@@ -1,6 +1,6 @@
 // Hybrid search (spec 8.10.4): exact references + semantic + keyword, fused with RRF in SQL (search_chunks),
 // then re-ranked by authority layer (8.10.6) and trimmed to a prompt budget.
-import { getDb, lit, litArray, litVector, type Db } from "./db";
+import { getStore, type KnowledgeStore } from "./db";
 import { getEmbeddingProvider, type EmbeddingProvider } from "./embeddings";
 import { expandRefs, findReferences } from "./refs-parser";
 
@@ -86,9 +86,9 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 export async function searchChunks(
   query: string | string[],
   opts: SearchOptions = {},
-  deps: { db?: Db; embeddings?: EmbeddingProvider } = {},
+  deps: { store?: KnowledgeStore; embeddings?: EmbeddingProvider } = {},
 ): Promise<{ chunks: Retrieved[]; refs: string[] }> {
-  const db = deps.db ?? getDb();
+  const store = deps.store ?? getStore();
   const emb = deps.embeddings ?? getEmbeddingProvider();
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 40;
@@ -97,9 +97,7 @@ export async function searchChunks(
   const results = await Promise.all(
     queries.map(async (q, i) => {
       const vec = await emb.embedQuery(q);
-      return db.query<Row>(
-        `select * from search_chunks(${litVector(vec)}, ${lit(q)}, ${litArray(i === 0 ? refs : [])}, ${per}, ${opts.workIds ? litArray(opts.workIds) : "null"})`,
-      );
+      return store.searchChunks({ embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null });
     }),
   );
   const merged = new Map<string, Row>();
@@ -113,18 +111,10 @@ export async function searchChunks(
 }
 
 /** Exact Bible verses for canonical refs (expanded to verse level) in one version. */
-export async function getVerses(versionId: string, canonicalRefs: string[], deps: { db?: Db } = {}): Promise<BibleVerse[]> {
-  const db = deps.db ?? getDb();
+export async function getVerses(versionId: string, canonicalRefs: string[], deps: { store?: KnowledgeStore } = {}): Promise<BibleVerse[]> {
+  const store = deps.store ?? getStore();
   const verseRefs = expandRefs(canonicalRefs).filter((r) => r.split(".").length === 3);
   const chapters = canonicalRefs.filter((r) => !r.includes("-") && r.split(".").length === 2);
-  const where: string[] = [];
-  if (verseRefs.length) where.push(`ref = any (${litArray(verseRefs)})`);
-  for (const c of chapters) {
-    const [book, ch] = c.split(".");
-    where.push(`(book_code = ${lit(book)} and chapter = ${Number(ch)})`);
-  }
-  if (!where.length) return [];
-  return db.query<BibleVerse>(
-    `select version_id, ref, text from bible_verses where version_id = ${lit(versionId)} and (${where.join(" or ")}) order by book_code, chapter, verse limit 300`,
-  );
+  if (!verseRefs.length && !chapters.length) return [];
+  return store.bibleVerses(versionId, verseRefs, chapters);
 }
