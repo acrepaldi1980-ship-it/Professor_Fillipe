@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:portability": "node scripts/check-portability.mjs",
+    "check:static-build": "node scripts/check-static-build.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.10.0",
