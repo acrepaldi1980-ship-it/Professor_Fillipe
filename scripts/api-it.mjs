@@ -72,7 +72,8 @@ async function api(path, { method = "GET", token, body } = {}) {
     check("turn without a session of its own is refused", (await api("/teacher/turn", { method: "POST", token, body: { sessionId: randomUUID(), text: "oi" } })).status === 404);
 
     const turn = await api("/teacher/turn", { method: "POST", token, body: { sessionId, text: "Quem foi Barnabé?" } });
-    check("teacher turn streams a structured answer", turn.status === 200 && /event: structured/.test(turn.text), turn.text.slice(0, 80).replace(/\n/g, " "));
+    const doneMeta = /event: done\ndata: (.+)/.exec(turn.text)?.[1] ?? "";
+    check("teacher turn streams a structured answer", turn.status === 200 && /event: structured/.test(turn.text), doneMeta.slice(0, 200));
     const [{ n: saved }] = await sql(`select count(*)::int n from messages where session_id='${sessionId}'`);
     check("conversation saved in the database (2 messages)", saved === 2, `saved=${saved}`);
 

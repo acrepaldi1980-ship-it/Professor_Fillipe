@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   // The local embedding model (transformers.js + ONNX) runs inside the API function: keep it out of the bundler
   // and ship only the Linux binaries (the other platforms would exceed the function size limit).
   serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "onnxruntime-common", "sharp"],
+  // The tracer cannot see the native ONNX runtime (loaded dynamically): include it explicitly, Linux x64 only.
+  outputFileTracingIncludes: {
+    "/api/**": [
+      "node_modules/onnxruntime-node/package.json",
+      "node_modules/onnxruntime-node/dist/**",
+      "node_modules/onnxruntime-node/bin/napi-v6/linux/x64/**",
+      "node_modules/onnxruntime-common/**",
+    ],
+  },
   outputFileTracingExcludes: {
     "/api/**": [
       "node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
