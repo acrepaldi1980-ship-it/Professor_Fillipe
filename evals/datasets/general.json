@@ -1,0 +1,242 @@
+[
+ {
+  "id": "gen-ini-01",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Davi e por que ele é famoso?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-02",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que quer dizer a palavra evangelho?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-03",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Jesus segundo os evangelhos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-04",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Por que Deus pediu para Abraão sacrificar Isaque?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-05",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é o Pentecostes?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-06",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Paulo e o que ele fazia antes de crer?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-07",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que são as parábolas e por que Jesus ensinava assim?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-08",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Moisés?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-09",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que significa a Páscoa na Bíblia?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-10",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Por que Jonas fugiu de Deus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-01",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "Qual a diferença entre graça e misericórdia na Bíblia?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-02",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "O que Atos 8 ensina sobre como interpretar a Escritura?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-03",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "Quem eram os fariseus e os saduceus e no que divergiam?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-04",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "Qual era o papel dos profetas no Antigo Testamento?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-05",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "O que é a aliança de Deus com Abraão?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-06",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "O que significa justificação em Romanos 3?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-07",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "Como Barnabé ajudou Paulo na igreja primitiva?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-08",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "O que era o Tabernáculo e para que servia?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-09",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "Qual o contexto histórico da carta aos Gálatas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-10",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD",
+  "question": "O que Jesus quis dizer com \"o Reino de Deus está próximo\"?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-01",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "O que significa propiciação em Romanos 3:25 e como o termo hilastērion é entendido?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-02",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Como as tradições reformada e arminiana entendem a eleição em Efésios 1?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-03",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Qual a diferença entre o batismo no Espírito Santo e a regeneração, segundo a tradição pentecostal e a reformada?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-04",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Qual é o sentido de logos em João 1:1?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-05",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Por que há diferenças entre a cronologia dos reis de Israel e a de Judá?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-06",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Quem é Melquisedeque em Hebreus 7 e como isso se liga a Gênesis 14?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-07",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Como interpretar o termo grego ekklesia no Novo Testamento?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-08",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Qual a relação entre a Lei e a fé em Gálatas 3?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-09",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "Como o dispensacionalismo interpreta o arrebatamento em 1 Tessalonicenses 4?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-10",
+  "group": "general",
+  "level": "avançado",
+  "audience": "seminarista",
+  "question": "O que o termo hebraico hesed revela sobre o caráter de Deus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ }
+]

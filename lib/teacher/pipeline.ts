@@ -35,6 +35,8 @@ export interface TurnInput {
 
 export interface TurnResult {
   response: TeacherResponse;
+  /** Retrieved sources of this turn (used by the evals; never sent to the client). */
+  retrieved: { id: string; work_id: string; title_path: string | null; text: string }[];
   meta: {
     intent: Intent;
     tier: "fast" | "deep" | "none";
@@ -64,6 +66,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     const response = pastoralResponse(student.preferred_name);
     return {
       response,
+      retrieved: [],
       meta: { ...baseMeta, intent: "ask", tier: "none", pastoral: true, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0 },
     };
   }
@@ -129,6 +132,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const words = countWords(response.speech);
   return {
     response,
+    retrieved: chunks.map((c) => ({ id: c.id, work_id: c.work_id, title_path: c.title_path, text: c.text })),
     meta: {
       intent,
       tier,

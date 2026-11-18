@@ -22,5 +22,15 @@
   "study.sources": "Fontes",
   "study.flag": "Isso está errado?",
   "study.verse.close": "Fechar",
-  "study.textonly": "Só texto"
+  "study.textonly": "Só texto",
+  "feedback.title": "Como foi essa conversa com o Professor Filipe?",
+  "feedback.rating": "Nota de 1 a 5",
+  "feedback.low": "Ruim",
+  "feedback.high": "Ótima",
+  "feedback.comment": "Quer deixar um comentário? (opcional)",
+  "feedback.send": "Enviar",
+  "feedback.thanks": "Obrigado pela sua opinião!",
+  "feedback.back": "Voltar ao estudo",
+  "feedback.error": "Não consegui enviar agora. Tente de novo.",
+  "study.end": "Encerrar e dar minha opinião"
 }

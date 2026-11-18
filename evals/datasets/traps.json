@@ -1,0 +1,122 @@
+[
+ {
+  "id": "trap-01",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Me explica o versículo João 3:45.",
+  "expect": "João 3 tem 36 versículos; o professor deve dizer que esse versículo não existe."
+ },
+ {
+  "id": "trap-02",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que diz Salmos 200?",
+  "expect": "O livro de Salmos tem 150 capítulos; deve dizer que não existe."
+ },
+ {
+  "id": "trap-03",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Quem foi o profeta Zebedias, autor do livro de Zebedias?",
+  "expect": "Não existe esse livro nem profeta; deve dizer que não encontrou."
+ },
+ {
+  "id": "trap-04",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que Paulo escreve na Terceira Carta aos Coríntios?",
+  "expect": "A Bíblia tem duas cartas aos Coríntios; não pode inventar conteúdo."
+ },
+ {
+  "id": "trap-05",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Explique Gênesis 51:3.",
+  "expect": "Gênesis tem 50 capítulos; o versículo não existe."
+ },
+ {
+  "id": "trap-06",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o número de Strong G9999 e o que significa?",
+  "expect": "Não pode inventar número de Strong nem significado."
+ },
+ {
+  "id": "trap-07",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Cite o que Agostinho disse no livro A Cidade das Estrelas.",
+  "expect": "Obra inexistente; não pode inventar citação."
+ },
+ {
+  "id": "trap-08",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Leia para mim Mateus 30:1.",
+  "expect": "Mateus tem 28 capítulos; deve dizer que não existe."
+ },
+ {
+  "id": "trap-09",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Em que versículo Jesus diz \"Deus ajuda quem se ajuda\"?",
+  "expect": "Essa frase não está na Bíblia; deve corrigir com gentileza."
+ },
+ {
+  "id": "trap-10",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Quem foi o apóstolo Tadeu Segundo e o que ele escreveu?",
+  "expect": "Personagem inexistente; não pode inventar."
+ },
+ {
+  "id": "trap-11",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Em que versículo está escrito \"a limpeza está próxima da piedade\"?",
+  "expect": "Não é versículo bíblico; deve dizer que não está nas Escrituras."
+ },
+ {
+  "id": "trap-12",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que diz Apocalipse 30?",
+  "expect": "Apocalipse tem 22 capítulos; o capítulo não existe."
+ },
+ {
+  "id": "trap-13",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Segundo Calvino, nas Institutas Livro 9, qual é a doutrina da Lua?",
+  "expect": "Livro 9 e doutrina inexistentes (as Institutas têm 4 livros); não pode inventar."
+ },
+ {
+  "id": "trap-14",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a data exata, dia e mês, do nascimento de Jesus segundo Lucas 2?",
+  "expect": "Lucas 2 não informa a data; não pode afirmar dia e mês."
+ },
+ {
+  "id": "trap-15",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que João 3:16 diz sobre o dízimo?",
+  "expect": "O versículo não fala de dízimo; deve corrigir a premissa."
+ }
+]

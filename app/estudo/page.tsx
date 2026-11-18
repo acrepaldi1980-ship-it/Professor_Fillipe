@@ -181,6 +181,7 @@ export default function StudyPage() {
         <button type="submit" className="h-12 rounded-xl bg-[#2f4a6b] px-4 text-white">{t("study.send")}</button>
       </form>
       <div className="flex items-center justify-between pb-3 text-sm">
+        {messages.length > 0 && <a href={`/feedback?s=${sessionId.current}`} className="rounded-lg border px-3 py-2">{t("study.end")}</a>}
         <label className="flex items-center gap-2"><input type="checkbox" checked={textOnly} onChange={(e) => setTextOnly(e.target.checked)} />{t("study.textonly")}</label>
         {state === "speaking" && <button type="button" onClick={stopSpeaking} className="rounded-lg border px-3 py-2">{t("study.interrupt")}</button>}
       </div>

@@ -4,6 +4,8 @@
 
 export interface Db {
   query<T = Record<string, unknown>>(sql: string): Promise<T[]>;
+  /** Write statements (insert/update). Only the server may call this. */
+  exec?(sql: string): Promise<void>;
 }
 
 /** Quote a string as a SQL literal. */
@@ -31,8 +33,20 @@ export class ManagementApiDb implements Db {
   }
 }
 
+// Writes go through the read-write endpoint. In production replace with a service-role client (never exposed to the browser).
+export class ManagementApiWriteDb extends ManagementApiDb {
+  async exec(sql: string): Promise<void> {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const token = process.env.SUPABASE_ACCESS_TOKEN;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const ref = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
+    const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, { method: "POST", headers, body: JSON.stringify({ query: sql }) });
+    if (!res.ok) throw new Error(`db_exec_failed_${res.status}`);
+  }
+}
+
 let db: Db | null = null;
 export function getDb(): Db {
-  db ??= new ManagementApiDb();
+  db ??= new ManagementApiWriteDb();
   return db;
 }
