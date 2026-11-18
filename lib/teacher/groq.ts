@@ -38,7 +38,12 @@ export class GroqTeacherLlm implements TeacherLlm {
         await new Promise((r) => setTimeout(r, 1500));
         res = await doFetch();
       }
+      // 400 on a forced tool call is usually the model writing a malformed call: it is non-deterministic, so retry the same model once
+      if (res.status === 400) {
+        res = await doFetch();
+      }
       lastStatus = res.status;
+      if (res.status === 413) throw new Error("llm_failed_413"); // request too large: the pipeline shrinks the context and retries
       if (res.status === 429 || res.status === 400 || res.status === 404) continue; // limit, tool-call failure or model gone: next model
       if (!res.ok) break;
       const json = (await res.json()) as { choices?: { message?: { tool_calls?: { function?: { arguments?: string } }[] } }[] };

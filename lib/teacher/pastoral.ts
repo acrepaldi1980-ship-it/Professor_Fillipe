@@ -7,6 +7,10 @@ const CRISIS_PATTERNS: RegExp[] = [
   /\b(automutila|me cortar|me machucar|n[aã]o quero mais viver|n[aã]o aguento mais viver)/i,
   /\b(depress[aã]o|depressivo|crise de ansiedade|desespero)\b/i,
   /\b(luto|perdi (meu|minha) (pai|m[aã]e|filho|filha|esposa|marido|irm[aã]o|irm[aã]))\b/i,
+  // someone close to the student died (not a study question like "Jesus morreu na cruz")
+  /\b(meu|minha) (pai|m[aã]e|filho|filha|esposa|marido|irm[aã]o|irm[aã]|av[oô]|av[oó]|amigo|amiga|noivo|noiva)\b[^.?!]{0,40}\b(morreu|faleceu|partiu|se foi|foi embora de vez)\b/i,
+  /\b(morreu|faleceu)\b[^.?!]{0,20}\b(meu|minha) (pai|m[aã]e|filho|filha|esposa|marido|irm[aã]o|irm[aã]|av[oô]|av[oó])\b/i,
+  /\b(n[aã]o consigo parar de chorar|s[oó] choro|choro (todos os dias|o dia todo)|n[aã]o tenho for[cç]as para nada)\b/i,
   /\b(fui (abusad|estuprad|agredid)|apanho|me bate|viol[eê]ncia dom[eé]stica|abuso sexual)\b/i,
 ];
 

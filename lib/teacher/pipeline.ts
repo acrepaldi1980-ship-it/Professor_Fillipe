@@ -84,18 +84,28 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const retrievalMs = Date.now() - tSearch;
 
   // 5) Prompt and 6) generation.
-  const system = buildSystemPrompt({ student, bible, chunks, verses });
+  let system = buildSystemPrompt({ student, bible, chunks, verses });
+  // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
+  const generate = async (msgs: ChatMessage[]) => {
+    try {
+      return await deps.llm.generate({ system, messages: msgs, tier });
+    } catch (e) {
+      if (!/413/.test((e as Error).message)) throw e;
+      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10) });
+      return deps.llm.generate({ system, messages: msgs, tier });
+    }
+  };
   const history = memory.get(input.sessionId);
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
   const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
 
   const tLlm = Date.now();
   let schemaRetries = 0;
-  let parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages, tier }));
+  let parsed = teacherResponseSchema.safeParse(await generate(messages));
   if (!parsed.success) {
     schemaRetries = 1;
     const hint = `Sua resposta anterior não seguiu o contrato (${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}). Responda de novo chamando teacher_response corretamente.`;
-    parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+    parsed = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
   }
   if (!parsed.success) throw new Error("teacher_response_invalid");
 
@@ -105,7 +115,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (countWords(parsed.data.speech) > limit) {
     lengthRewrites = 1;
     const hint = `Sua fala tem ${countWords(parsed.data.speech)} palavras. Reduza a "speech" para no máximo ${limit} palavras, sem resumo nem desafio, e termine com uma pergunta ou escolha. O texto longo pode ir em display_markdown.`;
-    const shorter = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+    const shorter = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
     if (shorter.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
   }
   const llmMs = Date.now() - tLlm;
@@ -117,7 +127,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (ver.invalidSpeechRefs.length) {
     speechRewrites = 1;
     const hint = `Atenção: você citou referências que não existem ou não estão nas fontes (${ver.invalidSpeechRefs.join(", ")}). Reformule sem elas e diga que não encontrou isso nas fontes, se for o caso.`;
-    const again = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+    const again = teacherResponseSchema.safeParse(await generate([...messages, { role: "user", content: hint }]));
     if (again.success) ver = await verifyCitations(repairWorkCitations(again.data, chunks), { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
     if (ver.invalidSpeechRefs.length) {
       // Last resort: do not speak an unverified reference.

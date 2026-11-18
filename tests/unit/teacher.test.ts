@@ -83,6 +83,12 @@ describe("intents and crisis", () => {
     expect(detectPastoralCrisis("estou com depressão")).toBe(true);
     expect(detectPastoralCrisis("Por que Elias queria morrer em 1 Reis 19?")).toBe(false);
     expect(detectPastoralCrisis("Quem foi Barnabé?")).toBe(false);
+    expect(detectPastoralCrisis("Faz uma semana que meu pai morreu e não consigo parar de chorar.")).toBe(true);
+    expect(detectPastoralCrisis("Minha mãe faleceu ontem")).toBe(true);
+    expect(detectPastoralCrisis("Perdi minha filha ontem e não consigo mais viver.")).toBe(true);
+    expect(detectPastoralCrisis("Jesus morreu na cruz por quê?")).toBe(false);
+    expect(detectPastoralCrisis("Lázaro morreu e Jesus chorou em João 11?")).toBe(false);
+    expect(detectPastoralCrisis("Meu marido me bate toda noite e tenho medo.")).toBe(true);
   });
 });
 
@@ -140,6 +146,24 @@ describe("runTurn", () => {
     expect(out.response.speech).toContain("192");
     expect(d.calls).toBe(0);
     expect(memory.get("s1")).toHaveLength(0);
+  });
+
+  it("retries with a smaller context when the model says the request is too large", async () => {
+    let calls = 0;
+    const lens: number[] = [];
+    const llm: TeacherLlm = {
+      generate: async ({ system }) => {
+        calls++;
+        lens.push(system.length);
+        if (calls === 1) throw new Error("llm_failed_413");
+        return good();
+      },
+    };
+    const d = { ...deps([good()]), llm };
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(calls).toBe(2);
+    expect(lens[1]).toBeLessThanOrEqual(lens[0]);
+    expect(out.response.speech).toContain("levita");
   });
 
   it("uses the deep tier for deepening intents", async () => {
