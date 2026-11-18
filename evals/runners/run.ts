@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createTurnDeps } from "../../lib/teacher/deps";
 import { runTurn, type TurnResult } from "../../lib/teacher/pipeline";
 import { DEFAULT_STUDENT } from "../../lib/teacher/prompts";
+import { endsWithQuestion } from "../../lib/teacher/speech";
 import { judgeGeneral, judgePass, suggestPromptFixes } from "./judge";
 
 interface Item {
@@ -39,7 +40,6 @@ const groups = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--l
 const wanted = groups.length ? groups : ["general", "traps", "injection", "pastoral"];
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const endsWithQuestion = (s: string) => /\?\s*["”')]*\s*$/.test(s.trim()) || /\b(ou|prefere|quer)\b[^.?!]*\?/.test(s.slice(-200));
 
 async function main() {
   const deps = createTurnDeps();
@@ -60,6 +60,7 @@ async function main() {
         else break;
       }
     }
+    if (turn?.meta.degraded) error = "degraded (model failed)";
     const speech = turn?.response.speech ?? "";
     const words = speech.split(/\s+/).filter(Boolean).length;
     const r: Result = { item, speech, words, endsWithQuestion: endsWithQuestion(speech), lengthOk: words > 0 && words <= 120, latencyMs: Date.now() - t0, error };

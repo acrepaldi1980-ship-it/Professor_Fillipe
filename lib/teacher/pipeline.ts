@@ -9,6 +9,7 @@ import { buildSystemPrompt, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, 
 import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
 import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
+import { ensureClosingQuestion } from "./speech";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -49,12 +50,31 @@ export interface TurnResult {
     words: number;
     overWordLimit: boolean;
     latencyMs: number;
+    /** True when the model failed for good and a friendly fallback answer was returned instead. */
+    degraded?: boolean;
     retrievalMs: number;
     llmMs: number;
   };
 }
 
 const DEEP_INTENTS: Intent[] = ["deepen", "other_traditions", "compare_versions"];
+
+function fallbackResponse(name: string): TeacherResponse {
+  return {
+    speech: `${name}, tive um problema para responder agora. Pode repetir a pergunta ou escrever de outro jeito?`,
+    display_markdown: "",
+    citations: [],
+    visuals: [],
+    next_options: [
+      { label: "Tentar de novo", intent: "ask" },
+      { label: "Encerrar por agora", intent: "stop" },
+    ],
+    lens_divergence: { present: false, summary: null },
+    pastoral_flag: false,
+    level_signal: "same",
+    mode_payload: null,
+  };
+}
 
 export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnResult> {
   const t0 = Date.now();
@@ -103,7 +123,13 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   const tLlm = Date.now();
   let schemaRetries = 0;
-  let parsed = teacherResponseSchema.safeParse(await generate(messages));
+  let parsed;
+  try {
+    parsed = teacherResponseSchema.safeParse(await generate(messages));
+  } catch {
+    const response = fallbackResponse(student.preferred_name);
+    return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, retrievalMs } };
+  }
   if (!parsed.success) {
     schemaRetries = 1;
     const hint = `Sua resposta anterior não seguiu o contrato (${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}). Responda de novo chamando teacher_response corretamente.`;
@@ -138,7 +164,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   }
 
   // 8) Memory (only what was said, never crisis text).
-  const response = ver.response;
+  const response = { ...ver.response, speech: ensureClosingQuestion(ver.response.speech) };
   memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
 
   const words = countWords(response.speech);
