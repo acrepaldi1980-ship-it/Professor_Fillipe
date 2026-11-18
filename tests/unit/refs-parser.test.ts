@@ -71,6 +71,10 @@ const cases: [string, string[]][] = [
   ["Atos 8:26–40", ["ACT.8.26-ACT.8.40"]],
   ["Mt 5:3-12", ["MAT.5.3-MAT.5.12"]],
   ["João 3:16-4:2", ["JHN.3.16-JHN.4.2"]],
+  ["João 3:17 a 3:40", ["JHN.3.17-JHN.3.40"]],
+  ["João 3:16 a 18", ["JHN.3.16-JHN.3.18"]],
+  ["Atos 8:26 até 40", ["ACT.8.26-ACT.8.40"]],
+  ["Gn 1 a 3", ["GEN.1-GEN.3"]],
   ["Jo 3 v. 16", ["JHN.3.16"]],
   ["Jo 3 vv. 16", ["JHN.3.16"]],
   // single-chapter books
@@ -165,7 +169,7 @@ describe("findReferences (free text)", () => {
 
   it("handles the trap from the prototype criteria (versículos inexistentes são tratados pelo banco, não pelo parser)", () => {
     const r = findReferences("Me mostra João 3:17 a 3:40");
-    expect(r[0].refs[0]).toBe("JHN.3.17");
+    expect(r[0].refs).toEqual(["JHN.3.17-JHN.3.40"]);
   });
 
   it("ignores a stray numeric prefix before an unnumbered book", () => {

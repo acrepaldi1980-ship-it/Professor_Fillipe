@@ -43,7 +43,8 @@ const HEAD = new RegExp(
   "gu",
 );
 
-const DASH = "[-–—]";
+// Range separators: dashes, or the words "a", "ao", "até", "to" ("João 3:17 a 3:40").
+const DASH = "(?:[-–—]|\\s(?:a|ao|até|ate|to)\\s)";
 const SEP_VERSE_COLON = /\s*(?::|\bvv?\.?)\s*(?=\d)/y;
 const SEP_VERSE_ADJ = /[.,](?=\d)/y;
 const NUM = /(\d+)/y;

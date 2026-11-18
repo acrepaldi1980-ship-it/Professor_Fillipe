@@ -33,6 +33,8 @@ export interface SearchOptions {
   workIds?: string[];
   maxChunks?: number;
   maxTokens?: number;
+  /** Cap on Bible chunks so dictionaries/commentaries can show up too (default 5). */
+  maxBible?: number;
   perSignal?: number;
 }
 
@@ -60,20 +62,21 @@ export function rerankAndSelect(
     })
     .sort((x, y) => y.score - x.score);
 
+  const maxBible = opts.maxBible ?? 5;
   const picked: Retrieved[] = [];
   let tokens = 0;
+  let bibleCount = 0;
   const add = (r: Retrieved) => {
     picked.push(r);
     tokens += r.tokens ?? 500;
+    if (r.kind === "bible_text") bibleCount++;
   };
+  const fits = (r: Retrieved) => picked.length < maxChunks && !picked.includes(r) && tokens + (r.tokens ?? 500) <= maxTokens;
+  // 1) always keep the best Bible chunk; 2) fill with the best of everything, Bible capped; 3) top up with Bible if room remains.
   const bible = scored.find((r) => r.kind === "bible_text");
   if (bible) add(bible);
-  for (const r of scored) {
-    if (picked.length >= maxChunks) break;
-    if (picked.includes(r)) continue;
-    if (tokens + (r.tokens ?? 500) > maxTokens) continue;
-    add(r);
-  }
+  for (const r of scored) if (fits(r) && (r.kind !== "bible_text" || bibleCount < maxBible)) add(r);
+  for (const r of scored) if (fits(r)) add(r);
   return picked.sort((x, y) => y.score - x.score);
 }
 

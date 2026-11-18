@@ -17,6 +17,16 @@ describe("authority layers", () => {
 });
 
 describe("rerankAndSelect", () => {
+  it("caps Bible chunks so dictionary entries are not crowded out", () => {
+    const rows = [
+      ...Array.from({ length: 10 }, (_, i) => row(`b${i}`, "bible_text", 0.05 - i * 0.001, 150)),
+      ...Array.from({ length: 5 }, (_, i) => row(`d${i}`, "dictionary", 0.03 - i * 0.001, 150)),
+    ];
+    const out = rerankAndSelect(rows, { maxChunks: 10, maxBible: 5 });
+    expect(out.filter((r) => r.kind === "bible_text")).toHaveLength(5);
+    expect(out.filter((r) => r.kind === "dictionary")).toHaveLength(5);
+  });
+
   it("lets a Bible chunk outrank a slightly better-fused encyclopedia chunk", () => {
     const out = rerankAndSelect([row("enc", "encyclopedia", 0.03), row("bib", "bible_text", 0.02)]);
     expect(out[0].id).toBe("bib");

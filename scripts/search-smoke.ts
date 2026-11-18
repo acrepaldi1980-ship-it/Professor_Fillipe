@@ -10,7 +10,7 @@ async function main() {
     const t0 = Date.now();
     const { chunks, refs } = await searchChunks(q);
     console.log(`\n# ${q}  (${Date.now() - t0} ms, refs: ${refs.join(",") || "-"})`);
-    for (const c of chunks.slice(0, 5)) {
+    for (const c of chunks.slice(0, 12)) {
       console.log(`  [${c.signals.join("+")}] L${c.layer} ${c.score.toFixed(4)} ${c.work_id} :: ${(c.title_path ?? "").slice(0, 60)} :: ${c.text.replace(/\s+/g, " ").slice(0, 80)}`);
     }
     const exact = refs.filter((r) => r.split(".").length === 3).slice(0, 25);

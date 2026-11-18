@@ -149,3 +149,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 7c28c57832c0a1ed3a5c35604c7a99c3fb76b99294466cff3ac3ef0a08838fd3
 - Observações: —
+
+## easton_1897 — Easton's Bible Dictionary
+- Autor(es) / tradutor(es) e anos de morte: Matthew George Easton (1894)
+- Edição e ano de publicação: 3ª edição, 1897
+- Licença: cc_by_sa. O texto original é de domínio público; a compilação usada (Theographic) é CC BY-SA 4.0, que adotamos por precaução.
+- Crédito exigido (texto exato): Easton's Bible Dictionary (M. G. Easton, 1897, domínio público), na compilação do conjunto Theographic Bible Metadata (Robert Rouse e colaboradores), licença CC BY-SA 4.0: https://github.com/robertrouse/theographic-bible-metadata
+- Fonte (URL): https://raw.githubusercontent.com/robertrouse/theographic-bible-metadata/master/json/easton.json
+- Data da coleta: 2026-11-18
+- Hash SHA-256 do arquivo: 8f7b348e0963428d59788ad971a7090f75afbc710e6896f99f95bd27f3748d5a
+- Observações: CC BY-SA: manter separada e não misturar com texto próprio do app. Links de versículos do original foram reduzidos ao rótulo e as referências extraídas para chunks.refs.

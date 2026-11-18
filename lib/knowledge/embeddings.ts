@@ -14,14 +14,20 @@ type Extractor = (
 
 /** multilingual-e5-small (384 dims, MIT license) via transformers.js / ONNX. Needs "query: " / "passage: " prefixes. */
 export class LocalE5Provider implements EmbeddingProvider {
-  readonly name = "local-multilingual-e5-small";
-  readonly dimensions = 384;
+  readonly name: string;
   private extractor: Promise<Extractor> | null = null;
+
+  constructor(
+    private readonly model = "Xenova/multilingual-e5-small",
+    readonly dimensions = 384,
+  ) {
+    this.name = `local-${model.split("/")[1]}`;
+  }
 
   private load(): Promise<Extractor> {
     this.extractor ??= (async () => {
       const { pipeline } = await import("@huggingface/transformers");
-      return (await pipeline("feature-extraction", "Xenova/multilingual-e5-small", {
+      return (await pipeline("feature-extraction", this.model, {
         dtype: "q8",
       })) as unknown as Extractor;
     })();
