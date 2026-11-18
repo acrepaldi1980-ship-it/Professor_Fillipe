@@ -1,26 +1,152 @@
 @import "tailwindcss";
 
+/* Design system — direction A "Caminho" (D-13): paper, terracotta and olive. Light and dark, adjustable text size,
+   reduced motion. Components read these tokens; never hard-code colors in screens. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-scale: 1;
+
+  --bg: #fbf3e4;
+  --surface: #fffaf0;
+  --surface-2: #f1e3c8;
+  --ink: #2b2118;
+  --muted: #6f604e;
+  --line: rgba(43, 33, 24, 0.14);
+
+  --primary: #b4532a;
+  --primary-ink: #ffffff;
+  --accent: #5b6b3a;
+  --accent-ink: #ffffff;
+  --link: #9a4423;
+
+  --danger-bg: #fde4e1;
+  --danger-ink: #8a1f17;
+  --warn-bg: #fdf0cc;
+  --warn-ink: #7a5a00;
+  --ok-bg: #e4efd6;
+  --ok-ink: #3b4d1d;
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --shadow: 0 6px 18px rgba(120, 80, 40, 0.12);
+  --motion: 200ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme="dark"] {
+  --bg: #1a1511;
+  --surface: #241d17;
+  --surface-2: #33291f;
+  --ink: #f3e9d8;
+  --muted: #b7a58d;
+  --line: rgba(243, 233, 216, 0.16);
+  --primary: #e0764a;
+  --primary-ink: #1a1511;
+  --accent: #9bb26a;
+  --accent-ink: #1a1511;
+  --link: #f0a27d;
+  --danger-bg: #4a1f1b;
+  --danger-ink: #ffc9c2;
+  --warn-bg: #4a3a10;
+  --warn-ink: #ffe29a;
+  --ok-bg: #2c3a18;
+  --ok-ink: #cfe3a6;
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
+/* Follow the device unless the user chose a theme in Conta (data-theme set to "light" or "dark"). */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --bg: #1a1511;
+    --surface: #241d17;
+    --surface-2: #33291f;
+    --ink: #f3e9d8;
+    --muted: #b7a58d;
+    --line: rgba(243, 233, 216, 0.16);
+    --primary: #e0764a;
+    --primary-ink: #1a1511;
+    --accent: #9bb26a;
+    --accent-ink: #1a1511;
+    --link: #f0a27d;
+    --danger-bg: #4a1f1b;
+    --danger-ink: #ffc9c2;
+    --warn-bg: #4a3a10;
+    --warn-ink: #ffe29a;
+    --ok-bg: #2c3a18;
+    --ok-ink: #cfe3a6;
+    --shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-link: var(--link);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-ink: var(--danger-ink);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-ink: var(--ok-ink);
+  --radius-card: var(--radius);
+  --radius-control: var(--radius-sm);
+  --font-sans: var(--font-nunito), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+}
+
+html {
+  /* text size from Conta (100% to 200%, RNF-05) */
+  font-size: calc(100% * var(--font-scale));
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  /* phone safe areas (notch / home indicator) */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+/* touch targets of at least 44px on interactive controls (spec 10.6.5) */
+button,
+a[role="button"],
+input,
+select,
+textarea {
+  min-height: 44px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

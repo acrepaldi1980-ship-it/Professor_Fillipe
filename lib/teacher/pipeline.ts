@@ -8,6 +8,7 @@ import { detectPastoralCrisis, pastoralResponse } from "./pastoral";
 import { buildSystemPrompt, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
 import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
 import { repairWorkCitations, verifyCitations } from "./citations";
+import { findUngroundedNames, groundingNotice } from "./grounding";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -84,14 +85,15 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const retrievalMs = Date.now() - tSearch;
 
   // 5) Prompt and 6) generation.
-  let system = buildSystemPrompt({ student, bible, chunks, verses });
+  const notice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
+  let system = buildSystemPrompt({ student, bible, chunks, verses, notice });
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   const generate = async (msgs: ChatMessage[]) => {
     try {
       return await deps.llm.generate({ system, messages: msgs, tier });
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10) });
+      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice });
       return deps.llm.generate({ system, messages: msgs, tier });
     }
   };

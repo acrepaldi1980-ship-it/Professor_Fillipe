@@ -9,7 +9,7 @@ export function Avatar({ state, level = 0, size = 112 }: { state: AvatarState; l
   const eyeY = state === "thinking" ? 44 : 48;
   return (
     <svg aria-hidden="true" width={size} height={size} viewBox="0 0 100 100" className="transition-transform duration-300 motion-reduce:transition-none" style={{ transform: state === "listening" ? "rotate(-4deg)" : "none" }}>
-      <circle cx="50" cy="50" r="46" fill="#2f4a6b" />
+      <circle cx="50" cy="50" r="46" fill="var(--surface-2)" />
       <circle cx="50" cy="52" r="34" fill="#f3d7b8" />
       <path d="M18 44c2-22 18-30 32-30s30 8 32 30c-6-10-16-15-32-15S24 34 18 44z" fill="#4a3a2c" />
       <circle cx="38" cy={eyeY} r="3" fill="#2b2118" />

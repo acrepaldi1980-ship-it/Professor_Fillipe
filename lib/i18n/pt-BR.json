@@ -32,5 +32,11 @@
   "feedback.thanks": "Obrigado pela sua opinião!",
   "feedback.back": "Voltar ao estudo",
   "feedback.error": "Não consegui enviar agora. Tente de novo.",
-  "study.end": "Encerrar e dar minha opinião"
+  "study.end": "Encerrar e dar minha opinião",
+  "nav.label": "Navegação principal",
+  "nav.home": "Início",
+  "nav.study": "Estudar",
+  "nav.review": "Revisão",
+  "nav.notebook": "Caderno",
+  "nav.account": "Conta"
 }
