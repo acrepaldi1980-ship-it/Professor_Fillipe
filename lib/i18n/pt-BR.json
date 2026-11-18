@@ -1,0 +1,9 @@
+{
+  "app.name": "Professor Filipe",
+  "app.tagline": "Entendes o que lês?",
+  "study.title": "Estudo livre",
+  "study.placeholder": "Escreva sua pergunta…",
+  "study.send": "Enviar",
+  "study.mic.start": "Tocar para falar",
+  "study.mic.stop": "Tocar para parar"
+}

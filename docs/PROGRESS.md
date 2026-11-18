@@ -2,13 +2,14 @@
 
 ## Estado atual
 
-Preparação concluída (Prompt 00). Nenhum código de aplicação ainda. Próximo passo: Prompt 0.1 (protótipo de voz), que começa pelas decisões D-02, D-03, D-04, D-09 e D-15.
+Prompt 0.1 em andamento. Etapa 1 (projeto base) concluída. Aguardando as decisões da Etapa 2 (D-02, D-03, D-04, D-09, D-15) e o preenchimento do `.env.local` antes das Etapas 3 a 9.
 
 ## Prompts concluídos
 
 | Prompt | Data | Resumo |
 | --- | --- | --- |
 | 00 | 2026-11-18 | CLAUDE.md, PROGRESS.md, LICENSES.md, .gitignore e Git inicializado |
+| 0.1 (Etapa 1) | 2026-11-18 | Next.js 15 + TypeScript estrito + Tailwind 4 + PWA básico; pastas da seção 10.3; `/api/v1/health`; `lib/platform` (Microphone e AudioPlayer, web) com `getPlatform()`; `lib/api-client` com Bearer, X-App-Version e X-Platform; i18n pt-BR; `.env.example`; Vitest |
 
 ## Decisões tomadas
 
