@@ -150,3 +150,13 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* Avatar idle animations (turned off by the reduced-motion rule above) */
+@keyframes avatar-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2.5px); }
+}
+@keyframes avatar-blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.08); }
+}
