@@ -1,0 +1,123 @@
+// One teacher turn (spec 8.5.1): crisis check → intent → references → retrieval → prompt → model → validation
+// → citation verification → memory. Every dependency is injected so the pipeline is testable without network.
+import { findReferences } from "../knowledge/refs-parser";
+import type { BibleVerse, Retrieved, SearchOptions } from "../knowledge/search";
+import { classifyIntent } from "./intents";
+import { memory, type ChatMessage } from "./memory";
+import { detectPastoralCrisis, pastoralResponse } from "./pastoral";
+import { buildSystemPrompt, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
+import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
+import { verifyCitations } from "./citations";
+
+export interface TeacherLlm {
+  /** Returns the raw `teacher_response` tool input (unvalidated). */
+  generate(args: { system: string; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
+}
+
+export interface TurnDeps {
+  llm: TeacherLlm;
+  search(query: string, opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
+  getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
+  existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
+}
+
+export interface TurnInput {
+  sessionId: string;
+  text: string;
+  student?: StudentProfile;
+  bible?: BibleSettings;
+  intent?: Intent;
+}
+
+export interface TurnResult {
+  response: TeacherResponse;
+  meta: {
+    intent: Intent;
+    tier: "fast" | "deep" | "none";
+    pastoral: boolean;
+    retrievedChunks: number;
+    removedCitations: number;
+    schemaRetries: number;
+    speechRewrites: number;
+    words: number;
+    overWordLimit: boolean;
+    latencyMs: number;
+  };
+}
+
+const DEEP_INTENTS: Intent[] = ["deepen", "other_traditions", "compare_versions"];
+
+export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnResult> {
+  const t0 = Date.now();
+  const student = input.student ?? DEFAULT_STUDENT;
+  const bible = input.bible ?? DEFAULT_BIBLE;
+  const baseMeta = { retrievedChunks: 0, removedCitations: 0, schemaRetries: 0, speechRewrites: 0 };
+
+  // 1) Crisis detection happens before any generation and the text is never stored (RA-17).
+  if (detectPastoralCrisis(input.text)) {
+    const response = pastoralResponse(student.preferred_name);
+    return {
+      response,
+      meta: { ...baseMeta, intent: "ask", tier: "none", pastoral: true, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0 },
+    };
+  }
+
+  // 2) Intent and 3) references cited by the student.
+  const intent = input.intent ?? classifyIntent(input.text);
+  const mentioned = findReferences(input.text).flatMap((r) => r.refs);
+
+  // 4) Retrieval.
+  const { chunks } = await deps.search(input.text, { lenses: bible.lenses });
+  const verses = mentioned.length ? await deps.getVerses(bible.main_version_id, mentioned.slice(0, 20)) : [];
+
+  // 5) Prompt and 6) generation.
+  const system = buildSystemPrompt({ student, bible, chunks, verses });
+  const history = memory.get(input.sessionId);
+  const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
+  const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
+
+  let schemaRetries = 0;
+  let parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages, tier }));
+  if (!parsed.success) {
+    schemaRetries = 1;
+    const hint = `Sua resposta anterior não seguiu o contrato (${parsed.error.issues.slice(0, 3).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}). Responda de novo chamando teacher_response corretamente.`;
+    parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+  }
+  if (!parsed.success) throw new Error("teacher_response_invalid");
+
+  // 7) Citation verification (8.5.6).
+  const retrievedChunkIds = new Set(chunks.map((c) => c.id));
+  let ver = await verifyCitations(parsed.data, { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
+  let speechRewrites = 0;
+  if (ver.invalidSpeechRefs.length) {
+    speechRewrites = 1;
+    const hint = `Atenção: você citou referências que não existem ou não estão nas fontes (${ver.invalidSpeechRefs.join(", ")}). Reformule sem elas e diga que não encontrou isso nas fontes, se for o caso.`;
+    const again = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+    if (again.success) ver = await verifyCitations(again.data, { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
+    if (ver.invalidSpeechRefs.length) {
+      // Last resort: do not speak an unverified reference.
+      ver = { ...ver, response: { ...ver.response, speech: "Não encontrei essa passagem nas minhas fontes. Quer me dizer o livro e o capítulo de novo, ou prefere que eu sugira um texto parecido?" } };
+    }
+  }
+
+  // 8) Memory (only what was said, never crisis text).
+  const response = ver.response;
+  memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
+
+  const words = countWords(response.speech);
+  return {
+    response,
+    meta: {
+      intent,
+      tier,
+      pastoral: response.pastoral_flag,
+      retrievedChunks: chunks.length,
+      removedCitations: ver.removed.length,
+      schemaRetries,
+      speechRewrites,
+      words,
+      overWordLimit: words > WORD_LIMITS.normal,
+      latencyMs: Date.now() - t0,
+    },
+  };
+}
