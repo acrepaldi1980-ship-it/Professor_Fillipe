@@ -18,6 +18,8 @@ export interface TurnDeps {
   llm: TeacherLlm;
   search(query: string, opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
   getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
+  /** Context budget in tokens for retrieved chunks (spec: ~6000; smaller for free-tier prototype models). */
+  contextTokens?: number;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
 }
 
@@ -42,6 +44,8 @@ export interface TurnResult {
     words: number;
     overWordLimit: boolean;
     latencyMs: number;
+    retrievalMs: number;
+    llmMs: number;
   };
 }
 
@@ -51,7 +55,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const t0 = Date.now();
   const student = input.student ?? DEFAULT_STUDENT;
   const bible = input.bible ?? DEFAULT_BIBLE;
-  const baseMeta = { retrievedChunks: 0, removedCitations: 0, schemaRetries: 0, speechRewrites: 0 };
+  const baseMeta = { retrievedChunks: 0, removedCitations: 0, schemaRetries: 0, speechRewrites: 0, retrievalMs: 0, llmMs: 0 };
 
   // 1) Crisis detection happens before any generation and the text is never stored (RA-17).
   if (detectPastoralCrisis(input.text)) {
@@ -67,8 +71,11 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const mentioned = findReferences(input.text).flatMap((r) => r.refs);
 
   // 4) Retrieval.
-  const { chunks } = await deps.search(input.text, { lenses: bible.lenses });
+  const tSearch = Date.now();
+  const { chunks } = await deps.search(input.text, { lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
   const verses = mentioned.length ? await deps.getVerses(bible.main_version_id, mentioned.slice(0, 20)) : [];
+
+  const retrievalMs = Date.now() - tSearch;
 
   // 5) Prompt and 6) generation.
   const system = buildSystemPrompt({ student, bible, chunks, verses });
@@ -76,6 +83,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
   const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
 
+  const tLlm = Date.now();
   let schemaRetries = 0;
   let parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages, tier }));
   if (!parsed.success) {
@@ -84,6 +92,17 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     parsed = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
   }
   if (!parsed.success) throw new Error("teacher_response_invalid");
+
+  // RA-06: spoken turns have a word limit; ask once for a shorter version (summary/deep intents have more room).
+  const limit = DEEP_INTENTS.includes(intent) ? WORD_LIMITS.deep : WORD_LIMITS.normal;
+  let lengthRewrites = 0;
+  if (countWords(parsed.data.speech) > limit) {
+    lengthRewrites = 1;
+    const hint = `Sua fala tem ${countWords(parsed.data.speech)} palavras. Reduza a "speech" para no máximo ${limit} palavras, sem resumo nem desafio, e termine com uma pergunta ou escolha. O texto longo pode ir em display_markdown.`;
+    const shorter = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
+    if (shorter.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
+  }
+  const llmMs = Date.now() - tLlm;
 
   // 7) Citation verification (8.5.6).
   const retrievedChunkIds = new Set(chunks.map((c) => c.id));
@@ -114,10 +133,12 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       retrievedChunks: chunks.length,
       removedCitations: ver.removed.length,
       schemaRetries,
-      speechRewrites,
+      speechRewrites: speechRewrites + lengthRewrites,
       words,
-      overWordLimit: words > WORD_LIMITS.normal,
+      overWordLimit: words > limit,
       latencyMs: Date.now() - t0,
+      retrievalMs,
+      llmMs,
     },
   };
 }

@@ -141,11 +141,21 @@ describe("runTurn", () => {
     expect(out.meta.tier).toBe("deep");
   });
 
-  it("flags answers over 120 words", async () => {
+  it("flags answers that stay over 120 words even after asking for a shorter one", async () => {
     const long = Array.from({ length: 130 }, () => "palavra").join(" ") + "?";
     const d = deps([good({ speech: long })]);
     const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
     expect(out.meta.overWordLimit).toBe(true);
     expect(countWords(long)).toBe(130);
+    expect(d.calls).toBe(2);
+  });
+
+  it("asks once for a shorter speech and uses it", async () => {
+    const long = Array.from({ length: 200 }, () => "palavra").join(" ") + "?";
+    const d = deps([good({ speech: long }), good()]);
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(out.meta.overWordLimit).toBe(false);
+    expect(out.response.speech).toContain("levita de Chipre");
+    expect(d.calls).toBe(2);
   });
 });
