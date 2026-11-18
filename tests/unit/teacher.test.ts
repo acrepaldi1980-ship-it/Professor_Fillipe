@@ -102,6 +102,13 @@ describe("runTurn", () => {
     expect(out.meta.removedCitations).toBe(1);
   });
 
+  it("re-links a work citation whose chunk id is wrong but whose entry name matches a retrieved chunk", async () => {
+    const d = deps([good({ citations: [{ type: "work", work_id: "easton_1897", chunk_id: "easton_1897:999", label: "Easton, verbete Barnabas" }] })]);
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(out.response.citations).toHaveLength(1);
+    expect(out.response.citations[0]).toMatchObject({ chunk_id: "easton_1897:1" });
+  });
+
   it("drops invented Bible citations", async () => {
     const d = deps([good({ citations: [{ type: "bible", ref: "JHN.3.40", version_id: "por_blivre_2018" }] })]);
     const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);

@@ -2,6 +2,24 @@
 import { findReferences } from "../knowledge/refs-parser";
 import type { Citation, TeacherResponse } from "./schema";
 
+export interface RetrievedRef {
+  id: string;
+  work_id: string;
+  title_path: string | null;
+}
+
+/** The model often gets the chunk id slightly wrong but names the right entry; re-link by work and title. */
+export function repairWorkCitations(raw: TeacherResponse, retrieved: RetrievedRef[]): TeacherResponse {
+  const ids = new Set(retrieved.map((r) => r.id));
+  const citations = raw.citations.map((c) => {
+    if (c.type !== "work" || ids.has(c.chunk_id)) return c;
+    const label = c.label.toLowerCase();
+    const match = retrieved.find((r) => r.work_id === c.work_id && r.title_path && label.includes(r.title_path.toLowerCase()));
+    return match ? { ...c, chunk_id: match.id } : c;
+  });
+  return { ...raw, citations };
+}
+
 export interface VerificationDeps {
   /** Which of these canonical verse refs exist in this Bible version? */
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;

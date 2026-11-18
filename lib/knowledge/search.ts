@@ -80,20 +80,36 @@ export function rerankAndSelect(
   return picked.sort((x, y) => y.score - x.score);
 }
 
+type Row = Omit<Retrieved, "layer" | "weight" | "score">;
+
+/** Runs the hybrid search for one or more phrasings of the question (e.g. Portuguese + English keywords) and fuses them. */
 export async function searchChunks(
-  query: string,
+  query: string | string[],
   opts: SearchOptions = {},
   deps: { db?: Db; embeddings?: EmbeddingProvider } = {},
 ): Promise<{ chunks: Retrieved[]; refs: string[] }> {
   const db = deps.db ?? getDb();
   const emb = deps.embeddings ?? getEmbeddingProvider();
-  const refs = expandRefs(findReferences(query).flatMap((r) => r.refs));
-  const vec = await emb.embedQuery(query);
+  const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 40;
-  const rows = await db.query<Omit<Retrieved, "layer" | "weight" | "score">>(
-    `select * from search_chunks(${litVector(vec)}, ${lit(query)}, ${litArray(refs)}, ${per}, ${opts.workIds ? litArray(opts.workIds) : "null"})`,
+  const refs = expandRefs(findReferences(queries[0] ?? "").flatMap((r) => r.refs));
+
+  const results = await Promise.all(
+    queries.map(async (q, i) => {
+      const vec = await emb.embedQuery(q);
+      return db.query<Row>(
+        `select * from search_chunks(${litVector(vec)}, ${lit(q)}, ${litArray(i === 0 ? refs : [])}, ${per}, ${opts.workIds ? litArray(opts.workIds) : "null"})`,
+      );
+    }),
   );
-  return { chunks: rerankAndSelect(rows, opts), refs };
+  const merged = new Map<string, Row>();
+  for (const rows of results) {
+    for (const r of rows) {
+      const prev = merged.get(r.id);
+      merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
+    }
+  }
+  return { chunks: rerankAndSelect([...merged.values()], opts), refs };
 }
 
 /** Exact Bible verses for canonical refs (expanded to verse level) in one version. */

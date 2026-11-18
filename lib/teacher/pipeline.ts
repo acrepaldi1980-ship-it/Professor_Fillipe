@@ -7,7 +7,7 @@ import { memory, type ChatMessage } from "./memory";
 import { detectPastoralCrisis, pastoralResponse } from "./pastoral";
 import { buildSystemPrompt, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
 import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
-import { verifyCitations } from "./citations";
+import { repairWorkCitations, verifyCitations } from "./citations";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -16,10 +16,12 @@ export interface TeacherLlm {
 
 export interface TurnDeps {
   llm: TeacherLlm;
-  search(query: string, opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
+  search(query: string | string[], opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
   getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
   /** Context budget in tokens for retrieved chunks (spec: ~6000; smaller for free-tier prototype models). */
   contextTokens?: number;
+  /** Optional: English keywords for the question, to reach English works from a Portuguese question. */
+  rewriteQuery?(question: string): Promise<string | null>;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
 }
 
@@ -72,7 +74,8 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   // 4) Retrieval.
   const tSearch = Date.now();
-  const { chunks } = await deps.search(input.text, { lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
+  const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(input.text) : null;
+  const { chunks } = await deps.search(rewritten ? [input.text, rewritten] : input.text, { lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
   const verses = mentioned.length ? await deps.getVerses(bible.main_version_id, mentioned.slice(0, 20)) : [];
 
   const retrievalMs = Date.now() - tSearch;
@@ -106,13 +109,13 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   // 7) Citation verification (8.5.6).
   const retrievedChunkIds = new Set(chunks.map((c) => c.id));
-  let ver = await verifyCitations(parsed.data, { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
+  let ver = await verifyCitations(repairWorkCitations(parsed.data, chunks), { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
   let speechRewrites = 0;
   if (ver.invalidSpeechRefs.length) {
     speechRewrites = 1;
     const hint = `Atenção: você citou referências que não existem ou não estão nas fontes (${ver.invalidSpeechRefs.join(", ")}). Reformule sem elas e diga que não encontrou isso nas fontes, se for o caso.`;
     const again = teacherResponseSchema.safeParse(await deps.llm.generate({ system, messages: [...messages, { role: "user", content: hint }], tier }));
-    if (again.success) ver = await verifyCitations(again.data, { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
+    if (again.success) ver = await verifyCitations(repairWorkCitations(again.data, chunks), { existingVerses: deps.existingVerses, retrievedChunkIds }, bible.main_version_id);
     if (ver.invalidSpeechRefs.length) {
       // Last resort: do not speak an unverified reference.
       ver = { ...ver, response: { ...ver.response, speech: "Não encontrei essa passagem nas minhas fontes. Quer me dizer o livro e o capítulo de novo, ou prefere que eu sugira um texto parecido?" } };

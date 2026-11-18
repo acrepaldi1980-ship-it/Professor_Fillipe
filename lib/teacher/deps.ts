@@ -2,7 +2,7 @@
 import { getDb, lit, litArray } from "../knowledge/db";
 import { getVerses, searchChunks } from "../knowledge/search";
 import { AnthropicTeacherLlm } from "./anthropic";
-import { GroqTeacherLlm } from "./groq";
+import { GroqTeacherLlm, rewriteQueryToEnglish } from "./groq";
 import type { TurnDeps } from "./pipeline";
 
 /** Provider: TEACHER_LLM_PROVIDER=anthropic|groq. Default: Anthropic when a key exists, otherwise Groq (free, prototype only). */
@@ -17,6 +17,7 @@ export function createTurnDeps(): TurnDeps {
     contextTokens: Number(process.env.TEACHER_CONTEXT_TOKENS) || (teacherProvider() === "groq" ? 2500 : 6000),
     llm: teacherProvider() === "anthropic" ? new AnthropicTeacherLlm() : new GroqTeacherLlm(),
     search: (q, opts) => searchChunks(q, opts),
+    rewriteQuery: process.env.GROQ_API_KEY || process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
     getVerses: (versionId, refs) => getVerses(versionId, refs),
     async existingVerses(versionId, refs) {
       if (!refs.length) return new Set<string>();
