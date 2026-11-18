@@ -10,6 +10,7 @@ import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type Teach
 import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
 import { ensureClosingQuestion } from "./speech";
+import { normalizeRaw } from "./normalize";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -114,11 +115,11 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   const generate = async (msgs: ChatMessage[]) => {
     try {
-      return await deps.llm.generate({ system, messages: msgs, tier });
+      return normalizeRaw(await deps.llm.generate({ system, messages: msgs, tier }), bible.main_version_id);
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
       system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars });
-      return deps.llm.generate({ system, messages: msgs, tier });
+      return normalizeRaw(await deps.llm.generate({ system, messages: msgs, tier }), bible.main_version_id);
     }
   };
   const history = memory.get(input.sessionId).slice(-(deps.historyMessages ?? 24));
