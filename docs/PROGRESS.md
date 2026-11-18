@@ -11,6 +11,7 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 | 00 | 2026-11-18 | CLAUDE.md, PROGRESS.md, LICENSES.md, .gitignore e Git inicializado |
 | 0.1 (Etapa 3) | 2026-11-18 | Supabase: migrations 0001 (works, bible_versions, bible_verses, chunks, pgvector 384, FTS pt/en, RLS) e 0002 (função `search_chunks`, RRF); `scripts/db.mjs`; verificador de licença (`lib/knowledge/licenses.ts`); leitor USFM; ingestão idempotente de 13 versões do eBible.org (373.222 versículos): por_blivre_2018, por_mundial, por_nbv_open, eng_web, eng_asv_1901, eng_kjv, eng_bsb, eng_geneva_1599, eng_darby, eng_ylt, spa_rv_1909, grc_tr, heb_wlc; fichas em `docs/LICENSES.md`; Easton (via Theographic, CC BY-SA) e janelas de 5 versículos da Bíblia Livre e da WEB com embeddings |
 | 0.1 (Etapa 5) | 2026-11-18 | Busca híbrida (`lib/knowledge/search.ts`): referência exata + semântica + palavra-chave, RRF e pesos de autoridade (8.10.6), seleção até ~6.000 tokens com 1 trecho bíblico garantido; `expandRefs` para versículos |
+| 0.1 (benchmark de embeddings) | 2026-11-18 | 15 perguntas em português contra o Easton em inglês: e5-small acerta 9/15 e e5-base 10/15 no top 5; trocar de modelo quase não ajuda e custa 2x. Decisão: manter e5-small. Falhas típicas: verbetes curtos (stubs) poluem o resultado e termos como "Arca", "Páscoa", "Elias" não casam com "Ark", "Passover", "Elijah". Plano: reescrever a pergunta em inglês com o modelo Haiku na Etapa 6 (busca por palavra-chave e semântica nas duas línguas), ligar o grafo de conhecimento (nomes pt/en, Prompt 1.3) e reavaliar com o conjunto `retrieval` de 50 perguntas (meta ≥ 85%) |
 | 0.1 (Etapa 4) | 2026-11-18 | Parser de referências bíblicas (`lib/knowledge/refs-parser.ts`, `books.ts`): pt-BR e inglês, números romanos e por extenso, intervalos, listas, capítulos, livros de um capítulo, validação de capítulo; 118 testes (meta do protótipo: 60; os 200 completos vêm no Prompt 1.2) |
 | 0.1 (Etapa 1) | 2026-11-18 | Next.js 15 + TypeScript estrito + Tailwind 4 + PWA básico; pastas da seção 10.3; `/api/v1/health`; `lib/platform` (Microphone e AudioPlayer, web) com `getPlatform()`; `lib/api-client` com Bearer, X-App-Version e X-Platform; i18n pt-BR; `.env.example`; Vitest |
 
@@ -28,6 +29,7 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 ## Pendências
 
 - Cota de voz: decidir entre plano Starter do ElevenLabs, Google Cloud TTS ou testar só em texto até 04/12. Chave da OpenAI recusada (não usada no plano). Gemini descartado para embeddings (sem crédito).
+- Chave da Anthropic (Console) para a Etapa 6: motor do professor e reescrita da pergunta em inglês.
 - Chave secreta do Supabase (`sb_secret_...`) para o app em produção; no protótipo as consultas usam a API de gerenciamento.
 - Versões ainda não carregadas (Prompt 1.2): demais traduções da 14.2, Almeida 1819/1911 (Gutenberg), Bíblia Livre Para Todos (NT), Reina-Valera e Biblica Open em espanhol, ULT/UST, originais morfológicos (STEPBible/OSHB). BBE adiada: domínio público só nos EUA.
 - Recomendado: apagar e recriar as chaves do Groq e do Gemini depois dos testes, pois foram coladas no chat.
