@@ -19,7 +19,7 @@ import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { splitSentences } from "@/lib/voice/speech-text";
 
-const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "happy", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
+const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
 type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse };
 

@@ -4,7 +4,6 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Avatar } from "@/components/teacher/Avatar";
 import { currentSession } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
 
@@ -18,7 +17,9 @@ export default function Landing() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-5 p-6 text-center">
-      <Avatar state="idle" size={160} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/avatar/cena-atos-8.webp" alt={t("landing.scene.alt")} className="w-full shadow-[var(--shadow)]" style={{ borderRadius: "var(--radius)" }} width={1400} height={781} />
+      <p className="-mt-3 text-sm text-muted">{t("landing.scene.caption")}</p>
       <h1 className="text-4xl">{t("app.name")}</h1>
       <p className="font-display text-xl italic text-primary">&ldquo;{t("app.tagline")}&rdquo;</p>
       <p className="text-muted">{t("landing.sub")}</p>
