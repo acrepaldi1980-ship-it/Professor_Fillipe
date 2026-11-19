@@ -3,8 +3,8 @@
 // Prototype study screen (Prompt 0.1, step 8): talk or type, hear the professor, read captions,
 // tap reference chips and next-step buttons, interrupt at any time.
 import { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import type { AvatarState } from "@/components/teacher/Avatar";
+import { AvatarArt } from "@/components/teacher/AvatarArt";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -18,8 +18,6 @@ import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { splitSentences } from "@/lib/voice/speech-text";
-
-const Avatar3D = dynamic(() => import("@/components/teacher/Avatar3D").then((m) => m.Avatar3D), { ssr: false, loading: () => <div className="h-full w-full" aria-hidden /> });
 
 const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "happy", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
@@ -39,6 +37,7 @@ export default function StudyPage() {
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [textOnly, setTextOnly] = useState(false);
+  const [greeting, setGreeting] = useState(false);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   const sessionId = useRef("");
   const nextId = useRef(1);
@@ -188,14 +187,23 @@ export default function StudyPage() {
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       <header className="flex flex-col items-center gap-1 py-2">
         <div className="h-[46dvh] max-h-[460px] min-h-[260px] w-full max-w-sm">
-          <Avatar3D state={recording ? "listening" : state} level={level} mode={messages.length > 0 ? "bust" : "full"} className="h-full w-full" />
+          {greeting ? (
+            <video src="/avatar/boas-vindas.mp4" autoPlay playsInline preload="auto" onEnded={() => setGreeting(false)} onError={() => setGreeting(false)} className="h-full w-full object-contain" aria-label={t("study.greeting.label")} />
+          ) : (
+            <AvatarArt state={recording ? "listening" : state} level={level} mode={messages.length > 0 ? "bust" : "full"} className="h-full w-full" />
+          )}
         </div>
         <p role="status" aria-live="polite" className="text-sm text-muted">{t(statusKey)}</p>
         <h1 className="sr-only">{t("study.title")}</h1>
       </header>
 
       <section className="flex flex-1 flex-col gap-3 overflow-y-auto pb-4" aria-label={t("study.title")}>
-        {messages.length === 0 && <p className="py-8 text-center text-muted">{t("study.empty")}</p>}
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <p className="text-muted">{t("study.empty")}</p>
+            {!greeting && <Button type="button" variant="ghost" onClick={() => { stopSpeaking(); setGreeting(true); }}>{t("study.greeting.play")}</Button>}
+          </div>
+        )}
         {messages.map((m) => (
           <Bubble key={m.id} from={m.role} className="flex flex-col">
             <p className="whitespace-pre-wrap text-[17px] leading-relaxed">{m.text}</p>

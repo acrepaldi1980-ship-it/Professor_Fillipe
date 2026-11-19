@@ -136,5 +136,7 @@
   "account.voice.help": "Usa as vozes instaladas no seu aparelho. A melhor costuma ser uma voz masculina \"natural\".",
   "account.voice.auto": "Automática (voz masculina em português)",
   "account.voice.test": "Ouvir a voz",
-  "account.voice.sample": "Olá! Que bom ter você aqui. Vamos estudar a Palavra juntos?"
+  "account.voice.sample": "Olá! Que bom ter você aqui. Vamos estudar a Palavra juntos?",
+  "study.greeting.play": "Ouvir a saudação do professor",
+  "study.greeting.label": "Saudação do Professor Filipe"
 }

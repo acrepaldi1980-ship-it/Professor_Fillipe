@@ -166,3 +166,8 @@ label:has(> input[type="checkbox"]) {
   0%, 94%, 100% { transform: scaleY(1); }
   97% { transform: scaleY(0.08); }
 }
+
+/* Final avatar art: gentle breathing at rest (switched off by the reduced-motion rule below/above). */
+@keyframes avatar-breathe { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.008) translateY(-0.4%); } }
+.avatar-breathe { animation: avatar-breathe 4.2s ease-in-out infinite; transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) { .avatar-breathe { animation: none; } }

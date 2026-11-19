@@ -192,7 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
-| M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Protótipo: 3D de corpo inteiro procedural (Three.js), com gestos; 2D como reserva (aprovado pelo Anderson em 19/11/2026) |
+| M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Arte final do Anderson (19/11/2026): personagem 3D estilizado em quatro poses (boas-vindas, ensinando, parabéns, refletindo) com transições e vídeo de saudação |
 
 ### 4.3 Fase 2 — Produto robusto (P1, 3–5 meses)
 
@@ -889,9 +889,9 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 **RF-M17-05 — Kit de marca (P1)**
 - Poses estáticas em alta resolução para redes sociais, figurinhas para WhatsApp (12 a 20, com frases do personagem), modelo de post e de story, vídeo curto de apresentação do personagem (com narração embutida no próprio vídeo).
 
-**RF-M17-06 — Versão 3D (P0 no protótipo, P2 nos ambientes imersivos)**
-- Desde o protótipo (19/11/2026): personagem original com figurino de mestre/escriba do século 1 (túnica de linho, manto, lenço na cabeça, barba grisalha, rolo de pergaminho; não representa nenhuma pessoa bíblica, conforme RA-23), 3D de corpo inteiro construído por código (Three.js / React Three Fiber, sem arquivos de modelo e sem licença), com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
-- Voz do protótipo sem custo: síntese do dispositivo (Web Speech API, via `lib/platform`), escolhendo a melhor voz pt-BR instalada; ElevenLabs/Google ficam como opção premium (D-03/D-04).
+**RF-M17-06 — Versão 3D interativa (P2, ambientes imersivos)**
+- Desde 19/11/2026 o avatar do app é a arte final do Anderson (poses recortadas em `public/avatar`, componentes `AvatarArt` e `Avatar`); a boca não acompanha o áudio, o movimento vem da troca de poses e do balanço pelo nível da fala.
+- Voz do protótipo sem custo: síntese do dispositivo (Web Speech API, via `lib/platform`), preferindo voz masculina pt-BR instalada, com tom e ritmo calmos; ElevenLabs/Google ficam como opção premium (D-03/D-04).
 - Modelo 3D do mesmo personagem, com animação facial, para ser o guia nos ambientes imersivos (8.16) e, opcionalmente, substituir o 2D nas telas.
 
 #### 8.17.3 Requisitos técnicos
