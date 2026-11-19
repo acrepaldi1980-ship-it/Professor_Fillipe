@@ -4,6 +4,7 @@ import { getLibraryStore, type LibraryStore } from "./library-store";
 import { getStore, type KnowledgeStore } from "./db";
 import { getEmbeddingProvider, type EmbeddingProvider } from "./embeddings";
 import { expandRefs, findReferences } from "./refs-parser";
+import { topicRefs } from "./topics";
 
 export interface Retrieved {
   id: string;
@@ -115,7 +116,8 @@ export async function searchChunks(
   const emb = deps.embeddings ?? getEmbeddingProvider();
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 40;
-  const refs = expandRefs(findReferences(queries[0] ?? "").flatMap((r) => r.refs));
+  // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
+  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? "")]);
 
   const results = await Promise.all(
     queries.map(async (q, i) => {

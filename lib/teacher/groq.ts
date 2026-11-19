@@ -72,14 +72,14 @@ export async function rewriteQueryToEnglish(question: string): Promise<string | 
       body: JSON.stringify({
         model,
         temperature: 0,
-        max_completion_tokens: 200,
+        max_completion_tokens: 260,
         reasoning_effort: "low",
         response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
             content:
-              'Você ajuda uma busca em dicionários e comentários bíblicos em inglês (Easton, KJV, WEB). Dada uma pergunta em português, responda SOMENTE um JSON {"en":"..."} com 3 a 8 palavras-chave em inglês: nomes bíblicos na grafia inglesa (Barnabé=Barnabas, Elias=Elijah, Arca da Aliança=Ark of the Covenant, Páscoa=Passover) e os termos do assunto. Sem frases.',
+              'Você ajuda uma busca em dicionários e comentários bíblicos em inglês (Easton, KJV, WEB). Dada uma pergunta em português, responda SOMENTE um JSON {"en":"...","refs":["Luke 15:11-32"]}. "en": 3 a 8 palavras-chave em inglês, o assunto principal primeiro: nomes bíblicos na grafia inglesa (Barnabé=Barnabas, Elias=Elijah, Arca da Aliança=Ark of the Covenant, Páscoa=Passover) e os termos do assunto, sem frases. "refs": até 3 passagens bíblicas onde o assunto aparece (livro capítulo:versículos, em inglês); use [] se não tiver certeza.',
           },
           { role: "user", content: question },
         ],
@@ -87,8 +87,11 @@ export async function rewriteQueryToEnglish(question: string): Promise<string | 
     });
     if (!res.ok) return null;
     const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const en = (JSON.parse(json.choices?.[0]?.message?.content ?? "{}") as { en?: string }).en;
-    return en && en.length < 200 ? en : null;
+    const out = JSON.parse(json.choices?.[0]?.message?.content ?? "{}") as { en?: string; refs?: string[] };
+    const en = out.en && out.en.length < 200 ? out.en : null;
+    const refs = (out.refs ?? []).filter((r) => typeof r === "string" && r.length < 40).slice(0, 3);
+    // The suggested passages travel with the keywords; the search turns them into exact references and verifies them in the database.
+    return en ? [en, ...refs].join(", ") : refs.length ? refs.join(", ") : null;
   } catch {
     return null;
   }

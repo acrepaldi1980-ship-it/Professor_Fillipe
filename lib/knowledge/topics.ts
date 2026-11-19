@@ -1,0 +1,82 @@
+// Well-known passages and topics (Portuguese names) -> Bible references. Used as an exact-reference hint for the search, so a
+// student asking "a parábola do filho pródigo" reaches Lucas 15 even when the semantic search misses (RA-09: the verses
+// themselves still come from the database, nothing is invented). Normalized: no accents, lower case.
+const T: [string[], string[]][] = [
+  [["filho prodigo", "filho perdido", "pai misericordioso"], ["LUK.15.11-LUK.15.32"]],
+  [["bom samaritano", "samaritano"], ["LUK.10.25-LUK.10.37"]],
+  [["semeador", "parabola do semeador", "sementes e solos"], ["MAT.13.1-MAT.13.23"]],
+  [["ovelha perdida", "parabola da ovelha"], ["LUK.15.1-LUK.15.7"]],
+  [["moeda perdida"], ["LUK.15.8-LUK.15.10"]],
+  [["dez virgens", "virgens prudentes"], ["MAT.25.1-MAT.25.13"]],
+  [["talentos", "parabola dos talentos"], ["MAT.25.14-MAT.25.30"]],
+  [["trigo e o joio", "joio"], ["MAT.13.24-MAT.13.30"]],
+  [["grao de mostarda", "semente de mostarda"], ["MAT.13.31-MAT.13.32"]],
+  [["rico e lazaro", "rico e o lazaro"], ["LUK.16.19-LUK.16.31"]],
+  [["fariseu e o publicano", "fariseu e publicano"], ["LUK.18.9-LUK.18.14"]],
+  [["servo implacavel", "servo que nao perdoou"], ["MAT.18.21-MAT.18.35"]],
+  [["trabalhadores da vinha", "operarios da vinha"], ["MAT.20.1-MAT.20.16"]],
+  [["casa sobre a rocha", "construtor sabio"], ["MAT.7.24-MAT.7.27"]],
+  [["pai nosso", "oracao do senhor"], ["MAT.6.9-MAT.6.13", "LUK.11.2-LUK.11.4"]],
+  [["bem-aventurancas", "bem aventurancas"], ["MAT.5.3-MAT.5.12"]],
+  [["sermao do monte", "sermao da montanha"], ["MAT.5.1-MAT.7.29"]],
+  [["grande comissao", "ide e fazei discipulos"], ["MAT.28.16-MAT.28.20"]],
+  [["dez mandamentos", "decalogo"], ["EXO.20.1-EXO.20.17", "DEU.5.6-DEU.5.21"]],
+  [["salmo 23", "senhor e meu pastor"], ["PSA.23.1-PSA.23.6"]],
+  [["armadura de deus"], ["EPH.6.10-EPH.6.18"]],
+  [["fruto do espirito"], ["GAL.5.22-GAL.5.23"]],
+  [["hino ao amor", "amor e paciente", "capitulo do amor"], ["1CO.13.1-1CO.13.13"]],
+  [["dons espirituais"], ["1CO.12.1-1CO.12.31", "ROM.12.4-ROM.12.8"]],
+  [["batismo de jesus"], ["MAT.3.13-MAT.3.17", "MRK.1.9-MRK.1.11", "LUK.3.21-LUK.3.22"]],
+  [["tentacao de jesus", "tentacoes de jesus"], ["MAT.4.1-MAT.4.11"]],
+  [["transfiguracao"], ["MAT.17.1-MAT.17.9"]],
+  [["ultima ceia", "santa ceia"], ["MAT.26.26-MAT.26.30", "1CO.11.23-1CO.11.26"]],
+  [["lava-pes", "lavou os pes"], ["JHN.13.1-JHN.13.17"]],
+  [["crucificacao", "morte de jesus"], ["MAT.27.32-MAT.27.56", "JHN.19.16-JHN.19.30"]],
+  [["ressurreicao de jesus", "tumulo vazio"], ["MAT.28.1-MAT.28.10", "LUK.24.1-LUK.24.12", "JHN.20.1-JHN.20.18"]],
+  [["nascer de novo", "nicodemos"], ["JHN.3.1-JHN.3.21"]],
+  [["mulher samaritana", "mulher no poco"], ["JHN.4.1-JHN.4.42"]],
+  [["bom pastor"], ["JHN.10.1-JHN.10.18"]],
+  [["pentecostes", "dia de pentecostes"], ["ACT.2.1-ACT.2.41"]],
+  [["conversao de paulo", "estrada de damasco"], ["ACT.9.1-ACT.9.19"]],
+  [["estevao", "martirio de estevao"], ["ACT.6.8-ACT.7.60"]],
+  [["eunuco etiope", "filipe e o eunuco"], ["ACT.8.26-ACT.8.40"]],
+  [["fe e obras"], ["JAS.2.14-JAS.2.26"]],
+  [["capitulo da fe", "heroes da fe"], ["HEB.11.1-HEB.11.40"]],
+  [["criacao", "criacao do mundo", "genesis 1"], ["GEN.1.1-GEN.2.3"]],
+  [["jardim do eden", "adao e eva", "queda do homem"], ["GEN.2.4-GEN.3.24"]],
+  [["caim e abel"], ["GEN.4.1-GEN.4.16"]],
+  [["dilúvio", "diluvio", "arca de noe"], ["GEN.6.9-GEN.8.22"]],
+  [["torre de babel"], ["GEN.11.1-GEN.11.9"]],
+  [["chamado de abraao", "abraao"], ["GEN.12.1-GEN.12.9"]],
+  [["sacrificio de isaque"], ["GEN.22.1-GEN.22.19"]],
+  [["jaco e esau"], ["GEN.25.19-GEN.27.45"]],
+  [["jose do egito", "jose e seus irmaos"], ["GEN.37.1-GEN.37.36", "GEN.45.1-GEN.45.15"]],
+  [["sarca ardente", "sarca ardente", "chamado de moises"], ["EXO.3.1-EXO.3.15"]],
+  [["pragas do egito", "dez pragas"], ["EXO.7.14-EXO.12.32"]],
+  [["mar vermelho", "travessia do mar vermelho"], ["EXO.14.1-EXO.14.31"]],
+  [["arca da alianca"], ["EXO.25.10-EXO.25.22", "HEB.9.1-HEB.9.5"]],
+  [["tabernaculo"], ["EXO.25.1-EXO.27.21", "HEB.9.1-HEB.9.14"]],
+  [["davi e golias"], ["1SA.17.1-1SA.17.58"]],
+  [["salomao e o templo", "templo de salomao"], ["1KI.6.1-1KI.8.66"]],
+  [["elias e os profetas de baal", "fogo do carmelo"], ["1KI.18.20-1KI.18.40"]],
+  [["fornalha ardente", "sadraque"], ["DAN.3.1-DAN.3.30"]],
+  [["daniel na cova dos leoes", "cova dos leoes"], ["DAN.6.1-DAN.6.28"]],
+  [["jonas e o grande peixe", "jonas"], ["JON.1.1-JON.2.10"]],
+  [["servo sofredor", "isaias 53"], ["ISA.52.13-ISA.53.12"]],
+  [["vale de ossos secos", "ossos secos"], ["EZK.37.1-EZK.37.14"]],
+  [["sete selos", "selos do apocalipse"], ["REV.6.1-REV.8.5"]],
+  [["nova jerusalem", "novo ceu e nova terra"], ["REV.21.1-REV.22.5"]],
+  [["sofrimento de jo", "paciencia de jo"], ["JOB.1.1-JOB.2.13", "JOB.42.1-JOB.42.17"]],
+  [["rute e boaz", "rute"], ["RUT.1.1-RUT.4.22"]],
+  [["ester"], ["EST.4.1-EST.4.17"]],
+];
+
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** References for the well-known passages named in a question (empty when none). */
+export function topicRefs(question: string): string[] {
+  const q = ` ${norm(question).replace(/[^a-z0-9 -]/g, " ")} `;
+  const out: string[] = [];
+  for (const [keys, refs] of T) if (keys.some((k) => q.includes(` ${norm(k)} `) || q.includes(norm(k)))) out.push(...refs);
+  return [...new Set(out)].slice(0, 6);
+}

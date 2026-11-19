@@ -188,7 +188,7 @@ export default function StudyPage() {
       <header className="flex flex-col items-center gap-1 py-2">
         <div className="h-[46dvh] max-h-[460px] min-h-[260px] w-full max-w-sm">
           {greeting ? (
-            <video src="/avatar/boas-vindas.mp4" autoPlay playsInline preload="auto" onEnded={() => setGreeting(false)} onError={() => setGreeting(false)} className="h-full w-full object-contain" aria-label={t("study.greeting.label")} />
+            <video src="/avatar/boas-vindas.mp4" autoPlay playsInline preload="auto" onEnded={() => setGreeting(false)} onError={() => setGreeting(false)} className="avatar-stage h-full w-full object-contain" aria-label={t("study.greeting.label")} />
           ) : (
             <AvatarArt state={recording ? "listening" : state} level={level} mode={messages.length > 0 ? "bust" : "full"} className="h-full w-full" />
           )}

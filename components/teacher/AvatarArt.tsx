@@ -38,8 +38,8 @@ export function AvatarArt({ state, level = 0, mode = "full", className }: { stat
     // Compact view: head and shoulders, with the mouth following the speech level.
     const face = faceFor(state, level);
     return (
-      <div className={`relative overflow-hidden ${className ?? ""}`} aria-hidden="true">
-        <div className={state === "speaking" ? "" : "avatar-breathe"} style={{ position: "absolute", inset: 0 }}>
+      <div className={`avatar-stage ${className ?? ""}`} aria-hidden="true">
+        <div className={`avatar-figure ${state === "speaking" ? "" : "avatar-breathe"}`} style={{ position: "absolute", inset: 0, maskImage: "linear-gradient(to bottom, #000 88%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, #000 88%, transparent 100%)" }}>
           {(Object.keys(FACES) as FaceId[]).map((id) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img key={id} src={FACES[id]} alt="" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "50% 100%", opacity: id === face ? 1 : 0 }} />
@@ -55,8 +55,9 @@ export function AvatarArt({ state, level = 0, mode = "full", className }: { stat
   const bounce = speaking ? lv * 6 : 0;
 
   return (
-    <div className={`relative overflow-hidden ${className ?? ""}`} aria-hidden="true">
-      <div className={speaking ? "" : "avatar-breathe"} style={{ position: "absolute", inset: 0, transform: `translateY(${-bounce}px)`, transition: "transform 90ms linear" }}>
+    <div className={`avatar-stage ${className ?? ""}`} aria-hidden="true">
+      <div className="avatar-ground" />
+      <div className={`avatar-figure ${speaking ? "" : "avatar-breathe"}`} style={{ position: "absolute", inset: 0, transform: `translateY(${-bounce}px)`, transition: "transform 90ms linear" }}>
         {(Object.keys(POSES) as PoseId[]).map((id) => {
           const p = POSES[id];
           return (

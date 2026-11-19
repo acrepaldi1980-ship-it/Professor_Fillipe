@@ -1,3 +1,4 @@
+import { levelAt, planText, wordAt } from "@/lib/voice/visemes";
 import type { Speech, SpeechOptions } from "../types";
 
 // On-device text-to-speech (Web Speech API): free, works offline, and on current phones/browsers it has natural
@@ -71,25 +72,30 @@ export class WebSpeech implements Speech {
       // Calm, slightly lower voice: a mature teacher, not an announcer.
       u.rate = opts.rate ?? 0.93;
       u.pitch = opts.pitch ?? (voice && MALE.test(voice.name) ? 0.92 : 0.8);
-      // The Web Speech API exposes no audio, so the mouth follows word boundaries plus a speech-like flutter.
-      let pulse = 0;
-      let t = 0;
+      // The Web Speech API exposes no audio, so the mouth is planned from the text (syllables and pauses) and re-aligned
+      // to the engine every time it reports a word boundary.
+      const plan = planText(text, u.rate);
+      let t0 = 0;
+      let shift = 0; // ms: how far the engine is ahead (+) or behind (-) our estimate
       const stop = () => {
         if (this.timer) clearInterval(this.timer);
         this.timer = null;
         opts.onLevel?.(0);
         resolve();
       };
-      u.onboundary = () => (pulse = 0.55);
+      u.onboundary = (e) => {
+        if (!plan.length) return;
+        const w = plan[wordAt(plan, e.charIndex)];
+        shift = w.startMs - (performance.now() - t0);
+      };
       u.onend = stop;
       u.onerror = stop;
       u.onstart = () => {
+        t0 = performance.now();
+        shift = 0;
         this.timer = setInterval(() => {
-          t += 0.06;
-          pulse *= 0.82;
-          const flutter = 0.12 + 0.1 * Math.abs(Math.sin(t * 13)) + 0.06 * Math.abs(Math.sin(t * 5.3));
-          opts.onLevel?.(Math.min(0.5, flutter + pulse * 0.5));
-        }, 60);
+          opts.onLevel?.(levelAt(plan, performance.now() - t0 + shift));
+        }, 30);
       };
       window.speechSynthesis.speak(u);
     });
