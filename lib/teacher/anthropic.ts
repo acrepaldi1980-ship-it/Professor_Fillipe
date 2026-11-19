@@ -57,6 +57,9 @@ export class AnthropicTeacherLlm implements TeacherLlm {
     // Cost tracking (no text): tokens and cache use of every call.
     console.log(JSON.stringify({ evt: "llm_usage", model: res.model, tier, input: res.usage.input_tokens, output: res.usage.output_tokens, cache_read: res.usage.cache_read_input_tokens ?? 0, cache_write: res.usage.cache_creation_input_tokens ?? 0 }));
     const block = res.content.find((b) => b.type === "tool_use");
-    return block && block.type === "tool_use" ? block.input : null;
+    if (block && block.type === "tool_use") return block.input;
+    // No tool call: keep the plain text so the pipeline can fall back to it (spec 8.5.5 "queda para texto").
+    const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("").trim();
+    return text ? { speech: text } : null;
   }
 }

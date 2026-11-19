@@ -82,6 +82,14 @@ export function isFollowUp(text: string, hasOwnRefs: boolean, intent: Intent): b
 
 const DEEP_INTENTS: Intent[] = ["deepen", "other_traditions", "compare_versions"];
 
+/** Builds a minimal valid response from whatever speech text the model produced (no citations: nothing unverified is claimed). */
+export function salvageText(raw: unknown, name: string): TeacherResponse | null {
+  const speech = raw && typeof raw === "object" && typeof (raw as { speech?: unknown }).speech === "string" ? (raw as { speech: string }).speech.trim() : "";
+  if (speech.length < 20) return null;
+  const base = fallbackResponse(name);
+  return { ...base, speech, next_options: [{ label: "Continuar", intent: "next" }, { label: "Encerrar por agora", intent: "stop" }] };
+}
+
 function fallbackResponse(name: string): TeacherResponse {
   return {
     speech: `${name}, tive um problema para responder agora. Pode repetir a pergunta ou escrever de outro jeito?`,
@@ -149,13 +157,14 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars, layers });
   const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
+  let lastRaw: unknown = null;
   const generate = async (msgs: ChatMessage[]) => {
     try {
-      return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
+      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
       parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars, layers });
-      return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
+      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     }
   };
   const history = priorHistory.slice(-(deps.historyMessages ?? 24));
@@ -185,7 +194,15 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     const retry = await tryGenerate([...messages, { role: "user", content: hint }]);
     if (retry) parsed = teacherResponseSchema.safeParse(retry);
   }
-  if (!parsed.success) throw new Error("teacher_response_invalid");
+  // Still invalid: fall back to the plain text of the answer (spec 8.5.5) rather than failing the turn.
+  let textFallback = false;
+  if (!parsed.success) {
+    const salvaged = salvageText(lastRaw, student.preferred_name);
+    if (!salvaged) throw new Error("teacher_response_invalid");
+    parsed = teacherResponseSchema.safeParse(salvaged);
+    if (!parsed.success) throw new Error("teacher_response_invalid");
+    textFallback = true;
+  }
 
   // RA-06: spoken turns have a word limit; ask once for a shorter version (summary/deep intents have more room).
   const limit = DEEP_INTENTS.includes(intent) ? WORD_LIMITS.deep : WORD_LIMITS.normal;
@@ -237,6 +254,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       retrievalMs,
       llmMs,
       llm: deps.llm.stats?.(),
+      ...(textFallback ? { textFallback: true } : {}),
     },
   };
 }

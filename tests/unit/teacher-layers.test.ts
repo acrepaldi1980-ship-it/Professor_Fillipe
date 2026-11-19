@@ -28,3 +28,16 @@ describe("session summary", () => {
     expect(await summarizeSession(turns, "iniciante", { complete: async () => "nada" })).toBeNull();
   });
 });
+
+import { salvageText } from "../../lib/teacher/pipeline";
+describe("fall back to text", () => {
+  it("builds a valid minimal response from plain speech", () => {
+    const r = salvageText({ speech: "Não encontrei esse versículo nas minhas fontes. Quer ver outro texto sobre o tema?" }, "Ana");
+    expect(r?.next_options).toHaveLength(2);
+    expect(r?.citations).toEqual([]);
+  });
+  it("gives up when there is no usable text", () => {
+    expect(salvageText({ speech: "oi" }, "Ana")).toBeNull();
+    expect(salvageText(null, "Ana")).toBeNull();
+  });
+});

@@ -1,0 +1,542 @@
+[
+ {
+  "id": "len-01-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-01-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-01-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-01-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-01-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-01-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a Bíblia entende o batismo de crianças e adultos?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-02-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a ceia do Senhor: símbolo ou presença real?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-03-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como a salvação acontece: predestinação e livre-arbítrio?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-04-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é o batismo no Espírito Santo?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-05-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Os dons espirituais ainda existem hoje?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-06-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como será a volta de Cristo e o milênio?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-07-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Pode-se perder a salvação?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-08-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual o papel de Maria na fé cristã?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-09-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a autoridade da tradição e das Escrituras?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-pen",
+  "group": "lenses",
+  "lens": "pentecostal",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente pentecostal e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-bap",
+  "group": "lenses",
+  "lens": "baptist",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente baptist e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-ref",
+  "group": "lenses",
+  "lens": "reformed",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente reformed e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-wes",
+  "group": "lenses",
+  "lens": "wesleyan",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente wesleyan e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-lut",
+  "group": "lenses",
+  "lens": "lutheran",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente lutheran e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ },
+ {
+  "id": "len-10-cat",
+  "group": "lenses",
+  "lens": "catholic",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Como entender a santificação: processo ou crise?",
+  "expect": "Ensina a partir da lente catholic e deixa claro que este é um tema em que as tradições divergem, mostrando ao menos uma outra leitura com fonte, sem declarar nenhuma vencedora e sem desrespeitar nenhuma fé; no máximo 120 palavras, terminando com pergunta ou escolha."
+ }
+]

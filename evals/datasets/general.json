@@ -238,5 +238,565 @@
   "audience": "seminarista",
   "question": "O que o termo hebraico hesed revela sobre o caráter de Deus?",
   "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-11",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Por que Jesus contava parábolas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-12",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é o Pentecostes?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-13",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Moisés?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-14",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que significa a palavra graça?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-15",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foram os doze apóstolos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-16",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é o Sermão do Monte?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-17",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Por que Jesus foi batizado se não tinha pecado?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-18",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Ester e o que ela fez?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-19",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que são os Dez Mandamentos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-20",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que aconteceu no jardim do Éden?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-21",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Paulo antes de conhecer Jesus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-22",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é a Páscoa na Bíblia?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-23",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Maria, mãe de Jesus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-24",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que quer dizer Aleluia?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-25",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Noé e por que construiu a arca?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-26",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que Jesus ensinou sobre perdoar?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-27",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Jonas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-28",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é a oração do Pai Nosso?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-29",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Como a Bíblia foi escrita?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-30",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é um salmo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-31",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi João Batista?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-32",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que é o fruto do Espírito?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-33",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Quem foi Rute?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-34",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "O que Jesus quis dizer com ser luz do mundo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ini-35",
+  "group": "general",
+  "level": "iniciante",
+  "audience": "jovem de 17 anos, grupo de jovens",
+  "question": "Por que a Bíblia tem dois testamentos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-11",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Qual a diferença entre aliança e testamento?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-12",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como entender o livro de Apocalipse sem medo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-13",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é a justificação pela fé em Romanos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-14",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como Paulo usa a palavra carne em Gálatas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-15",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Qual o contexto histórico do livro de Daniel?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-16",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que significa o templo no tempo de Jesus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-17",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Quem eram os fariseus e saduceus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-18",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como interpretar uma parábola corretamente?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-19",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é o reino de Deus nos evangelhos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-20",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Qual a mensagem central do livro de Jó?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-21",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como funciona o sistema de sacrifícios em Levítico?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-22",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Quem foram os juízes de Israel?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-23",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é o dia do Senhor nos profetas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-24",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como o Novo Testamento cita o Antigo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-25",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é a Septuaginta e por que importa?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-26",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que ensina Hebreus sobre o sacerdócio de Cristo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-27",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Qual a diferença entre os evangelhos sinóticos e João?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-28",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é o exílio babilônico e o que mudou depois?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-29",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como a carta de Tiago fala de fé e obras?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-30",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que são os anos sabáticos e o jubileu?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-31",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Qual o papel do Espírito Santo no Antigo Testamento?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-32",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como entender a genealogia de Mateus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-33",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que é a Lei de Moisés e como ela vale hoje?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-34",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "O que são os profetas menores?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-int-35",
+  "group": "general",
+  "level": "intermediário",
+  "audience": "professor de EBD, adulto",
+  "question": "Como estudar um versículo no contexto?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-11",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Qual a diferença entre agapao e phileo em João 21?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-12",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como se discute a autoria de Hebreus?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-13",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "O que significa logos em João 1:1?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-14",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como as versões traduzem o tempo verbal em Romanos 8:30?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-15",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Qual o problema sinótico e as principais propostas?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-16",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "O que é o hebraico bara em Gênesis 1:1?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-17",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como se entende o termo hilasterion em Romanos 3:25?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-18",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Quais as principais teorias da expiação?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-19",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "O que é a expressão filho do homem em Daniel 7 e nos evangelhos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-20",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como se debate a datação do Êxodo?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-21",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Que papel tem a pistis Christou na discussão sobre Gálatas 2:16?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-22",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como a palavra ekklesia era usada no mundo grego?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-23",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Qual a estrutura literária de Filipenses 2:6-11?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-24",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como se debate o significado de semana em Daniel 9?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-25",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Quais as relações entre Colossenses e Efésios?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-26",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como se debate o significado de teleios em Mateus 5:48?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-27",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "O que o termo parousia significa no contexto do Novo Testamento?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-28",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Como a crítica textual trata o final longo de Marcos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-29",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "O que é o midrash e como aparece nos evangelhos?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
+ },
+ {
+  "id": "gen-ava-30",
+  "group": "general",
+  "level": "avançado",
+  "audience": "pastor ou estudante de teologia",
+  "question": "Quais as diferenças entre o texto massorético e a Septuaginta em Jeremias?",
+  "expect": "Resposta no nível do aluno, fiel às fontes recuperadas, com no máximo 120 palavras, linguagem clara, terminando em pergunta ou escolha."
  }
 ]

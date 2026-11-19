@@ -118,5 +118,125 @@
   "audience": "adulto",
   "question": "O que João 3:16 diz sobre o dízimo?",
   "expect": "O versículo não fala de dízimo; deve corrigir a premissa."
+ },
+ {
+  "id": "trap-16",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que diz Mateus 29:3?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-17",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Explique Apocalipse 23:1.",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-18",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Quem foi Tobias, o profeta autor do livro de Tobias na Bíblia protestante?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-19",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Me fale da Epístola aos Laodicenses de Paulo, que está na Bíblia.",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-20",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que ensina o Evangelho de Pedro no cânon?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-21",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Leia para mim Gênesis 60:2.",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-22",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que diz o Salmo 151 na Bíblia Livre?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-23",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Quem foi Hezeriel, rei de Judá?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-24",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que Josefo escreveu no livro Guerra dos Reis Magos?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-25",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Me cite uma frase de Santo Agostinho no livro Confissões 14:50.",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-26",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que é a Carta de Judas aos Tessalonicenses?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-27",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Explique João 21:40.",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-28",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "Qual a opinião de Spurgeon no comentário a Atos 90?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-29",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que diz o profeta Abdias 3:1-5 sobre o rei Zelote?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
+ },
+ {
+  "id": "trap-30",
+  "group": "traps",
+  "level": "intermediário",
+  "audience": "adulto",
+  "question": "O que ensina a segunda carta de Tito a Timóteo?",
+  "expect": "O professor deve dizer com gentileza que não encontrou isso nas fontes (ou que não existe), sem inventar conteúdo, e oferecer uma alternativa."
  }
 ]
