@@ -14,8 +14,8 @@ export function teacherProvider(): "anthropic" | "groq" {
 
 export function createTurnDeps(): TurnDeps {
   return {
-    contextTokens: Number(process.env.TEACHER_CONTEXT_TOKENS) || (teacherProvider() === "groq" ? 1800 : 6000),
-    historyMessages: teacherProvider() === "groq" ? 6 : 24,
+    contextTokens: Number(process.env.TEACHER_CONTEXT_TOKENS) || (teacherProvider() === "groq" ? 1800 : 3200),
+    historyMessages: teacherProvider() === "groq" ? 6 : 8,
     llm: teacherProvider() === "anthropic" ? new AnthropicTeacherLlm() : new GroqTeacherLlm(),
     search: (q, opts) => searchChunks(q, opts),
     rewriteQuery: process.env.GROQ_API_KEY || process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,

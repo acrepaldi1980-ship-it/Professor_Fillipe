@@ -140,5 +140,6 @@
   "study.greeting.play": "Ouvir a saudação do professor",
   "study.greeting.label": "Saudação do Professor Filipe",
   "landing.scene.alt": "O Professor Filipe conversa com o eunuco etíope ao lado da carruagem, no deserto, com um rolo de pergaminho na mão",
-  "landing.scene.caption": "Atos 8:30: \"Entendes o que lês?\""
+  "landing.scene.caption": "Atos 8:30: \"Entendes o que lês?\"",
+  "study.error.limit": "Você chegou ao limite de conversas de hoje. Volte amanhã para continuar o estudo."
 }

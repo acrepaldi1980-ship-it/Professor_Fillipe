@@ -3,9 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { TeacherLlm } from "./pipeline";
 import { teacherToolJsonSchema } from "./schema";
 
+// Economy first: the small model answers everyday turns; the stronger one is used only for deep intents.
 export function modelFor(tier: "fast" | "deep"): string {
-  const fast = process.env.TEACHER_MODEL_FAST ?? "claude-sonnet-5-5";
-  const deep = process.env.TEACHER_MODEL_DEEP ?? fast;
+  const fast = process.env.TEACHER_MODEL_FAST ?? "claude-haiku-5-5";
+  const deep = process.env.TEACHER_MODEL_DEEP ?? "claude-sonnet-5-5";
   return tier === "deep" ? deep : fast;
 }
 
@@ -15,14 +16,20 @@ export class AnthropicTeacherLlm implements TeacherLlm {
     this.client = new Anthropic({ apiKey });
   }
 
-  async generate({ system, messages, tier }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
+  async generate({ system, systemParts, messages, tier }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     const res = await this.client.messages.create({
       model: modelFor(tier),
-      max_tokens: 4000, // room for adaptive thinking plus the answer
+      max_tokens: 1800, // room for a little thinking plus a spoken answer of up to ~120 words
       // Forced tool_choice (any/tool) is rejected by the newer models (400); the tool is asked for in the prompt and `auto` is used.
       // Effort `medium` keeps chat answers quick and cheap; thinking is adaptive by default on these models.
-      output_config: { effort: "medium" },
-      system: `${system}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`,
+      output_config: { effort: tier === "deep" ? "medium" : "low" },
+      // The stable part (rules, student, lens) is cached: later turns of the same conversation read it at a fraction of the price.
+      system: systemParts
+        ? [
+            { type: "text" as const, text: `${systemParts.stable}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`, cache_control: { type: "ephemeral" as const } },
+            { type: "text" as const, text: systemParts.dynamic },
+          ]
+        : `${system}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`,
       messages,
       tools: [
         {
@@ -33,6 +40,8 @@ export class AnthropicTeacherLlm implements TeacherLlm {
       ],
       tool_choice: { type: "auto" },
     });
+    // Cost tracking (no text): tokens and cache use of every call.
+    console.log(JSON.stringify({ evt: "llm_usage", model: res.model, tier, input: res.usage.input_tokens, output: res.usage.output_tokens, cache_read: res.usage.cache_read_input_tokens ?? 0, cache_write: res.usage.cache_creation_input_tokens ?? 0 }));
     const block = res.content.find((b) => b.type === "tool_use");
     return block && block.type === "tool_use" ? block.input : null;
   }

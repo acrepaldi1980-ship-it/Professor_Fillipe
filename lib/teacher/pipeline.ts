@@ -5,7 +5,7 @@ import type { BibleVerse, Retrieved, SearchOptions } from "../knowledge/search";
 import { classifyIntent } from "./intents";
 import { memory, type ChatMessage } from "./memory";
 import { detectPastoralCrisis, pastoralResponse } from "./pastoral";
-import { buildSystemPrompt, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
+import { buildSystemParts, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
 import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
 import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
@@ -14,7 +14,7 @@ import { normalizeRaw } from "./normalize";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
-  generate(args: { system: string; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
+  generate(args: { system: string; systemParts?: { stable: string; dynamic: string }; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
 }
 
 export interface TurnDeps {
@@ -113,15 +113,16 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const notice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
-  let system = buildSystemPrompt({ student, bible, chunks, verses, notice, maxChunkChars });
+  let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars });
+  const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   const generate = async (msgs: ChatMessage[]) => {
     try {
-      return normalizeRaw(await deps.llm.generate({ system, messages: msgs, tier }), bible.main_version_id);
+      return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      system = buildSystemPrompt({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars });
-      return normalizeRaw(await deps.llm.generate({ system, messages: msgs, tier }), bible.main_version_id);
+      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars });
+      return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
     }
   };
   const history = memory.get(input.sessionId).slice(-(deps.historyMessages ?? 24));

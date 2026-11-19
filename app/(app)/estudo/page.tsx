@@ -122,7 +122,7 @@ export default function StudyPage() {
         setState("idle");
         const msg = (e as Error).message;
         if (msg === "api_error_401") return router.replace("/login");
-        setError(msg === "api_error_503" ? t("study.error.unavailable") : t("study.error.turn"));
+        setError(msg === "api_error_503" ? t("study.error.unavailable") : msg === "api_error_429" ? t("study.error.limit") : t("study.error.turn"));
       }
     },
     [speak, stopSpeaking, textOnly, router],

@@ -35,6 +35,13 @@ export async function POST(req: Request) {
   const { data: session } = await db.from("sessions").select("id").eq("id", parsed.data.sessionId).maybeSingle();
   if (!session) return errorResponse(new HttpError(404, "session_not_found"));
 
+  // Spending guard: a daily cap of teacher answers per student (TEACHER_DAILY_LIMIT, default 40).
+  const limit = Number(process.env.TEACHER_DAILY_LIMIT) || 40;
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const { count } = await db.from("messages").select("id", { count: "exact", head: true }).eq("role", "teacher").gte("created_at", dayStart.toISOString());
+  if ((count ?? 0) >= limit * 1) return Response.json({ error: "daily_limit" }, { status: 429 });
+
   const stream = new ReadableStream({
     async start(controller) {
       const enc = new TextEncoder();

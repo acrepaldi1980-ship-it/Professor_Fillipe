@@ -97,14 +97,16 @@ export interface PromptInput {
 }
 
 /** Layers 1-5 concatenated (mode = Estudo livre in Phase 0). */
-export function buildSystemPrompt(i: PromptInput): string {
+/** The system prompt in two parts: `stable` (identity, student, lens, mode: the same for a whole conversation, so it can be cached) and `dynamic` (retrieved sources and notices: new every turn). */
+export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
-  return [
-    LAYER_IDENTITY,
-    layerStudent(i.student ?? DEFAULT_STUDENT),
-    layerLens(bible),
-    LAYER_MODE_FREE,
-    layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars),
-    ...(i.notice ? [i.notice] : []),
-  ].join("\n\n---\n\n");
+  return {
+    stable: [LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), LAYER_MODE_FREE].join("\n\n---\n\n"),
+    dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
+  };
+}
+
+export function buildSystemPrompt(i: PromptInput): string {
+  const { stable, dynamic } = buildSystemParts(i);
+  return `${stable}\n\n---\n\n${dynamic}`;
 }
