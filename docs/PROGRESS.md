@@ -6,7 +6,7 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 ## Prompts concluídos
 
-> **1.4 (passo 1 feito, aguardando revisão):** `docs/pentecostal/linha.md` escrito; o Prompt 1.4 manda parar aqui até o Anderson revisar. Passos 2 a 6 não iniciados.
+| 1.4 | 2026-11-19 | Anderson aprovou as 5 recomendações de `docs/pentecostal/linha.md` (AD clássica, línguas como sinal inicial, ressalva médica, conselho = ele, confirmar acervo). Feito: migrations 0011 e 0012 (fluxo `draft → in_review → approved → published` imposto por gatilho no banco; só admin publica; tabela `own_note_comments`; funções `api_publish_note`/`api_unpublish_note` que põem a nota na busca como tradição `pentecostal`, tipo `own_notes`, camada 3 só com a lente pentecostal); `lib/notes` (gerador com Claude Haiku 5.5 via `NOTES_MODEL`, relatório de originalidade com reescrita automática, plano de Atos); API `/api/v1/admin/notes` (lista, gerar, editar/mover, comentar); tela `/admin/notas`; 62 notas de Atos em rascunho (introdução, 53 perícopes, 8 artigos). Verificado em produção: nota publicada de teste apareceu na camada 3 com a lente pentecostal e na camada 5 com a reformada; revertida a rascunho. **Divergência a aprovar (CLAUDE.md):** o limite 0,85 da 8.11 foi mantido, mas o cosseno bruto do e5 dá 0,78 a 0,85 a qualquer texto sobre o mesmo assunto; por isso a similaridade é normalizada (marca ≥ 0,85 com ~30% de 5-gramas iguais ou cosseno ~0,94). Falta: Anderson revisar e aprovar as 3 primeiras notas no /admin; dar a si o papel `admin` (hoje só usuários de teste tinham); o acervo pentecostal de 14.4 ainda não está na base, então as notas citam só a Bíblia Livre |
 
 
 | Prompt | Data | Resumo |
