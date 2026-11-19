@@ -118,3 +118,20 @@ export async function deleteAccount(): Promise<void> {
   if (!res.ok) throw new Error(`api_error_${res.status}`);
 }
 export const getConfig = () => apiJson<{ minVersion: string; flags: Record<string, boolean> }>("/config");
+
+export interface SourceWork {
+  id: string;
+  title: string;
+  authors: string[];
+  pub_year: number | null;
+  language: string;
+  kind: string;
+  tradition: string;
+  license: string;
+  credit_text: string | null;
+  source_url: string | null;
+}
+
+export async function getSources(): Promise<SourceWork[]> {
+  return (await apiJson<{ works: SourceWork[] }>("/sources")).works;
+}

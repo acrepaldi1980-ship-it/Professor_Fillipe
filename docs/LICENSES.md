@@ -279,3 +279,10 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 88513d3c0e852f219ca64d040591b640858e8f8292fe9ef503bdcc94ca88811b
 - Observações: CC BY-SA e só Novo Testamento: mantida separada de qualquer texto próprio.
+
+## STEPBible — Novo Testamento grego (TAGNT) e léxico grego breve (TBESG)
+- Fonte: https://github.com/STEPBible/STEPBible-Data (arquivos "TAGNT Mat-Jhn", "TAGNT Act-Rev" e "TBESG").
+- Licença: CC BY 4.0 (declarada no cabeçalho dos arquivos). Crédito exato: "Dados de STEPBible.org, baseados no trabalho do Tyndale House, Cambridge (CC BY 4.0). Fonte: https://STEPBible.github.io/STEPBible-Data/".
+- A licença permite usar em software e reformatar os dados; pede crédito e link da fonte (feito na página Fontes e licenças). Guardamos só no banco; não republicamos os arquivos.
+- Uso no app: `original_words` (palavras do texto Nestlé-Aland, tipos N*) e `lexicon_entries` (TBESG).
+- **Não importados:** TBESH (léxico hebraico): o cabeçalho diz que é preciso permissão da Online Bible para usar as definições (derivadas do BDB abreviado) — licença duvidosa, fica fora. TAHOT (hebraico) fica para depois por espaço no banco.

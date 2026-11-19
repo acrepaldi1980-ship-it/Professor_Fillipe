@@ -28,6 +28,7 @@ export default function Landing() {
       <p className="flex gap-4 text-sm text-muted">
         <Link href="/termos" className="underline">Termos</Link>
         <Link href="/privacidade" className="underline">Privacidade</Link>
+        <Link href="/fontes-e-licencas" className="underline">Fontes e licenças</Link>
       </p>
     </main>
   );
