@@ -13,6 +13,11 @@ export function modelFor(tier: "fast" | "deep"): string {
 
 export class AnthropicTeacherLlm implements TeacherLlm {
   private client: Anthropic;
+  private totals = { calls: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  /** Token use of this turn (every call), for the cost meta. */
+  stats() {
+    return { ...this.totals };
+  }
   constructor(apiKey = process.env.ANTHROPIC_API_KEY) {
     this.client = new Anthropic({ apiKey });
   }
@@ -43,6 +48,11 @@ export class AnthropicTeacherLlm implements TeacherLlm {
       ],
       tool_choice: { type: "auto" },
     });
+    this.totals.calls++;
+    this.totals.input += res.usage.input_tokens;
+    this.totals.output += res.usage.output_tokens;
+    this.totals.cacheRead += res.usage.cache_read_input_tokens ?? 0;
+    this.totals.cacheWrite += res.usage.cache_creation_input_tokens ?? 0;
     // Cost tracking (no text): tokens and cache use of every call.
     console.log(JSON.stringify({ evt: "llm_usage", model: res.model, tier, input: res.usage.input_tokens, output: res.usage.output_tokens, cache_read: res.usage.cache_read_input_tokens ?? 0, cache_write: res.usage.cache_creation_input_tokens ?? 0 }));
     const block = res.content.find((b) => b.type === "tool_use");

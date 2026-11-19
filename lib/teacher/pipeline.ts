@@ -14,6 +14,8 @@ import { normalizeRaw } from "./normalize";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
+  /** Optional token use of this turn (Anthropic): calls, input, output, cache reads and writes. */
+  stats?(): { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number };
   generate(args: { system: string; systemParts?: { stable: string; dynamic: string }; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
 }
 
@@ -63,6 +65,7 @@ export interface TurnResult {
     degradedReason?: string;
     retrievalMs: number;
     llmMs: number;
+    llm?: { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number };
   };
 }
 
@@ -227,6 +230,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       latencyMs: Date.now() - t0,
       retrievalMs,
       llmMs,
+      llm: deps.llm.stats?.(),
     },
   };
 }

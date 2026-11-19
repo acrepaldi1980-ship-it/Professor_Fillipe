@@ -8,6 +8,7 @@ import { AvatarArt } from "@/components/teacher/AvatarArt";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
@@ -208,7 +209,7 @@ export default function StudyPage() {
         )}
         {messages.map((m) => (
           <Bubble key={m.id} from={m.role} className="flex flex-col">
-            <p className="whitespace-pre-wrap text-[17px] leading-relaxed">{m.text}</p>
+            <MiniMarkdown text={m.text} className="text-[17px] leading-relaxed" />
             {m.response && <TeacherExtras r={m.response} onRef={openRef} onOption={(label, intent) => void send(label, intent)} />}
           </Bubble>
         ))}
