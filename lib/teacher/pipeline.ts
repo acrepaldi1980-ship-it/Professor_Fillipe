@@ -30,6 +30,8 @@ export interface TurnDeps {
   /** Optional: English keywords for the question, to reach English works from a Portuguese question. */
   rewriteQuery?(question: string): Promise<string | null>;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
+  /** Optional: active prompt layers from prompt_versions (falls back to the built-in version 1). */
+  loadLayers?(): Promise<import("./prompt-store").PromptLayers | null>;
 }
 
 export interface TurnInput {
@@ -128,9 +130,10 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(searchText) : null;
   const wantedVerses = [...mentioned, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
-  const [{ chunks }, verses] = await Promise.all([
+  const [{ chunks }, verses, layers] = await Promise.all([
     deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined }),
     wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
+    deps.loadLayers ? deps.loadLayers().catch(() => null) : Promise.resolve(null),
   ]);
 
   const retrievalMs = Date.now() - tSearch;
@@ -143,7 +146,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const notice = [baseNotice, deepNote].filter(Boolean).join("\n\n") || undefined;
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
-  let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars });
+  let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars, layers });
   const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   const generate = async (msgs: ChatMessage[]) => {
@@ -151,7 +154,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars });
+      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars, layers });
       return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
     }
   };

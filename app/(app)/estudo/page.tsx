@@ -12,7 +12,7 @@ import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
-import { createSession, getBibleVerses, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { closeSession, createSession, flagAnswer, getBibleVerses, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -22,7 +22,7 @@ import { splitSentences } from "@/lib/voice/speech-text";
 
 const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
-type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse };
+type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse; messageId?: string };
 
 const MAIN_VERSION = "por_blivre_2018";
 const SILENCE_MS = 1200;
@@ -125,8 +125,8 @@ export default function StudyPage() {
       setMessages((m) => [...m, { id: nextId.current++, role: "user", text: clean }]);
       setState("thinking");
       try {
-        const { response } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
-        setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response }]);
+        const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
+        setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
         if (response.pastoral_flag) setState("empathetic");
         const cue: AvatarState = response.pastoral_flag ? "empathetic" : response.avatar_cue && response.avatar_cue !== "neutral" ? CUE_STATE[response.avatar_cue] : response.visuals.length ? "pointing" : "idle";
         if (!textOnly) await speak(response.speech, cue);
@@ -223,6 +223,7 @@ export default function StudyPage() {
           <Bubble key={m.id} from={m.role} className="flex flex-col">
             <MiniMarkdown text={m.text} className="text-[17px] leading-relaxed" />
             {m.response && <TeacherExtras r={m.response} onRef={openRef} onOption={(label, intent) => void send(label, intent)} />}
+            {m.messageId && <FlagButton messageId={m.messageId} />}
           </Bubble>
         ))}
         <div ref={endRef} />
@@ -245,7 +246,7 @@ export default function StudyPage() {
         <Button type="submit">{t("study.send")}</Button>
       </form>
       <div className="flex items-center justify-between pb-3 text-sm">
-        {messages.length > 0 && <a href={`/feedback?s=${sessionId.current}`} className="inline-flex min-h-11 items-center rounded-control border border-line px-3">{t("study.end")}</a>}
+        {messages.length > 0 && <a href={`/feedback?s=${sessionId.current}`} onClick={() => void closeSession(sessionId.current).catch(() => undefined)} className="inline-flex min-h-11 items-center rounded-control border border-line px-3">{t("study.end")}</a>}
         <label className="flex items-center gap-2"><input type="checkbox" checked={textOnly} onChange={(e) => setTextOnly(e.target.checked)} />{t("study.textonly")}</label>
         {state === "speaking" && <Button type="button" variant="ghost" onClick={stopSpeaking}>{t("study.interrupt")}</Button>}
       </div>
@@ -286,5 +287,19 @@ function TeacherExtras({ r, onRef, onOption }: { r: TeacherResponse; onRef(ref: 
         ))}
       </div>
     </div>
+  );
+}
+
+/** "Isso está errado?": the student reports an answer; it goes to the reviewers (answer_flags). */
+function FlagButton({ messageId }: { messageId: string }) {
+  const [step, setStep] = useState<"idle" | "form" | "sent">("idle");
+  const [reason, setReason] = useState("");
+  if (step === "sent") return <p className="mt-2 text-xs text-muted">{t("study.flag.thanks")}</p>;
+  if (step === "idle") return <button type="button" className="mt-2 text-xs text-muted underline" onClick={() => setStep("form")}>{t("study.flag")}</button>;
+  return (
+    <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); void flagAnswer(messageId, reason.trim() || undefined).finally(() => setStep("sent")); }}>
+      <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("study.flag.placeholder")} className="h-9 min-w-0 flex-1 rounded-control border border-line bg-surface px-2 text-sm text-ink" />
+      <Button type="submit" className="text-sm">{t("study.flag.send")}</Button>
+    </form>
   );
 }

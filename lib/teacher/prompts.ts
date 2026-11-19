@@ -92,6 +92,8 @@ export interface PromptInput {
   bible?: BibleSettings;
   chunks: Retrieved[];
   verses: BibleVerse[];
+  /** Active texts from prompt_versions (override the built-in version 1 of those layers). */
+  layers?: { identity?: string; mode_free?: string } | null;
   /** Cap per retrieved chunk, in characters (free-tier prototype keeps prompts small). */
   maxChunkChars?: number;
 }
@@ -101,7 +103,7 @@ export interface PromptInput {
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), LAYER_MODE_FREE].join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

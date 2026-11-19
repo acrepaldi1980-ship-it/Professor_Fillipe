@@ -79,6 +79,7 @@ export async function studentForPrompt(db: SupabaseClient, userId: string): Prom
       role = null;
     }
   }
+  const { data: sums } = await db.from("session_summaries").select("summary").eq("user_id", userId).order("created_at", { ascending: false }).limit(3);
   return {
     preferred_name: p?.preferred_name || p?.display_name || "amigo",
     level: (p?.level as StudentProfile["level"]) ?? "iniciante",
@@ -86,7 +87,7 @@ export async function studentForPrompt(db: SupabaseClient, userId: string): Prom
     ministry_role: role,
     preferred_formats: p?.preferred_formats ?? [],
     is_minor: !!p?.is_minor,
-    last_summaries: [],
+    last_summaries: (sums ?? []).map((x) => x.summary as string),
   };
 }
 

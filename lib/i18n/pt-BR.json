@@ -166,5 +166,8 @@
   "admin.notes.edit": "Editar texto",
   "admin.notes.save": "Salvar",
   "admin.notes.back": "Voltar à lista",
-  "admin.notes.empty": "Nenhuma nota nesta lista."
+  "admin.notes.empty": "Nenhuma nota nesta lista.",
+  "study.flag.thanks": "Obrigado! Vamos revisar essa resposta.",
+  "study.flag.placeholder": "O que está errado? (opcional)",
+  "study.flag.send": "Enviar"
 }

@@ -38,6 +38,8 @@ export interface TurnMeta {
   tier: string;
   words: number;
   latencyMs: number;
+  /** Id of the saved teacher message (absent for pastoral turns, which store nothing). */
+  messageId?: string;
 }
 
 /** One teacher turn over SSE. Calls onStructured once with the validated contract. */
@@ -160,3 +162,6 @@ export const listNotes = (status?: NoteStatus) => apiJson<{ role: "reviewer" | "
 export const getNote = (id: string) => apiJson<{ role: "reviewer" | "admin"; note: NoteDetail; comments: NoteComment[] }>(`/admin/notes/${id}`);
 export const patchNote = (id: string, body: { status?: NoteStatus; body?: string; title?: string }) => apiJson<{ ok: boolean; status: NoteStatus }>(`/admin/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) });
 export const commentNote = (id: string, body: string) => apiJson<{ ok: boolean }>(`/admin/notes/${id}/comments`, { method: "POST", body: JSON.stringify({ body }) });
+
+export const flagAnswer = (messageId: string, reason?: string) => apiJson<{ ok: boolean }>("/teacher/flag", { method: "POST", body: JSON.stringify({ messageId, reason }) });
+export const closeSession = (sessionId: string) => apiJson<{ ok: boolean; summarized: boolean }>(`/sessions/${sessionId}/close`, { method: "POST" });

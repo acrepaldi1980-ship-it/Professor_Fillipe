@@ -60,6 +60,7 @@ export async function POST(req: Request) {
         ].slice(0, 10);
         const { response, meta } = await runTurn({ ...parsed.data, student, history, lastRefs }, createTurnDeps());
 
+        let messageId: string | undefined;
         if (response.pastoral_flag) {
           await db.from("pastoral_events").insert({ user_id: user.id });
         } else {
@@ -67,13 +68,14 @@ export async function POST(req: Request) {
             { session_id: session.id, role: "user", text: parsed.data.text },
             { session_id: session.id, role: "teacher", text: response.display_markdown || response.speech, speech: response.speech, structured: response, latency_ms: meta.latencyMs },
           ];
-          await db.from("messages").insert(rows);
+          const { data: saved } = await db.from("messages").insert(rows).select("id,role");
+          messageId = saved?.find((m) => m.role === "teacher")?.id;
         }
 
         // Never log the student's text (spec 13): only metrics.
         console.log(JSON.stringify({ evt: "turn", ...meta }));
         controller.enqueue(enc.encode(sse("structured", response)));
-        controller.enqueue(enc.encode(sse("done", meta)));
+        controller.enqueue(enc.encode(sse("done", { ...meta, messageId })));
       } catch (e) {
         console.error(JSON.stringify({ evt: "turn_error", code: (e as Error).message.slice(0, 80) }));
         controller.enqueue(enc.encode(sse("error", { code: "turn_failed", detail: (e as Error).message.slice(0, 160) })));
