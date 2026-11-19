@@ -73,16 +73,19 @@ export async function generateNote(req: GenerateRequest, deps: GenerateDeps): Pr
   const user = `${brief(req)}\n\nTítulo sugerido: ${req.title}\nPassagem: ${req.passage}\nLimite: ${limit} palavras.\n\nTEXTO BÍBLICO (${deps.versionId}):\n${bible || "(sem texto fornecido; use apenas as fontes)"}\n\nFONTES:\n${lines.join("\n\n") || "(nenhuma obra recuperada; escreva só com o texto bíblico e diga isso)"}`;
 
   let out: DraftOutput | null = null;
+  let why = "";
   for (let attempt = 0; attempt < 2 && !out; attempt++) {
     try {
       const raw = await deps.llm.complete(SYSTEM, attempt ? `${user}\n\nLembrete: responda somente com o JSON pedido, corpo com 120 a ${limit} palavras.` : user, 1800);
       const parsed = DraftOutput.safeParse(parseJson(raw));
-      if (parsed.success && countWords(parsed.data.body) <= Math.round(limit * 1.4)) out = parsed.data;
-    } catch {
-      /* retry once */
+      if (!parsed.success) why = parsed.error.issues[0]?.message ?? "schema";
+      else if (countWords(parsed.data.body) > Math.round(limit * 1.4)) why = `too_long_${countWords(parsed.data.body)}`;
+      else out = parsed.data;
+    } catch (e) {
+      why = (e as Error).message.slice(0, 120); // retry once
     }
   }
-  if (!out) throw new Error("draft_invalid");
+  if (!out) throw new Error(`draft_invalid: ${why}`);
 
   const { body, report } = await checkAndRewrite(out.body, {
     sourcesFor: deps.sourcesFor,
