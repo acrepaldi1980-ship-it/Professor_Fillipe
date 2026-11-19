@@ -197,12 +197,19 @@ describe("runTurn", () => {
   });
 
   it("flags answers that stay over 120 words even after asking for a shorter one", async () => {
-    const long = Array.from({ length: 130 }, () => "palavra").join(" ") + "?";
+    const long = Array.from({ length: 170 }, () => "palavra").join(" ") + "?";
     const d = deps([good({ speech: long })]);
     const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
     expect(out.meta.overWordLimit).toBe(true);
-    expect(countWords(long)).toBe(130);
+    expect(countWords(long)).toBe(170);
     expect(d.calls).toBe(2);
+  });
+
+  it("tolerates a few words over the limit without paying for a second call", async () => {
+    const slightly = Array.from({ length: 128 }, () => "palavra").join(" ") + "?";
+    const d = deps([good({ speech: slightly })]);
+    await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(d.calls).toBe(1);
   });
 
   it("asks once for a shorter speech and uses it", async () => {

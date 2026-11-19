@@ -34,10 +34,10 @@ export class AnthropicTeacherLlm implements TeacherLlm {
       // The stable part (rules, student, lens) is cached: later turns of the same conversation read it at a fraction of the price.
       system: systemParts
         ? [
-            { type: "text" as const, text: `${systemParts.stable}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`, cache_control: { type: "ephemeral" as const } },
+            { type: "text" as const, text: `${systemParts.stable}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela. Não escreva NENHUM texto fora da ferramenta (nem uma frase antes dela): tudo vai dentro dos campos.`, cache_control: { type: "ephemeral" as const } },
             { type: "text" as const, text: systemParts.dynamic },
           ]
-        : `${system}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`,
+        : `${system}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela. Não escreva NENHUM texto fora da ferramenta (nem uma frase antes dela): tudo vai dentro dos campos.`,
       messages,
       tools: [
         {
