@@ -55,6 +55,9 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 ## Pendências
 
+- **FILA (pedido do Anderson, 19/11/2026): substituir o avatar pelo personagem 3D estilizado enviado por ele** (arte em `docs/identidade/avatar-final/`: 4 poses Boas-vindas/Ensinando/Parabéns/Refletindo, cenário de boas-vindas e vídeo de 10 s com fala "Olá! Que bom ter você aqui! Eu sou o Felipe..."). Plano: recortar o fundo branco, usar as poses como estados do avatar (parado, ensinando, alegre, pensando) com transições suaves, o vídeo na tela de boas-vindas e, se o Anderson gerar um loop "falando" no Gemini, usá-lo enquanto o professor fala. Registrar como D-18 final e conferir direitos de uso comercial da arte gerada (termos do Gemini). Fica depois da ingestão da biblioteca e da voz.
+- **FILA: voz parecida com a do vídeo** (barítono caloroso, F0 ~131 Hz): opção 1 (voz masculina do aparelho + tom e ritmo) e opção 2 (Piper pt-BR masculino, conferindo a licença). O Gemini TTS, que gera esse tipo de voz, responde 402 (sem crédito); o áudio do vídeo pode ser usado como saudação fixa.
+
 - Cota de voz: decidir entre plano Starter do ElevenLabs, Google Cloud TTS ou testar só em texto até 04/12. Chave da OpenAI recusada (não usada no plano). Gemini descartado para embeddings (sem crédito).
 - Chave da Anthropic: **adiada** (sem orçamento). Se um dia houver: variável `ANTHROPIC_API_KEY` no ambiente `professor-filipe` e sessão nova; o provedor troca sozinho.
 - Próximo: Etapa 9 (medição de latência de voz ponta a ponta) e Prompt 0.2 com o modelo gratuito (resultados valem como piso de qualidade).
