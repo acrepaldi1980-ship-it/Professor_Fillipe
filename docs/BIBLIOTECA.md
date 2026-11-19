@@ -6,6 +6,10 @@ Legenda de status: **Carregada** (já na base) · **Proposta** (fonte escolhida,
 
 Observação de ambiente (19/11/2026): o Project Gutenberg estava "em manutenção" quando a lista foi montada, então os números de cada obra no Gutenberg serão confirmados na hora da ingestão. Alcançamos daqui GitHub, eBible.org e Gutenberg; **não alcançamos** Internet Archive, Wikisource, HathiTrust nem a CCEL (esta só serviria de catálogo, de qualquer forma).
 
+## Como a ingestão funciona (aprovada pelo Anderson: "quanto mais obras melhor")
+
+`scripts/ingest/library-gutenberg.ts`: seleciona do catálogo do Project Gutenberg (espelho gutenberg.pglaf.org) as obras em inglês de religião, filosofia e história antiga cujos colaboradores morreram até 1931; baixa o texto, tira o cabeçalho do Gutenberg, divide em capítulos e blocos de 400 a 700 tokens com sobreposição de 60, converte citações antigas ("John iii. 16") e extrai as referências bíblicas, gera os embeddings e grava os trechos no **Neon** (`chunks`, busca híbrida `library_search`). A ficha da obra vai para `works` no Supabase. Ordem de entrada: intercala comentários, história, teologia (linhas com tradição identificada primeiro) e filosofia. Limite de espaço: ~12 KB por trecho, então o teto atual é de cerca de 55 mil trechos no projeto Neon gratuito (1 GB). O texto do Gutenberg já é digital, então **não há OCR** nesta etapa (o OCR fica para obras escaneadas do Internet Archive, que não alcançamos daqui).
+
 ## 14.3 Bíblias de estudo e referência
 
 | Obra | Linha | Tipo | Fonte de texto escolhida | Licença | Status |

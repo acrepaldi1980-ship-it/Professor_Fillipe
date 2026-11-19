@@ -53,3 +53,11 @@ export function errorResponse(e: unknown): Response {
   console.error(JSON.stringify({ evt: "api_error", code: (e as Error).message?.slice(0, 80) }));
   return Response.json({ error: "internal_error" }, { status: 500 });
 }
+
+/** Admin-only endpoints: the signed-in user must have role "admin" in profiles (the role cannot be self-assigned, see migration 0005). */
+export async function requireAdmin(req: Request): Promise<AuthedContext> {
+  const ctx = await requireUser(req);
+  const { data } = await ctx.db.from("profiles").select("role").eq("user_id", ctx.user.id).maybeSingle();
+  if (data?.role !== "admin") throw new HttpError(403, "forbidden");
+  return ctx;
+}

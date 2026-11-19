@@ -121,5 +121,15 @@
   "license.cc0": "CC0",
   "license.cc_by": "CC BY",
   "license.cc_by_sa": "CC BY-SA",
-  "license.licensed": "Licenciada"
+  "license.licensed": "Licenciada",
+  "admin.forbidden": "Esta página é só para administradores.",
+  "admin.error": "Não foi possível carregar o painel agora.",
+  "admin.library.title": "Biblioteca: totais e revisão de licenças",
+  "admin.library.summary": "{works} obras habilitadas, {chunks} trechos na biblioteca e {review} obras na fila de revisão de licenças.",
+  "admin.library.kind": "Por tipo",
+  "admin.library.tradition": "Por linha teológica",
+  "admin.library.language": "Por idioma",
+  "admin.library.license": "Por licença",
+  "admin.library.review": "Fila de revisão de licenças",
+  "admin.library.reviewHelp": "Obras que não passaram no verificador de licença (colaborador sem data de morte conhecida ou falecido depois de 1931). Não entram na base até uma pessoa decidir."
 }

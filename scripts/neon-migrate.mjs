@@ -5,7 +5,7 @@ import { randomBytes } from "node:crypto";
 import { nsql } from "./neon.mjs";
 
 for (const f of readdirSync("neon").filter((f) => f.endsWith(".sql")).sort()) {
-  const statements = readFileSync(`neon/${f}`, "utf8").split(/;\s*\n/).map((s) => s.replace(/^\s*--.*$/gm, "").trim()).filter(Boolean);
+  const statements = readFileSync(`neon/${f}`, "utf8").split(/;\s*\n(?=\s*(?:create|alter|grant|drop|insert|do)\b)/i).map((s) => s.replace(/^\s*--.*$/gm, "").trim()).filter(Boolean);
   for (const s of statements) await nsql(s);
   console.log("applied", f);
 }

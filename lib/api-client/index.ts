@@ -135,3 +135,13 @@ export interface SourceWork {
 export async function getSources(): Promise<SourceWork[]> {
   return (await apiJson<{ works: SourceWork[] }>("/sources")).works;
 }
+
+export interface LibraryAdminReport {
+  works: { total: number; byKind: { name: string; works: number }[]; byTradition: { name: string; works: number }[]; byLanguage: { name: string; works: number }[]; byLicense: { name: string; works: number }[] };
+  libraryChunks: { kind: string; tradition: string; n: number }[];
+  review: { total: number; items: { id: string; title: string; authors: string; reason: string }[] };
+}
+
+export async function getLibraryAdminReport(): Promise<LibraryAdminReport> {
+  return apiJson<LibraryAdminReport>("/admin/library");
+}

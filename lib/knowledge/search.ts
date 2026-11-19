@@ -1,5 +1,6 @@
 // Hybrid search (spec 8.10.4): exact references + semantic + keyword, fused with RRF in SQL (search_chunks),
 // then re-ranked by authority layer (8.10.6) and trimmed to a prompt budget.
+import { getLibraryStore, type LibraryStore } from "./library-store";
 import { getStore, type KnowledgeStore } from "./db";
 import { getEmbeddingProvider, type EmbeddingProvider } from "./embeddings";
 import { expandRefs, findReferences } from "./refs-parser";
@@ -106,9 +107,11 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 export async function searchChunks(
   query: string | string[],
   opts: SearchOptions = {},
-  deps: { store?: KnowledgeStore; embeddings?: EmbeddingProvider } = {},
+  deps: { store?: KnowledgeStore; embeddings?: EmbeddingProvider; library?: LibraryStore | null } = {},
 ): Promise<{ chunks: Retrieved[]; refs: string[] }> {
   const store = deps.store ?? getStore();
+  // Library works live in a second database; its failure must never break a search.
+  const library = deps.library === undefined ? (deps.store ? undefined : getLibraryStore()) : (deps.library ?? undefined);
   const emb = deps.embeddings ?? getEmbeddingProvider();
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 40;
@@ -117,7 +120,9 @@ export async function searchChunks(
   const results = await Promise.all(
     queries.map(async (q, i) => {
       const vec = await emb.embedQuery(q);
-      return store.searchChunks({ embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null });
+      const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
+      const [main, lib] = await Promise.all([store.searchChunks(args), library ? library.searchChunks(args).catch(() => []) : Promise.resolve([])]);
+      return [...main, ...lib];
     }),
   );
   const merged = new Map<string, Row>();
