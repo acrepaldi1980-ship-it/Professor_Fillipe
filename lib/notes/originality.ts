@@ -2,6 +2,15 @@
 // 5-gram containment and by embedding cosine, and flags what is at or above the threshold (0.85) for automatic rewriting.
 export const SIMILARITY_THRESHOLD = 0.85;
 
+// Raw measures are mapped to a 0..1 similarity before the 0.85 threshold of the spec. Measured on the base: the multilingual
+// e5 embedding gives 0.78 to 0.85 to any two passages on the same biblical subject with no shared wording, so a raw 0.85
+// would flag every note. The mapping keeps 0.85 as the threshold: it flags at ~30% shared 5-grams or embedding cosine ~0.94.
+export const NGRAM_FULL = 0.35; // containment that counts as similarity 1
+export const COSINE_FLOOR = 0.78; // embedding cosine of related-but-different text
+export const COSINE_CEIL = 0.97; // embedding cosine of near-identical text
+export const normNgram = (c: number) => Math.min(1, c / NGRAM_FULL);
+export const normCosine = (c: number) => Math.min(1, Math.max(0, (c - COSINE_FLOOR) / (COSINE_CEIL - COSINE_FLOOR)));
+
 export interface ParagraphScore {
   index: number;
   ngram: number;
@@ -89,7 +98,7 @@ export async function scoreParagraph(paragraph: string, index: number, deps: Dep
     }
     if (cos > ngram && wins[best]) source = wins[best].id;
   }
-  const similarity = Math.max(ngram, cos);
+  const similarity = Math.max(normNgram(ngram), normCosine(cos));
   return { index, ngram: +ngram.toFixed(3), cosine: +cos.toFixed(3), similarity: +similarity.toFixed(3), source, flagged: similarity >= SIMILARITY_THRESHOLD };
 }
 
