@@ -36,6 +36,8 @@ export interface SearchOptions {
   /** Cap on Bible chunks so dictionaries/commentaries can show up too (default 5). */
   maxBible?: number;
   perSignal?: number;
+  /** Words of the question (and its English keywords): a dictionary entry titled with one of them gets a boost. */
+  terms?: string[];
 }
 
 /** Authority layers (spec 8.10.6). */
@@ -48,6 +50,24 @@ export function authorityLayer(kind: string, tradition: string, lenses: string[]
   return { layer: 5, weight: 0.7 }; // dictionaries and works from other traditions
 }
 
+const ENTRY_KINDS = new Set(["dictionary", "encyclopedia", "lexicon"]);
+
+/** Words of a question that can name a dictionary entry ("Barnabas", "Ark of the Covenant" -> "ark", "covenant"...). */
+export function queryTerms(queries: string[]): string[] {
+  const out = new Set<string>();
+  // The first phrasing is the question; the others are English keywords where the subject comes first, so only their first items count.
+  const scoped = queries.map((q, i) => (i === 0 ? q : q.split(",").slice(0, 2).join(" ")));
+  for (const q of scoped) for (const w of q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z]+/)) if (w.length >= 4) out.add(w);
+  return [...out];
+}
+
+/** "Who was X?" / "What is X?": an entry titled exactly with a word of the question beats a loosely related Bible window. */
+export function entryBoost(r: { kind: string; title_path: string | null }, terms?: string[]): number {
+  if (!terms?.length || !ENTRY_KINDS.has(r.kind) || !r.title_path) return 1;
+  const key = r.title_path.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[,(]/)[0].replace(/[^a-z ]/g, "").trim();
+  return key.length >= 3 && terms.includes(key) ? 1.9 : 1;
+}
+
 /** Re-rank by authority and keep the best chunks within the budget; guarantee one Bible chunk when available. */
 export function rerankAndSelect(
   rows: Omit<Retrieved, "layer" | "weight" | "score">[],
@@ -58,7 +78,7 @@ export function rerankAndSelect(
   const scored: Retrieved[] = rows
     .map((r) => {
       const a = authorityLayer(r.kind, r.tradition, opts.lenses);
-      return { ...r, ...a, score: r.rrf * a.weight };
+      return { ...r, ...a, score: r.rrf * a.weight * entryBoost(r, opts.terms) };
     })
     .sort((x, y) => y.score - x.score);
 
@@ -107,7 +127,13 @@ export async function searchChunks(
       merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
     }
   }
-  return { chunks: rerankAndSelect([...merged.values()], opts), refs };
+  // Entries titled with a word of the question (the other signals can miss them when many Bible windows match).
+  const terms = queryTerms(queries);
+  if (store.titleChunks && terms.length) {
+    const byTitle = await store.titleChunks(terms).catch(() => []);
+    for (const r of byTitle) if (!merged.has(r.id)) merged.set(r.id, r);
+  }
+  return { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
 }
 
 /** Exact Bible verses for canonical refs (expanded to verse level) in one version. */

@@ -25,6 +25,8 @@ export interface VerseRow {
 export interface KnowledgeStore {
   searchChunks(a: { embedding: number[]; text: string; refs: string[]; perSignal: number; workIds?: string[] | null }): Promise<ChunkRow[]>;
   bibleVerses(version: string, refs: string[], chapters: string[]): Promise<VerseRow[]>;
+  /** Dictionary/encyclopedia entries whose title equals one of the given words (optional: test doubles may omit it). */
+  titleChunks?(titles: string[]): Promise<ChunkRow[]>;
 }
 
 export class SupabaseRpcStore implements KnowledgeStore {
@@ -45,6 +47,12 @@ export class SupabaseRpcStore implements KnowledgeStore {
       allowed_work_ids: a.workIds ?? null,
     });
     if (error) throw new Error(`search_failed: ${error.message.slice(0, 120)}`);
+    return (data ?? []) as ChunkRow[];
+  }
+
+  async titleChunks(titles: string[]): Promise<ChunkRow[]> {
+    const { data, error } = await this.client.rpc("api_title_chunks", { p_titles: titles.slice(0, 40), p_limit: 24 });
+    if (error) throw new Error(`title_failed: ${error.message.slice(0, 120)}`);
     return (data ?? []) as ChunkRow[];
   }
 

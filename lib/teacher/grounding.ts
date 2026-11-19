@@ -24,7 +24,7 @@ const phon = (s: string) =>
     .replace(/(.)\1+/g, "$1");
 
 // Common biblical names whose English form differs a lot from the Portuguese one.
-const NAME_EN: Record<string, string> = {
+export const NAME_EN: Record<string, string> = {
   elias: "elijah", eliseu: "elisha", joao: "john", tiago: "james", pedro: "peter", davi: "david", isaias: "isaiah", jeremias: "jeremiah",
   moises: "moses", salomao: "solomon", abraao: "abraham", isaque: "isaac", jaco: "jacob", jose: "joseph", paulo: "paul", estevao: "stephen",
   mateus: "matthew", marcos: "mark", lucas: "luke", ezequiel: "ezekiel", jonas: "jonah", josue: "joshua", noe: "noah", ester: "esther",

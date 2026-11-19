@@ -292,3 +292,6 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 
 ## Referências cruzadas (Treasury of Scripture Knowledge)
 - Fonte: https://github.com/CrossReferences-org/bible-cross-references (arquivo `tsv/crossreferences_kjv.tsv`), licença CC BY 4.0 do conjunto; o conteúdo-base (TSK) é de domínio público. Crédito: "Referências cruzadas do Treasury of Scripture Knowledge (domínio público), no conjunto de dados CrossReferences.org (CC BY 4.0)". Obra `tsk_crossrefs` na tabela `works`.
+
+## STEPBible TFLSJ — léxico grego completo (LSJ formatado)
+- Fonte: https://github.com/STEPBible/STEPBible-Data (arquivos "TFLSJ 0-5624" e "TFLSJ extra"). Licença CC BY 4.0 (cabeçalho dos arquivos); LSJ original de Liddell, Scott e Jones (domínio público). Crédito: "Dados de STEPBible.org, baseados no trabalho do Tyndale House, Cambridge (CC BY 4.0), a partir do léxico Liddell-Scott-Jones". Guardado no Neon (`lexicon_entries`, fonte `step_tflsj`, 10.612 verbetes, sem as dicas de passagens que aparecem ao passar o mouse).

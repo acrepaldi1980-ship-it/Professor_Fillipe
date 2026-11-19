@@ -41,3 +41,19 @@ describe("rerankAndSelect", () => {
     expect(out.reduce((s, r) => s + (r.tokens ?? 0), 0)).toBeLessThanOrEqual(3000 + 450);
   });
 });
+
+import { entryBoost, queryTerms } from "@/lib/knowledge/search";
+describe("title boost", () => {
+  it("takes the subject of the English keywords, not every keyword", () => {
+    const t = queryTerms(["Quem foi Barnabé?", "Barnabas, Apostle, missionary, Paul, Jerusalem"]);
+    expect(t).toContain("barnabas");
+    expect(t).toContain("apostle");
+    expect(t).not.toContain("jerusalem");
+  });
+  it("boosts only entries of dictionary kinds titled exactly with a term", () => {
+    expect(entryBoost({ kind: "dictionary", title_path: "Barnabas" }, ["barnabas"])).toBeGreaterThan(1);
+    expect(entryBoost({ kind: "dictionary", title_path: "Temple, Herod’s" }, ["temple"])).toBeGreaterThan(1);
+    expect(entryBoost({ kind: "bible_text", title_path: "Barnabas" }, ["barnabas"])).toBe(1);
+    expect(entryBoost({ kind: "dictionary", title_path: "Barnabas" }, [])).toBe(1);
+  });
+});

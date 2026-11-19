@@ -1,0 +1,540 @@
+[
+ {
+  "id": "ret-01",
+  "question": "Quem foi Barnabé?",
+  "expect": {
+   "easton_title": "^Barnabas",
+   "refs": [
+    "ACT.4",
+    "ACT.9",
+    "ACT.11",
+    "ACT.13",
+    "ACT.15"
+   ]
+  }
+ },
+ {
+  "id": "ret-02",
+  "question": "O que é a Arca da Aliança?",
+  "expect": {
+   "easton_title": "^Ark",
+   "refs": [
+    "EXO.25",
+    "HEB.9",
+    "1SA.4",
+    "1SA.5",
+    "2SA.6"
+   ]
+  }
+ },
+ {
+  "id": "ret-03",
+  "question": "O que era a Páscoa?",
+  "expect": {
+   "easton_title": "^Passover",
+   "refs": [
+    "EXO.12",
+    "LUK.22",
+    "MAT.26",
+    "NUM.9",
+    "DEU.16"
+   ]
+  }
+ },
+ {
+  "id": "ret-04",
+  "question": "Quem foi o profeta Elias?",
+  "expect": {
+   "easton_title": "^Elijah",
+   "refs": [
+    "1KI.17",
+    "1KI.18",
+    "1KI.19",
+    "2KI.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-05",
+  "question": "O que é o Pentecostes?",
+  "expect": {
+   "easton_title": "^Pentecost"
+  }
+ },
+ {
+  "id": "ret-06",
+  "question": "Quem foi o eunuco etíope?",
+  "expect": {
+   "easton_title": "Eunuch|Ethiopia|Candace"
+  }
+ },
+ {
+  "id": "ret-07",
+  "question": "O que eram os fariseus?",
+  "expect": {
+   "easton_title": "^Pharisees",
+   "refs": [
+    "MAT.23",
+    "ACT.23",
+    "ACT.26",
+    "LUK.18",
+    "MRK.7"
+   ]
+  }
+ },
+ {
+  "id": "ret-08",
+  "question": "O que eram os saduceus?",
+  "expect": {
+   "easton_title": "^Sadducees",
+   "refs": [
+    "ACT.23",
+    "MAT.22",
+    "MRK.12",
+    "ACT.4"
+   ]
+  }
+ },
+ {
+  "id": "ret-09",
+  "question": "Quem foi Melquisedeque?",
+  "expect": {
+   "easton_title": "^Melchizedek",
+   "refs": [
+    "GEN.14",
+    "HEB.7",
+    "PSA.110"
+   ]
+  }
+ },
+ {
+  "id": "ret-10",
+  "question": "O que era o tabernáculo?",
+  "expect": {
+   "easton_title": "^Tabernacle",
+   "refs": [
+    "EXO.25",
+    "EXO.26",
+    "EXO.40",
+    "HEB.9"
+   ]
+  }
+ },
+ {
+  "id": "ret-11",
+  "question": "Quem foi Estêvão, o primeiro mártir?",
+  "expect": {
+   "easton_title": "^Stephen",
+   "refs": [
+    "ACT.6",
+    "ACT.7"
+   ]
+  }
+ },
+ {
+  "id": "ret-12",
+  "question": "O que significa a circuncisão?",
+  "expect": {
+   "easton_title": "^Circumcision",
+   "refs": [
+    "GEN.17",
+    "ACT.15",
+    "ROM.2",
+    "ROM.4",
+    "GAL.5"
+   ]
+  }
+ },
+ {
+  "id": "ret-13",
+  "question": "O que é o sábado?",
+  "expect": {
+   "easton_title": "^Sabbath",
+   "refs": [
+    "EXO.20",
+    "EXO.31",
+    "MAT.12",
+    "MRK.2",
+    "LUK.6",
+    "GEN.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-14",
+  "question": "Quem foi Lázaro?",
+  "expect": {
+   "easton_title": "^Lazarus",
+   "refs": [
+    "JHN.11",
+    "JHN.12",
+    "LUK.16"
+   ]
+  }
+ },
+ {
+  "id": "ret-15",
+  "question": "O que era o Sinédrio?",
+  "expect": {
+   "easton_title": "^Sanhedrim|^Sanhedrin",
+   "refs": [
+    "ACT.4",
+    "ACT.5",
+    "ACT.6",
+    "ACT.23",
+    "MAT.26"
+   ]
+  }
+ },
+ {
+  "id": "ret-16",
+  "question": "O que foi o dilúvio de Noé?",
+  "expect": {
+   "easton_title": "^Flood|^Noah|^Deluge",
+   "refs": [
+    "GEN.6",
+    "GEN.7",
+    "GEN.8",
+    "MAT.24",
+    "1PE.3"
+   ]
+  }
+ },
+ {
+  "id": "ret-17",
+  "question": "Quem foi Pôncio Pilatos?",
+  "expect": {
+   "easton_title": "^Pilate",
+   "refs": [
+    "MAT.27",
+    "JHN.18",
+    "JHN.19",
+    "LUK.23",
+    "MRK.15"
+   ]
+  }
+ },
+ {
+  "id": "ret-18",
+  "question": "O que era o Templo de Jerusalém?",
+  "expect": {
+   "easton_title": "^Temple",
+   "refs": [
+    "1KI.6",
+    "1KI.8",
+    "2CH.3",
+    "2CH.6",
+    "MAT.24",
+    "EZR.3"
+   ]
+  }
+ },
+ {
+  "id": "ret-19",
+  "question": "Quem foi Timóteo?",
+  "expect": {
+   "easton_title": "^Timothy",
+   "refs": [
+    "ACT.16",
+    "1TI.1",
+    "2TI.1",
+    "PHP.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-20",
+  "question": "Quem foi Priscila e Áquila?",
+  "expect": {
+   "easton_title": "^Aquila|^Priscilla",
+   "refs": [
+    "ACT.18",
+    "ROM.16",
+    "1CO.16",
+    "2TI.4"
+   ]
+  }
+ },
+ {
+  "id": "ret-21",
+  "question": "Como é a oração do Pai Nosso?",
+  "expect": {
+   "refs": [
+    "MAT.6"
+   ]
+  }
+ },
+ {
+  "id": "ret-22",
+  "question": "O que Jesus disse a Nicodemos sobre nascer de novo?",
+  "expect": {
+   "refs": [
+    "JHN.3"
+   ]
+  }
+ },
+ {
+  "id": "ret-23",
+  "question": "O que aconteceu no dia de Pentecostes em Atos 2?",
+  "expect": {
+   "refs": [
+    "ACT.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-24",
+  "question": "O que Paulo escreveu sobre o amor?",
+  "expect": {
+   "refs": [
+    "1CO.13"
+   ]
+  }
+ },
+ {
+  "id": "ret-25",
+  "question": "Qual é a parábola do filho pródigo?",
+  "expect": {
+   "refs": [
+    "LUK.15"
+   ]
+  }
+ },
+ {
+  "id": "ret-26",
+  "question": "Como foi o batismo de Jesus?",
+  "expect": {
+   "refs": [
+    "MAT.3",
+    "MRK.1",
+    "LUK.3"
+   ]
+  }
+ },
+ {
+  "id": "ret-27",
+  "question": "O que é o fruto do Espírito?",
+  "expect": {
+   "refs": [
+    "GAL.5"
+   ]
+  }
+ },
+ {
+  "id": "ret-28",
+  "question": "Quais são os dez mandamentos?",
+  "expect": {
+   "refs": [
+    "EXO.20",
+    "DEU.5"
+   ]
+  }
+ },
+ {
+  "id": "ret-29",
+  "question": "O que diz o Salmo 23?",
+  "expect": {
+   "refs": [
+    "PSA.23"
+   ]
+  }
+ },
+ {
+  "id": "ret-30",
+  "question": "Como Deus criou o mundo?",
+  "expect": {
+   "refs": [
+    "GEN.1"
+   ]
+  }
+ },
+ {
+  "id": "ret-31",
+  "question": "Jesus como o bom pastor",
+  "expect": {
+   "refs": [
+    "JHN.10"
+   ]
+  }
+ },
+ {
+  "id": "ret-32",
+  "question": "O que é a armadura de Deus?",
+  "expect": {
+   "refs": [
+    "EPH.6"
+   ]
+  }
+ },
+ {
+  "id": "ret-33",
+  "question": "O que são as bem-aventuranças?",
+  "expect": {
+   "refs": [
+    "MAT.5"
+   ]
+  }
+ },
+ {
+  "id": "ret-34",
+  "question": "Como Paulo se converteu no caminho de Damasco?",
+  "expect": {
+   "refs": [
+    "ACT.9",
+    "ACT.22",
+    "ACT.26"
+   ]
+  }
+ },
+ {
+  "id": "ret-35",
+  "question": "O que Jesus ensinou sobre perdoar setenta vezes sete?",
+  "expect": {
+   "refs": [
+    "MAT.18"
+   ]
+  }
+ },
+ {
+  "id": "ret-36",
+  "question": "Como Davi venceu Golias?",
+  "expect": {
+   "refs": [
+    "1SA.17"
+   ]
+  }
+ },
+ {
+  "id": "ret-37",
+  "question": "Qual é a grande comissão?",
+  "expect": {
+   "refs": [
+    "MAT.28"
+   ]
+  }
+ },
+ {
+  "id": "ret-38",
+  "question": "Quem foi Jó e o que ele sofreu?",
+  "expect": {
+   "refs": [
+    "JOB.1",
+    "JOB.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-39",
+  "question": "O que diz Romanos 8:28?",
+  "expect": {
+   "refs": [
+    "ROM.8"
+   ]
+  }
+ },
+ {
+  "id": "ret-40",
+  "question": "Filipe e o eunuco no caminho de Gaza",
+  "expect": {
+   "refs": [
+    "ACT.8"
+   ]
+  }
+ },
+ {
+  "id": "ret-41",
+  "question": "Por que Jesus lavou os pés dos discípulos?",
+  "expect": {
+   "refs": [
+    "JHN.13"
+   ]
+  }
+ },
+ {
+  "id": "ret-42",
+  "question": "O que Tiago diz sobre fé e obras?",
+  "expect": {
+   "refs": [
+    "JAS.2"
+   ]
+  }
+ },
+ {
+  "id": "ret-43",
+  "question": "Como foi a ressurreição de Jesus?",
+  "expect": {
+   "refs": [
+    "MAT.28",
+    "MRK.16",
+    "LUK.24",
+    "JHN.20"
+   ]
+  }
+ },
+ {
+  "id": "ret-44",
+  "question": "O que são os dons espirituais?",
+  "expect": {
+   "refs": [
+    "1CO.12",
+    "ROM.12"
+   ]
+  }
+ },
+ {
+  "id": "ret-45",
+  "question": "O que diz Hebreus 11 sobre a fé?",
+  "expect": {
+   "refs": [
+    "HEB.11"
+   ]
+  }
+ },
+ {
+  "id": "ret-46",
+  "question": "Por que João Batista chamou Jesus de Cordeiro de Deus?",
+  "expect": {
+   "refs": [
+    "JHN.1"
+   ]
+  }
+ },
+ {
+  "id": "ret-47",
+  "question": "Qual é a parábola do bom samaritano?",
+  "expect": {
+   "refs": [
+    "LUK.10"
+   ]
+  }
+ },
+ {
+  "id": "ret-48",
+  "question": "O que Jesus ensinou sobre o Sermão da Montanha?",
+  "expect": {
+   "refs": [
+    "MAT.5",
+    "MAT.6",
+    "MAT.7"
+   ]
+  }
+ },
+ {
+  "id": "ret-49",
+  "question": "Quem foi Moisés e a sarça ardente?",
+  "expect": {
+   "refs": [
+    "EXO.3"
+   ]
+  }
+ },
+ {
+  "id": "ret-50",
+  "question": "Como foi a travessia do Mar Vermelho?",
+  "expect": {
+   "refs": [
+    "EXO.14"
+   ]
+  }
+ }
+]
