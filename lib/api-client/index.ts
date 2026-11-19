@@ -165,3 +165,5 @@ export const commentNote = (id: string, body: string) => apiJson<{ ok: boolean }
 
 export const flagAnswer = (messageId: string, reason?: string) => apiJson<{ ok: boolean }>("/teacher/flag", { method: "POST", body: JSON.stringify({ messageId, reason }) });
 export const closeSession = (sessionId: string) => apiJson<{ ok: boolean; summarized: boolean }>(`/sessions/${sessionId}/close`, { method: "POST" });
+export const getLenses = () => apiJson<{ lenses: string[]; available: string[] }>("/preferences");
+export const saveLensesApi = (lenses: string[]) => apiJson<{ ok: boolean }>("/preferences", { method: "PUT", body: JSON.stringify({ lenses }) });

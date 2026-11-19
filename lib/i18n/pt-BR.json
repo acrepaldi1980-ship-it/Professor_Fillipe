@@ -169,5 +169,17 @@
   "admin.notes.empty": "Nenhuma nota nesta lista.",
   "study.flag.thanks": "Obrigado! Vamos revisar essa resposta.",
   "study.flag.placeholder": "O que está errado? (opcional)",
-  "study.flag.send": "Enviar"
+  "study.flag.send": "Enviar",
+  "account.lenses": "Linha teológica",
+  "account.lenses.help": "O professor ensina a partir da linha que você escolher (até 3) e sempre avisa quando as tradições divergem. Precisa do consentimento de dados religiosos.",
+  "account.lenses.consent": "Para guardar a sua linha teológica, aceite o consentimento de dados religiosos na tela de privacidade.",
+  "lens.pentecostal": "Pentecostal",
+  "lens.baptist": "Batista",
+  "lens.reformed": "Reformada",
+  "lens.wesleyan": "Wesleyana",
+  "lens.lutheran": "Luterana",
+  "lens.anabaptist": "Anabatista",
+  "lens.dispensational": "Dispensacionalista",
+  "lens.catholic": "Católica",
+  "lens.orthodox": "Ortodoxa"
 }

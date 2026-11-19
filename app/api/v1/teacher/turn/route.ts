@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { studentForPrompt } from "@/lib/auth/profile";
+import { loadBibleSettings } from "@/lib/auth/preferences";
 import { createTurnDeps, teacherProvider } from "@/lib/teacher/deps";
 import { runTurn } from "@/lib/teacher/pipeline";
 import { INTENTS } from "@/lib/teacher/schema";
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
     async start(controller) {
       const enc = new TextEncoder();
       try {
-        const student = await studentForPrompt(db, user.id);
+        const [student, bible] = await Promise.all([studentForPrompt(db, user.id), loadBibleSettings(db, user.id)]);
         // Conversation context comes from the database, so it survives serverless instances (the in-memory copy does not).
         const { data: recent } = await db.from("messages").select("role,text,speech,structured").eq("session_id", session.id).order("created_at", { ascending: false }).limit(8);
         const ordered = (recent ?? []).reverse();
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
           ...(structured?.citations ?? []).filter((c) => c.type === "bible" && c.ref).map((c) => c.ref as string),
           ...findReferences(`${structured?.speech ?? ""} ${structured?.display_markdown ?? ""}`, { strictCase: true }).flatMap((r) => r.refs),
         ].slice(0, 10);
-        const { response, meta } = await runTurn({ ...parsed.data, student, history, lastRefs }, createTurnDeps());
+        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs }, createTurnDeps());
 
         let messageId: string | undefined;
         if (response.pastoral_flag) {

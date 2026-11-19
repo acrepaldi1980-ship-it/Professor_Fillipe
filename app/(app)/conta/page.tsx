@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
-import { deleteAccount, getMe, saveConsent, type MeResponse } from "@/lib/api-client";
+import { deleteAccount, getLenses, getMe, saveConsent, saveLensesApi, type MeResponse } from "@/lib/api-client";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
@@ -23,10 +23,12 @@ export default function AccountPage() {
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [lenses, setLenses] = useState<{ chosen: string[]; available: string[] }>({ chosen: [], available: [] });
   const [voices, setVoices] = useState<{ name: string; lang: string }[]>([]);
 
   useEffect(() => {
     void getMe().then(setMe);
+    void getLenses().then((r) => setLenses({ chosen: r.lenses, available: r.available })).catch(() => undefined);
     void loadPrefs().then(setPrefs);
     void getPlatform().speech.voices().then(setVoices);
   }, []);
@@ -85,6 +87,34 @@ export default function AccountPage() {
           <input type="range" min={1} max={2} step={0.1} value={prefs.fontScale} onChange={(e) => update({ ...prefs, fontScale: Number(e.target.value) })} />
         </label>
       </Card>
+
+      {lenses.available.length > 0 && (
+        <Card className="flex flex-col gap-3">
+          <h2 className="text-lg">{t("account.lenses")}</h2>
+          <p className="text-sm text-muted">{me?.consents.sensitive_religious?.granted ? t("account.lenses.help") : t("account.lenses.consent")}</p>
+          <div className="flex flex-wrap gap-2">
+            {lenses.available.map((l) => {
+              const on = lenses.chosen.includes(l);
+              return (
+                <button
+                  key={l}
+                  type="button"
+                  aria-pressed={on}
+                  disabled={!me?.consents.sensitive_religious?.granted || (!on && lenses.chosen.length >= 3)}
+                  className={`min-h-11 rounded-control border px-3 text-sm ${on ? "border-primary bg-primary text-primary-ink" : "border-line"}`}
+                  onClick={() => {
+                    const next = on ? lenses.chosen.filter((x) => x !== l) : [...lenses.chosen, l];
+                    setLenses({ ...lenses, chosen: next });
+                    void saveLensesApi(next);
+                  }}
+                >
+                  {t(`lens.${l}` as "lens.pentecostal")}
+                </button>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {voices.length > 0 && (
         <Card className="flex flex-col gap-3">
