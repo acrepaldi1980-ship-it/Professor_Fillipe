@@ -1,6 +1,6 @@
 # Avaliação de busca (2026-11-19)
 
-Acertos no top 5: 43/50 (86%). Meta: 85%.
+Acertos no top 5: 44/50 (88%). Meta: 85%.
 Reescrita em inglês: ligada.
 
 - PASS ret-01 Quem foi Barnabé?
@@ -26,8 +26,8 @@ Reescrita em inglês: ligada.
 - PASS ret-21 Como é a oração do Pai Nosso?
 - PASS ret-22 O que Jesus disse a Nicodemos sobre nascer de novo?
 - PASS ret-23 O que aconteceu no dia de Pentecostes em Atos 2?
-- FAIL ret-24 O que Paulo escreveu sobre o amor?  -> top: bible_por_blivre_2018:Bíblia Livre 2018 — 1 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 2 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 2 Tes | bible_por_blivre_2018:Bíblia Livre 2018 — 1 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 1 Joã
-- FAIL ret-25 Qual é a parábola do filho pródigo?  -> top: easton_1897:Parable | easton_1897:Kish | bible_por_blivre_2018:Bíblia Livre 2018 — Prové | bible_eng_web:World English Bible — Pro | bible_por_blivre_2018:Bíblia Livre 2018 — Prové
+- FAIL ret-24 O que Paulo escreveu sobre o amor?  -> top: easton_1897:Paul | easton_1897:Paul | easton_1897:Paul | easton_1897:Paul | easton_1897:Paul
+- PASS ret-25 Qual é a parábola do filho pródigo?
 - PASS ret-26 Como foi o batismo de Jesus?
 - PASS ret-27 O que é o fruto do Espírito?
 - PASS ret-28 Quais são os dez mandamentos?
@@ -35,11 +35,11 @@ Reescrita em inglês: ligada.
 - PASS ret-30 Como Deus criou o mundo?
 - PASS ret-31 Jesus como o bom pastor
 - PASS ret-32 O que é a armadura de Deus?
-- FAIL ret-33 O que são as bem-aventuranças?  -> top: easton_1897:Mount | easton_1897:Perida | easton_1897:Shimeon | easton_1897:Zatthu | bible_por_blivre_2018:Bíblia Livre 2018 — Salmo
+- PASS ret-33 O que são as bem-aventuranças?
 - PASS ret-34 Como Paulo se converteu no caminho de Damasco?
 - PASS ret-35 O que Jesus ensinou sobre perdoar setenta vezes sete?
 - PASS ret-36 Como Davi venceu Golias?
-- FAIL ret-37 Qual é a grande comissão?  -> top: bible_por_blivre_2018:Bíblia Livre 2018 — Mateu | bible_por_blivre_2018:Bíblia Livre 2018 — Mateu | bible_por_blivre_2018:Bíblia Livre 2018 — Lucas | bible_por_blivre_2018:Bíblia Livre 2018 — Atos  | bible_por_blivre_2018:Bíblia Livre 2018 — Zacar
+- FAIL ret-37 Qual é a grande comissão?  -> top: easton_1897:Jesus | easton_1897:Jesus | pg_40575:The Great Commission. Mis | pg_40575:The Great Commission. Mis | pg_40575:The Great Commission. Mis
 - PASS ret-38 Quem foi Jó e o que ele sofreu?
 - PASS ret-39 O que diz Romanos 8:28?
 - PASS ret-40 Filipe e o eunuco no caminho de Gaza
@@ -49,7 +49,7 @@ Reescrita em inglês: ligada.
 - PASS ret-44 O que são os dons espirituais?
 - PASS ret-45 O que diz Hebreus 11 sobre a fé?
 - PASS ret-46 Por que João Batista chamou Jesus de Cordeiro de Deus?
-- FAIL ret-47 Qual é a parábola do bom samaritano?  -> top: easton_1897:Parable | easton_1897:Sarepta | easton_1897:Zatthu | easton_1897:Mount of beatitudes | easton_1897:Petra
+- FAIL ret-47 Qual é a parábola do bom samaritano?  -> top: bible_por_blivre_2018:Bíblia Livre 2018 — Salmo | bible_por_blivre_2018:Bíblia Livre 2018 — Salmo | bible_por_blivre_2018:Bíblia Livre 2018 — Salmo | bible_por_blivre_2018:Bíblia Livre 2018 — Marco | bible_por_blivre_2018:Bíblia Livre 2018 — Amós 
 - PASS ret-48 O que Jesus ensinou sobre o Sermão da Montanha?
 - PASS ret-49 Quem foi Moisés e a sarça ardente?
-- PASS ret-50 Como foi a travessia do Mar Vermelho?
+- FAIL ret-50 Como foi a travessia do Mar Vermelho?  -> top: easton_1897:Moses | easton_1897:Moses | easton_1897:Moses | easton_1897:Moses | pg_33420:The Expositor's Bible: Th
