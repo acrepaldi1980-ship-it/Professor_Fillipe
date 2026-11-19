@@ -24,3 +24,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 **Fornecedores que recebem dados:** modelo de linguagem (texto das perguntas; hoje Groq, no futuro Anthropic), reconhecimento de fala (áudio enviado e descartado), síntese de voz (texto da resposta). Preferência por quem não usa os dados para treino (a confirmar em contrato antes do lançamento).
 
 **Direitos do titular:** exportar, corrigir, revogar consentimento e excluir conta (RF-M01-03 e RF-M02-04), a implementar neste prompt e no 1.13.
+
+## Fala no dispositivo (`lib/platform` → `speech`)
+- Usa a síntese de voz do sistema (Web Speech API / equivalente nativo). O texto falado não sai do aparelho para essa etapa e nada é armazenado.

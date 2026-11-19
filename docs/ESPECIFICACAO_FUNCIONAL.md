@@ -192,7 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
-| M17 Avatar do Professor Filipe | Avatar 2D animado com estados, expressões e sincronia de boca com a voz |
+| M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Protótipo: 3D de corpo inteiro procedural (Three.js), com gestos; 2D como reserva (aprovado pelo Anderson em 19/11/2026) |
 
 ### 4.3 Fase 2 — Produto robusto (P1, 3–5 meses)
 
@@ -889,7 +889,9 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 **RF-M17-05 — Kit de marca (P1)**
 - Poses estáticas em alta resolução para redes sociais, figurinhas para WhatsApp (12 a 20, com frases do personagem), modelo de post e de story, vídeo curto de apresentação do personagem (com narração embutida no próprio vídeo).
 
-**RF-M17-06 — Versão 3D (P2)**
+**RF-M17-06 — Versão 3D (P0 no protótipo, P2 nos ambientes imersivos)**
+- Desde o protótipo (19/11/2026): personagem 3D de corpo inteiro construído por código (Three.js / React Three Fiber, sem arquivos de modelo e sem licença), com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
+- Voz do protótipo sem custo: síntese do dispositivo (Web Speech API, via `lib/platform`), escolhendo a melhor voz pt-BR instalada; ElevenLabs/Google ficam como opção premium (D-03/D-04).
 - Modelo 3D do mesmo personagem, com animação facial, para ser o guia nos ambientes imersivos (8.16) e, opcionalmente, substituir o 2D nas telas.
 
 #### 8.17.3 Requisitos técnicos

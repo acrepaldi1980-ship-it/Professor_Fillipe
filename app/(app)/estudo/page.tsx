@@ -3,7 +3,8 @@
 // Prototype study screen (Prompt 0.1, step 8): talk or type, hear the professor, read captions,
 // tap reference chips and next-step buttons, interrupt at any time.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Avatar, type AvatarState } from "@/components/teacher/Avatar";
+import dynamic from "next/dynamic";
+import type { AvatarState } from "@/components/teacher/Avatar";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -16,6 +17,10 @@ import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { splitSentences } from "@/lib/voice/speech-text";
+
+const Avatar3D = dynamic(() => import("@/components/teacher/Avatar3D").then((m) => m.Avatar3D), { ssr: false, loading: () => <div className="h-full w-full" aria-hidden /> });
+
+const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "happy", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
 type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse };
 
@@ -61,33 +66,47 @@ export default function StudyPage() {
   const stopSpeaking = useCallback(() => {
     playId.current++;
     getPlatform().audioPlayer.stop();
+    getPlatform().speech.cancel();
+    setLevel(0);
     setState("idle");
   }, []);
 
-  const speak = useCallback(async (speech: string) => {
+  const speak = useCallback(async (speech: string, cue?: AvatarState) => {
     const my = ++playId.current;
     const sentences = splitSentences(speech);
+    const platform = getPlatform();
     setState("speaking");
     try {
-      // fetch sentence i+1 while sentence i plays, so the first audio starts as early as possible
-      let next = speakSentence(sentences[0]);
-      for (let i = 0; i < sentences.length; i++) {
-        const blob = await next;
-        if (my !== playId.current) return;
-        if (i + 1 < sentences.length) next = speakSentence(sentences[i + 1]);
-        await getPlatform().audioPlayer.play(blob);
-        if (my !== playId.current) return;
+      if (platform.speech.isSupported()) {
+        // Free on-device voice (D-04 prototype): sentence by sentence, mouth driven by the speech level.
+        for (const sentence of sentences) {
+          if (my !== playId.current) return;
+          await platform.speech.speak(sentence, { onLevel: (lv) => my === playId.current && setLevel(lv) });
+        }
+      } else {
+        let next = speakSentence(sentences[0]);
+        for (let i = 0; i < sentences.length; i++) {
+          const blob = await next;
+          if (my !== playId.current) return;
+          if (i + 1 < sentences.length) next = speakSentence(sentences[i + 1]);
+          await platform.audioPlayer.play(blob);
+          if (my !== playId.current) return;
+        }
       }
     } catch {
       if (my === playId.current) setError(t("study.error.voice"));
     }
-    if (my === playId.current) setState("idle");
+    if (my === playId.current) {
+      setLevel(0);
+      setState(cue ?? "idle");
+    }
   }, []);
 
   const send = useCallback(
     async (text: string, intent?: string) => {
       const clean = text.trim();
       if (!clean) return;
+      getPlatform().speech.unlock();
       stopSpeaking();
       setError(null);
       setMessages((m) => [...m, { id: nextId.current++, role: "user", text: clean }]);
@@ -96,8 +115,9 @@ export default function StudyPage() {
         const { response } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
         setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response }]);
         if (response.pastoral_flag) setState("empathetic");
-        if (!textOnly) await speak(response.speech);
-        else setState(response.pastoral_flag ? "empathetic" : response.visuals.length ? "pointing" : "idle");
+        const cue: AvatarState = response.pastoral_flag ? "empathetic" : response.avatar_cue && response.avatar_cue !== "neutral" ? CUE_STATE[response.avatar_cue] : response.visuals.length ? "pointing" : "idle";
+        if (!textOnly) await speak(response.speech, cue);
+        else setState(cue);
       } catch (e) {
         setState("idle");
         const msg = (e as Error).message;
@@ -165,8 +185,10 @@ export default function StudyPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
-      <header className="flex flex-col items-center gap-1 py-4">
-        <Avatar state={recording ? "listening" : state} level={level} />
+      <header className="flex flex-col items-center gap-1 py-2">
+        <div className="h-[46dvh] max-h-[460px] min-h-[260px] w-full max-w-sm">
+          <Avatar3D state={recording ? "listening" : state} level={level} mode={messages.length > 0 ? "bust" : "full"} className="h-full w-full" />
+        </div>
         <p role="status" aria-live="polite" className="text-sm text-muted">{t(statusKey)}</p>
         <h1 className="sr-only">{t("study.title")}</h1>
       </header>

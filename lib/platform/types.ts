@@ -69,10 +69,20 @@ export interface StatusBar {
   setStyle(style: "light" | "dark"): void;
 }
 
+export interface Speech {
+  isSupported(): boolean;
+  /** Must be called from a user gesture (iOS blocks speech otherwise). */
+  unlock(): void;
+  /** Speaks one sentence with the best pt-BR voice of the device; resolves when it ends. onLevel drives the mouth. */
+  speak(text: string, opts?: { rate?: number; onLevel?: (level: number) => void }): Promise<void>;
+  cancel(): void;
+}
+
 export interface Platform {
   name: PlatformName;
   microphone: Microphone;
   audioPlayer: AudioPlayer;
+  speech: Speech;
   push: PushNotifications;
   store: LocalStore;
   share: Share;

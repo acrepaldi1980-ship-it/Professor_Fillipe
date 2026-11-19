@@ -12,7 +12,7 @@ describe("platform layer", () => {
 
   it("exposes every interface of spec 10.6.2", () => {
     const p = createMockPlatform();
-    for (const k of ["microphone", "audioPlayer", "push", "store", "share", "files", "deepLinks", "purchases", "haptics", "statusBar"] as const) {
+    for (const k of ["microphone", "audioPlayer", "speech", "push", "store", "share", "files", "deepLinks", "purchases", "haptics", "statusBar"] as const) {
       expect(p[k]).toBeDefined();
     }
   });
