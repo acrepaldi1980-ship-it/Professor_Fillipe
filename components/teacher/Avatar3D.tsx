@@ -12,17 +12,22 @@ import type { AvatarState } from "./Avatar";
 import { Avatar } from "./Avatar";
 
 const C = {
-  skin: "#c98f62",
-  skinDark: "#a8693f",
-  hair: "#2a1d17",
-  gray: "#9b9186",
-  beard: "#33251d",
-  cardigan: "#b4532a",
-  cardiganDark: "#9c4320",
-  shirt: "#f3e6cf",
-  pants: "#4b4a3c",
-  shoe: "#3a2a1f",
-  frame: "#b4532a",
+  skin: "#c58d62",
+  skinDark: "#a6693f",
+  hair: "#8d857c",
+  gray: "#b9b2a8",
+  beard: "#8a8177",
+  tunic: "#eadcbd",
+  tunicDark: "#cdb98f",
+  mantle: "#2f4a6b",
+  stripe: "#efe3c6",
+  sash: "#8a5a2b",
+  wrap: "#f3ead6",
+  band: "#7a4a2a",
+  brow: "#5b5249",
+  parchment: "#e9d9ae",
+  rod: "#7a4a2a",
+  shoe: "#5a3d27",
   mouth: "#4a1a14",
   teeth: "#fbf3e6",
 };
@@ -80,36 +85,30 @@ function Arm({ side, rig }: { side: "R" | "L"; rig: React.MutableRefObject<Recor
   const x = side === "R" ? -0.215 : 0.215;
   return (
     <group ref={(o) => void (rig.current["sh" + side] = o)} position={[x, 0.15, 0]}>
-      <Ball r={0.07} color={C.cardigan} />
-      <Capsule r={0.06} len={0.2} color={C.cardigan} pos={[0, -0.16, 0]} />
+      <Ball r={0.07} color={C.tunic} />
+      <Capsule r={0.06} len={0.2} color={C.tunic} pos={[0, -0.16, 0]} />
       <group ref={(o) => void (rig.current["el" + side] = o)} position={[0, -0.31, 0]}>
-        <Ball r={0.056} color={C.cardigan} />
-        <Capsule r={0.05} len={0.18} color={C.cardigan} pos={[0, -0.14, 0]} />
+        <Ball r={0.056} color={C.tunic} />
+        <Capsule r={0.05} len={0.18} color={C.tunic} pos={[0, -0.14, 0]} />
         <mesh position={[0, -0.24, 0]}>
-          <cylinderGeometry args={[0.054, 0.054, 0.03, 20]} />
-          <meshStandardMaterial color={C.shirt} roughness={0.9} />
+          <cylinderGeometry args={[0.062, 0.062, 0.035, 20]} />
+          <meshStandardMaterial color={C.tunicDark} roughness={0.9} />
         </mesh>
         <group position={[0, -0.31, 0]}>
           <Ball r={0.056} color={C.skin} scale={[1, 1.25, 0.7]} />
           <Capsule r={0.016} len={0.04} color={C.skin} pos={[side === "R" ? 0.05 : -0.05, -0.01, 0.02]} rot={[0, 0, side === "R" ? -0.6 : 0.6]} />
+          {side === "R" && (
+            <group position={[0, -0.02, 0.05]} rotation={[0, 0, Math.PI / 2]}>
+              <mesh><cylinderGeometry args={[0.026, 0.026, 0.22, 16]} /><meshStandardMaterial color={C.parchment} roughness={0.9} /></mesh>
+              {[-1, 1].map((e) => (
+                <mesh key={e} position={[0, e * 0.115, 0]}><cylinderGeometry args={[0.02, 0.02, 0.025, 12]} /><meshStandardMaterial color={C.rod} roughness={0.7} /></mesh>
+              ))}
+            </group>
+          )}
           <group ref={(o) => void (rig.current["index" + side] = o)} visible={false}>
             <Capsule r={0.014} len={0.07} color={C.skin} pos={[0, -0.09, 0.01]} />
           </group>
         </group>
-      </group>
-    </group>
-  );
-}
-
-function Leg({ side }: { side: "R" | "L" }) {
-  const x = side === "R" ? -0.095 : 0.095;
-  return (
-    <group position={[x, -0.05, 0]}>
-      <Capsule r={0.088} len={0.22} color={C.pants} pos={[0, -0.17, 0]} />
-      <group position={[0, -0.31, 0]}>
-        <Ball r={0.075} color={C.pants} />
-        <Capsule r={0.072} len={0.22} color={C.pants} pos={[0, -0.16, 0]} />
-        <Ball r={0.085} color={C.shoe} pos={[0, -0.375, 0.05]} scale={[1, 0.62, 1.75]} />
       </group>
     </group>
   );
@@ -123,20 +122,26 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       <Ball r={0.03} color={C.skinDark} pos={[-0.145, 0.07, 0]} scale={[0.45, 1.1, 0.7]} />
       <Ball r={0.03} color={C.skinDark} pos={[0.145, 0.07, 0]} scale={[0.45, 1.1, 0.7]} />
       <Ball r={0.024} color={C.skinDark} pos={[0, 0.04, 0.152]} scale={[1, 1.15, 1]} />
-      {/* hair: cap + gray temples */}
-      <mesh position={[0, 0.085, -0.01]} rotation={[-0.3, 0, 0]} castShadow>
-        <sphereGeometry args={[0.158, 32, 24, 0, Math.PI * 2, 0, 1.38]} />
-        <meshStandardMaterial color={C.hair} roughness={0.9} />
+      {/* head wrap (keffiyeh-style cloth of a 1st-century scholar) + grey hair at the sides */}
+      <mesh position={[0, 0.1, -0.012]} rotation={[0.12, 0, 0]} scale={[1.0, 1.02, 1.02]} castShadow>
+        <sphereGeometry args={[0.168, 32, 24, 0, Math.PI * 2, 0, 1.2]} />
+        <meshStandardMaterial color={C.wrap} roughness={0.95} />
       </mesh>
-      <Capsule r={0.008} len={0.035} color={C.gray} pos={[-0.148, 0.115, 0.02]} />
-      <Capsule r={0.008} len={0.035} color={C.gray} pos={[0.148, 0.115, 0.02]} />
+      <mesh position={[0, 0.172, -0.004]} rotation={[Math.PI / 2 + 0.1, 0, 0]} scale={[0.97, 1.02, 1]} castShadow>
+        <torusGeometry args={[0.157, 0.019, 10, 40]} />
+        <meshStandardMaterial color={C.band} roughness={0.8} />
+      </mesh>
+      <Capsule r={0.05} len={0.16} color={C.wrap} pos={[0, 0.0, -0.15]} rot={[0.25, 0, 0]} scale={[1.8, 1, 0.5]} />
+      <Capsule r={0.016} len={0.05} color={C.hair} pos={[-0.148, 0.115, 0.01]} />
+      <Capsule r={0.016} len={0.05} color={C.hair} pos={[0.148, 0.115, 0.01]} />
       {/* beard (lower face) and mustache */}
       <mesh position={[0, 0.07, -0.002]} scale={[0.98, 1.08, 1.01]} castShadow>
-        <sphereGeometry args={[0.152, 32, 24, 0, Math.PI * 2, 1.62, 1.52]} />
+        <sphereGeometry args={[0.152, 32, 24, 0, Math.PI * 2, 1.95, 1.2]} />
         <meshStandardMaterial color={C.beard} roughness={0.95} side={THREE.DoubleSide} />
       </mesh>
       <Capsule r={0.013} len={0.045} color={C.beard} pos={[-0.03, -0.012, 0.152]} rot={[0, 0, Math.PI / 2 - 0.25]} />
       <Capsule r={0.013} len={0.045} color={C.beard} pos={[0.03, -0.012, 0.152]} rot={[0, 0, Math.PI / 2 + 0.25]} />
+      <Ball r={0.085} color={C.beard} pos={[0, -0.06, 0.07]} scale={[1.02, 1.35, 0.85]} />
       {/* mouth */}
       <group ref={(o) => void (rig.current.mouth = o)} position={[0, -0.04, 0.147]}>
         <mesh scale={[0.034, 0.012, 0.02]} ref={(o) => void (rig.current.mouthInner = o)}>
@@ -167,28 +172,11 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       ))}
       {/* eyebrows */}
       <group ref={(o) => void (rig.current.browR = o)} position={[-0.056, 0.128, 0.138]}>
-        <Capsule r={0.0085} len={0.05} color={C.hair} rot={[0, 0, Math.PI / 2]} />
+        <Capsule r={0.0085} len={0.05} color={C.brow} rot={[0, 0, Math.PI / 2]} />
       </group>
       <group ref={(o) => void (rig.current.browL = o)} position={[0.056, 0.128, 0.138]}>
-        <Capsule r={0.0085} len={0.05} color={C.hair} rot={[0, 0, Math.PI / 2]} />
+        <Capsule r={0.0085} len={0.05} color={C.brow} rot={[0, 0, Math.PI / 2]} />
       </group>
-      {/* round glasses (signature element) */}
-      {[-1, 1].map((s) => (
-        <mesh key={s} position={[s * 0.056, 0.082, 0.156]}>
-          <torusGeometry args={[0.04, 0.0055, 10, 36]} />
-          <meshStandardMaterial color={C.frame} roughness={0.5} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.088, 0.158]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.0035, 0.0035, 0.03, 8]} />
-        <meshStandardMaterial color={C.frame} />
-      </mesh>
-      {[-1, 1].map((s) => (
-        <mesh key={s} position={[s * 0.098, 0.082, 0.085]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.0035, 0.0035, 0.14, 8]} />
-          <meshStandardMaterial color={C.frame} />
-        </mesh>
-      ))}
     </group>
   );
 }
@@ -316,21 +304,37 @@ function Filipe({ state, level, reduceMotion }: { state: AvatarState; level: num
   return (
     <group ref={(o) => void (rig.current.root = o)}>
       <group position={[0, 0.8, 0]}>
-        {/* hips */}
-        <Ball r={0.17} color={C.pants} scale={[1.1, 0.7, 0.85]} pos={[0, -0.02, 0]} />
-        <Leg side="R" />
-        <Leg side="L" />
+        {/* long linen tunic down to the ankles, sandals peeking out */}
+        <mesh position={[0, -0.39, 0]} castShadow>
+          <cylinderGeometry args={[0.19, 0.29, 0.8, 36]} />
+          <meshStandardMaterial color={C.tunic} roughness={0.92} />
+        </mesh>
+        <mesh position={[0, -0.78, 0]}>
+          <cylinderGeometry args={[0.292, 0.295, 0.035, 36]} />
+          <meshStandardMaterial color={C.tunicDark} roughness={0.9} />
+        </mesh>
+        {[-1, 1].map((s) => (
+          <Ball key={s} r={0.07} color={C.shoe} pos={[s * 0.09, -0.79, 0.2]} scale={[1, 0.45, 1.7]} />
+        ))}
         <group ref={(o) => void (rig.current.spine = o)} position={[0, 0.02, 0]}>
-          <Capsule r={0.175} len={0.16} color={C.cardigan} pos={[0, 0.16, 0]} scale={[1.05, 1, 0.85]} />
-          <mesh position={[0, 0.25, 0.145]} rotation={[0.1, 0, 0]}>
-            <coneGeometry args={[0.085, 0.2, 3]} />
-            <meshStandardMaterial color={C.shirt} roughness={0.9} />
+          <Capsule r={0.175} len={0.16} color={C.tunic} pos={[0, 0.16, 0]} scale={[1.05, 1, 0.85]} />
+          {/* sash */}
+          <mesh position={[0, 0.03, 0]} scale={[1, 1, 0.86]}>
+            <cylinderGeometry args={[0.188, 0.2, 0.065, 32]} />
+            <meshStandardMaterial color={C.sash} roughness={0.8} />
           </mesh>
-          {[0.0, 0.07, 0.13].map((y) => (
-            <Ball key={y} r={0.011} color={C.cardiganDark} pos={[0, y + 0.0, 0.15]} />
+          {/* mantle hanging down the front (indigo with cream stripes) */}
+          {[-1, 1].map((s) => (
+            <group key={s} position={[s * 0.12, 0.2, 0.152]} rotation={[0.08, 0, 0]}>
+              <mesh><boxGeometry args={[0.1, 0.58, 0.025]} /><meshStandardMaterial color={C.mantle} roughness={0.9} /></mesh>
+              <mesh position={[0, -0.2, 0.014]}><boxGeometry args={[0.1, 0.018, 0.004]} /><meshStandardMaterial color={C.stripe} /></mesh>
+              <mesh position={[0, -0.24, 0.014]}><boxGeometry args={[0.1, 0.008, 0.004]} /><meshStandardMaterial color={C.stripe} /></mesh>
+            </group>
           ))}
           <group ref={(o) => void (rig.current.chest = o)} position={[0, 0.3, 0]}>
-            <Capsule r={0.1} len={0.05} color={C.cardigan} pos={[0, 0.1, 0]} rot={[0, 0, Math.PI / 2]} scale={[1, 1, 0.9]} />
+            <Capsule r={0.1} len={0.05} color={C.tunic} pos={[0, 0.1, 0]} rot={[0, 0, Math.PI / 2]} scale={[1, 1, 0.9]} />
+            <Ball r={0.2} color={C.mantle} pos={[0, 0.1, -0.01]} scale={[1.35, 0.5, 1.0]} />
+            <Ball r={0.2} color={C.stripe} pos={[0, 0.07, -0.01]} scale={[1.37, 0.06, 1.02]} />
             <Arm side="R" rig={rig} />
             <Arm side="L" rig={rig} />
             <group ref={(o) => void (rig.current.neck = o)} position={[0, 0.2, 0]}>

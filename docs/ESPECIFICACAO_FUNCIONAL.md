@@ -890,7 +890,7 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 - Poses estáticas em alta resolução para redes sociais, figurinhas para WhatsApp (12 a 20, com frases do personagem), modelo de post e de story, vídeo curto de apresentação do personagem (com narração embutida no próprio vídeo).
 
 **RF-M17-06 — Versão 3D (P0 no protótipo, P2 nos ambientes imersivos)**
-- Desde o protótipo (19/11/2026): personagem 3D de corpo inteiro construído por código (Three.js / React Three Fiber, sem arquivos de modelo e sem licença), com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
+- Desde o protótipo (19/11/2026): personagem original com figurino de mestre/escriba do século 1 (túnica de linho, manto, lenço na cabeça, barba grisalha, rolo de pergaminho; não representa nenhuma pessoa bíblica, conforme RA-23), 3D de corpo inteiro construído por código (Three.js / React Three Fiber, sem arquivos de modelo e sem licença), com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
 - Voz do protótipo sem custo: síntese do dispositivo (Web Speech API, via `lib/platform`), escolhendo a melhor voz pt-BR instalada; ElevenLabs/Google ficam como opção premium (D-03/D-04).
 - Modelo 3D do mesmo personagem, com animação facial, para ser o guia nos ambientes imersivos (8.16) e, opcionalmente, substituir o 2D nas telas.
 
