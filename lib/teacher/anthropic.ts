@@ -18,8 +18,11 @@ export class AnthropicTeacherLlm implements TeacherLlm {
   async generate({ system, messages, tier }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     const res = await this.client.messages.create({
       model: modelFor(tier),
-      max_tokens: 1500,
-      system,
+      max_tokens: 4000, // room for adaptive thinking plus the answer
+      // Forced tool_choice (any/tool) is rejected by the newer models (400); the tool is asked for in the prompt and `auto` is used.
+      // Effort `medium` keeps chat answers quick and cheap; thinking is adaptive by default on these models.
+      output_config: { effort: "medium" },
+      system: `${system}\n\nIMPORTANTE: responda SEMPRE chamando a ferramenta teacher_response, e somente ela.`,
       messages,
       tools: [
         {
@@ -28,7 +31,7 @@ export class AnthropicTeacherLlm implements TeacherLlm {
           input_schema: teacherToolJsonSchema() as never,
         },
       ],
-      tool_choice: { type: "tool", name: "teacher_response" },
+      tool_choice: { type: "auto" },
     });
     const block = res.content.find((b) => b.type === "tool_use");
     return block && block.type === "tool_use" ? block.input : null;
