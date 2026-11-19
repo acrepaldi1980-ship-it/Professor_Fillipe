@@ -35,6 +35,8 @@ export async function POST(req: Request) {
     if (res.error) throw new Error("db_error");
     return Response.json({ id: res.data.id, words: note.body.split(/\s+/).length, originality: note.originality_score, rewrites: note.rewrite_count });
   } catch (e) {
+    // Admin-only endpoint: say what failed (short code) so a draft that could not be written is easy to diagnose.
+    if (!(e instanceof HttpError)) return Response.json({ error: "generate_failed", detail: ((e as Error).message ?? "").slice(0, 200) }, { status: 500 });
     return errorResponse(e);
   }
 }
