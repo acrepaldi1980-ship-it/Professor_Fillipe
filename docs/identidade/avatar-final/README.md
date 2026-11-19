@@ -1,6 +1,6 @@
 # Avatar final do Professor Filipe (D-18)
 
-Arte enviada pelo Anderson em 19/11/2026, gerada no Gemini: personagem 3D estilizado, um mestre de manto azul com detalhes vermelhos, bolsa de couro e rolo de pergaminho. É um personagem original: não representa o apóstolo Filipe, Jesus nem pessoa real (RA-23).
+Arte enviada pelo Anderson em 19/11/2026, gerada no Gemini: personagem 3D estilizado, um mestre de manto azul com detalhes vermelhos, bolsa de couro e rolo de pergaminho. Pode representar o Filipe de Atos 8 (decisão do Anderson, 19/11/2026, RA-23 alterada); não imita pessoa real e nunca mostra o rosto de Jesus (RA-20).
 
 - `poses-4-estados.png` e `poses-4-estados-celular.png`: Boas-vindas, Ensinando, Parabéns e Refletindo.
 - `ensinando.png` e `refletindo.png`: poses individuais em alta resolução.
