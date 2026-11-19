@@ -5,6 +5,8 @@ export type Theme = "auto" | "light" | "dark";
 export interface Prefs {
   theme: Theme;
   fontScale: number; // 1 to 2
+  /** Device voice chosen for the teacher (null = best male pt-BR voice). */
+  voiceName?: string | null;
 }
 const KEY = "prefs.v1";
 export const DEFAULT_PREFS: Prefs = { theme: "auto", fontScale: 1 };

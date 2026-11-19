@@ -8,7 +8,7 @@ export function createMockPlatform(overrides: Partial<Platform> = {}): Platform 
     name: "web",
     microphone: { isSupported: () => true, start: async () => void calls.push("mic.start"), stop: async () => new Blob(["x"]), onLevel: () => () => {} },
     audioPlayer: { play: async () => void calls.push("audio.play"), stop: () => void calls.push("audio.stop"), isPlaying: () => false, setRate: () => {}, onLevel: () => () => {} },
-    speech: { isSupported: () => true, unlock: () => {}, speak: async (t) => void calls.push(`speech.speak:${t}`), cancel: () => void calls.push("speech.cancel") },
+    speech: { isSupported: () => true, unlock: () => {}, speak: async (t) => void calls.push(`speech.speak:${t}`), cancel: () => void calls.push("speech.cancel"), voices: async () => [{ name: "Mock", lang: "pt-BR" }] },
     push: { isSupported: () => true, requestPermission: async () => "granted", getToken: async () => "mock-token" },
     store: {
       get: async <T,>(k: string) => (mem.has(k) ? (mem.get(k) as T) : null),

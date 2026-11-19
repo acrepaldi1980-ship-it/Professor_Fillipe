@@ -15,6 +15,7 @@ import { createSession, getBibleVerses, speakSentence, teacherTurn, transcribeAu
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
+import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { splitSentences } from "@/lib/voice/speech-text";
 
@@ -81,7 +82,7 @@ export default function StudyPage() {
         // Free on-device voice (D-04 prototype): sentence by sentence, mouth driven by the speech level.
         for (const sentence of sentences) {
           if (my !== playId.current) return;
-          await platform.speech.speak(sentence, { onLevel: (lv) => my === playId.current && setLevel(lv) });
+          await platform.speech.speak(sentence, { voiceName: (await loadPrefs()).voiceName, onLevel: (lv) => my === playId.current && setLevel(lv) });
         }
       } else {
         let next = speakSentence(sentences[0]);

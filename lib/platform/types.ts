@@ -69,13 +69,23 @@ export interface StatusBar {
   setStyle(style: "light" | "dark"): void;
 }
 
+export interface SpeechOptions {
+  rate?: number;
+  pitch?: number;
+  /** Exact name of a device voice chosen by the student (otherwise the best male pt-BR voice). */
+  voiceName?: string | null;
+  onLevel?: (level: number) => void;
+}
+
 export interface Speech {
   isSupported(): boolean;
   /** Must be called from a user gesture (iOS blocks speech otherwise). */
   unlock(): void;
   /** Speaks one sentence with the best pt-BR voice of the device; resolves when it ends. onLevel drives the mouth. */
-  speak(text: string, opts?: { rate?: number; onLevel?: (level: number) => void }): Promise<void>;
+  speak(text: string, opts?: SpeechOptions): Promise<void>;
   cancel(): void;
+  /** Portuguese voices installed on the device, best first (male voices first: the teacher is a mature man). */
+  voices(): Promise<{ name: string; lang: string }[]>;
 }
 
 export interface Platform {

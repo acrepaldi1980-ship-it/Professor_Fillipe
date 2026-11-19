@@ -131,5 +131,10 @@
   "admin.library.language": "Por idioma",
   "admin.library.license": "Por licença",
   "admin.library.review": "Fila de revisão de licenças",
-  "admin.library.reviewHelp": "Obras que não passaram no verificador de licença (colaborador sem data de morte conhecida ou falecido depois de 1931). Não entram na base até uma pessoa decidir."
+  "admin.library.reviewHelp": "Obras que não passaram no verificador de licença (colaborador sem data de morte conhecida ou falecido depois de 1931). Não entram na base até uma pessoa decidir.",
+  "account.voice": "Voz do professor",
+  "account.voice.help": "Usa as vozes instaladas no seu aparelho. A melhor costuma ser uma voz masculina \"natural\".",
+  "account.voice.auto": "Automática (voz masculina em português)",
+  "account.voice.test": "Ouvir a voz",
+  "account.voice.sample": "Olá! Que bom ter você aqui. Vamos estudar a Palavra juntos?"
 }

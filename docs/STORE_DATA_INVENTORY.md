@@ -30,3 +30,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Banco de referência (Neon)
 - Só conteúdo público (palavras dos originais, léxicos, referências cruzadas, versificação). Não guarda dado de usuário, então não entra no formulário de privacidade das lojas.
+
+## Voz escolhida
+- A voz do professor escolhida na tela Conta fica só no aparelho (armazenamento local, chave `prefs.v1`); não vai para o servidor.

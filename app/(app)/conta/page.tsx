@@ -12,6 +12,7 @@ import { Toast } from "@/components/ui/Toast";
 import { deleteAccount, getMe, saveConsent, type MeResponse } from "@/lib/api-client";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
+import { getPlatform } from "@/lib/platform";
 import { applyPrefs, DEFAULT_PREFS, loadPrefs, savePrefs, type Prefs, type Theme } from "@/lib/prefs";
 
 export default function AccountPage() {
@@ -22,10 +23,12 @@ export default function AccountPage() {
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [voices, setVoices] = useState<{ name: string; lang: string }[]>([]);
 
   useEffect(() => {
     void getMe().then(setMe);
     void loadPrefs().then(setPrefs);
+    void getPlatform().speech.voices().then(setVoices);
   }, []);
 
   const update = (p: Prefs) => {
@@ -82,6 +85,22 @@ export default function AccountPage() {
           <input type="range" min={1} max={2} step={0.1} value={prefs.fontScale} onChange={(e) => update({ ...prefs, fontScale: Number(e.target.value) })} />
         </label>
       </Card>
+
+      {voices.length > 0 && (
+        <Card className="flex flex-col gap-3">
+          <h2 className="text-lg">{t("account.voice")}</h2>
+          <label className="flex flex-col gap-1">
+            <span className="text-sm text-muted">{t("account.voice.help")}</span>
+            <select className="h-12 rounded-control border border-line bg-surface px-3" value={prefs.voiceName ?? ""} onChange={(e) => update({ ...prefs, voiceName: e.target.value || null })}>
+              <option value="">{t("account.voice.auto")}</option>
+              {voices.map((v) => (
+                <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
+              ))}
+            </select>
+          </label>
+          <Button type="button" variant="ghost" onClick={() => { getPlatform().speech.unlock(); getPlatform().speech.cancel(); void getPlatform().speech.speak(t("account.voice.sample"), { voiceName: prefs.voiceName }); }}>{t("account.voice.test")}</Button>
+        </Card>
+      )}
 
       <Card className="flex flex-col gap-3">
         <h2 className="text-lg">{t("account.privacy")}</h2>
