@@ -13,7 +13,7 @@ export function modelFor(tier: "fast" | "deep"): string {
 
 export class AnthropicTeacherLlm implements TeacherLlm {
   private client: Anthropic;
-  private totals = { calls: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  private totals = { calls: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0, blocks: "" };
   /** Token use of this turn (every call), for the cost meta. */
   stats() {
     return { ...this.totals };
@@ -25,7 +25,7 @@ export class AnthropicTeacherLlm implements TeacherLlm {
   async generate({ system, systemParts, messages, tier }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     const res = await this.client.messages.create({
       model: modelFor(tier),
-      max_tokens: 1800, // room for a little thinking plus a spoken answer of up to ~120 words
+      max_tokens: tier === "deep" ? 3500 : 1800, // a spoken answer of up to ~120 words; deep mode also writes the detailed text
       // Forced tool_choice (any/tool) is rejected by the newer models (400); the tool is asked for in the prompt and `auto` is used.
       // Effort `medium` keeps chat answers quick and cheap; thinking is adaptive by default on these models.
       output_config: { effort: tier === "deep" ? "medium" : "low" },
@@ -49,6 +49,7 @@ export class AnthropicTeacherLlm implements TeacherLlm {
       tool_choice: { type: "auto" },
     });
     this.totals.calls++;
+    this.totals.blocks += `${res.content.map((b) => b.type).join("+")}/${res.stop_reason};`;
     this.totals.input += res.usage.input_tokens;
     this.totals.output += res.usage.output_tokens;
     this.totals.cacheRead += res.usage.cache_read_input_tokens ?? 0;
