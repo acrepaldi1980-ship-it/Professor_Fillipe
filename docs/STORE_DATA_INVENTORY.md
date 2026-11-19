@@ -33,3 +33,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Voz escolhida
 - A voz do professor escolhida na tela Conta fica só no aparelho (armazenamento local, chave `prefs.v1`); não vai para o servidor.
+
+## Notas de Estudo Pentecostais (Prompt 1.4)
+- Tabelas `own_notes` e `own_note_comments`: conteúdo editorial e comentários de revisores (usuário com papel `reviewer` ou `admin`). Nenhum dado de aluno. Os comentários guardam apenas o `user_id` do revisor e o texto. Não entra no formulário de privacidade das lojas além do que já consta para contas de revisor.
