@@ -6,6 +6,9 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 ## Prompts concluídos
 
+> **1.4 (passo 1 feito, aguardando revisão):** `docs/pentecostal/linha.md` escrito; o Prompt 1.4 manda parar aqui até o Anderson revisar. Passos 2 a 6 não iniciados.
+
+
 | Prompt | Data | Resumo |
 | --- | --- | --- |
 | 00 | 2026-11-18 | CLAUDE.md, PROGRESS.md, LICENSES.md, .gitignore e Git inicializado |
