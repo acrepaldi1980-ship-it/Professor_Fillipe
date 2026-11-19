@@ -3,9 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { TeacherLlm } from "./pipeline";
 import { teacherToolJsonSchema } from "./schema";
 
-// Economy first: the small model answers everyday turns; the stronger one is used only for deep intents.
+// Economy: Claude Sonnet 5.5 at low effort with a cached prompt costs about one cent per answer; Haiku 5.5 is ~20x cheaper but
+// answered worse in tests (said Bible sources were missing when they were there), so it is opt-in via TEACHER_MODEL_FAST.
 export function modelFor(tier: "fast" | "deep"): string {
-  const fast = process.env.TEACHER_MODEL_FAST ?? "claude-haiku-5-5";
+  const fast = process.env.TEACHER_MODEL_FAST ?? "claude-sonnet-5-5";
   const deep = process.env.TEACHER_MODEL_DEEP ?? "claude-sonnet-5-5";
   return tier === "deep" ? deep : fast;
 }
