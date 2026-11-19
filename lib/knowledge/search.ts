@@ -107,6 +107,16 @@ export function rerankAndSelect(
 type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 
 /** Runs the hybrid search for one or more phrasings of the question (e.g. Portuguese + English keywords) and fuses them. */
+// Speed: the library database (Neon) scales to zero and can take many seconds on the first query after idle time, so the
+// search waits for it only for a short budget (it keeps warming in the background for the next question). Bible windows and
+// dictionary entries (Supabase) always answer. Repeated questions are served from a small cache.
+const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const searchCache = new Map<string, { at: number; value: { chunks: Retrieved[]; refs: string[] } }>();
+
+const within = <T>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([p.catch(() => fallback), new Promise<T>((res) => setTimeout(() => res(fallback), ms))]);
+
 export async function searchChunks(
   query: string | string[],
   opts: SearchOptions = {},
@@ -117,15 +127,22 @@ export async function searchChunks(
   const library = deps.library === undefined ? (deps.store ? undefined : getLibraryStore()) : (deps.library ?? undefined);
   const emb = deps.embeddings ?? getEmbeddingProvider();
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
-  const per = opts.perSignal ?? 40;
+  const per = opts.perSignal ?? 24;
+  const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
+  const hit = cacheKey ? searchCache.get(cacheKey) : undefined;
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
+
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
   const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
+  const terms = queryTerms(queries);
+  // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
+  const titlePromise = store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([]);
 
   const results = await Promise.all(
     queries.map(async (q, i) => {
       const vec = await emb.embedQuery(q);
       const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
-      const [main, lib] = await Promise.all([store.searchChunks(args), library ? library.searchChunks(args).catch(() => []) : Promise.resolve([])]);
+      const [main, lib] = await Promise.all([store.searchChunks(args), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
       return [...main, ...lib];
     }),
   );
@@ -136,13 +153,13 @@ export async function searchChunks(
       merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
     }
   }
-  // Entries titled with a word of the question (the other signals can miss them when many Bible windows match).
-  const terms = queryTerms(queries);
-  if (store.titleChunks && terms.length) {
-    const byTitle = await store.titleChunks(terms).catch(() => []);
-    for (const r of byTitle) if (!merged.has(r.id)) merged.set(r.id, r);
+  for (const r of await titlePromise) if (!merged.has(r.id)) merged.set(r.id, r);
+  const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
+  if (cacheKey) {
+    searchCache.set(cacheKey, { at: Date.now(), value });
+    if (searchCache.size > 60) searchCache.delete(searchCache.keys().next().value as string);
   }
-  return { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
+  return value;
 }
 
 /** Exact Bible verses for canonical refs (expanded to verse level) in one version. */

@@ -67,7 +67,7 @@ export async function rewriteQueryToEnglish(question: string): Promise<string | 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(1800),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY ?? "proxy-injected"}` },
       body: JSON.stringify({
         model,

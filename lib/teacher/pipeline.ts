@@ -126,9 +126,12 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4) Retrieval.
   const tSearch = Date.now();
   const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(searchText) : null;
-  const { chunks } = await deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
   const wantedVerses = [...mentioned, ...carriedRefs];
-  const verses = wantedVerses.length ? await deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : [];
+  // The search and the verse lookup do not depend on each other: run them together.
+  const [{ chunks }, verses] = await Promise.all([
+    deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined }),
+    wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
+  ]);
 
   const retrievalMs = Date.now() - tSearch;
 
