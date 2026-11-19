@@ -15,7 +15,7 @@ export class AnthropicNotesLlm implements NotesLlm {
     const res = await this.client.messages.create({
       model: this.model,
       max_tokens: maxTokens,
-      thinking: { type: "between_tools" } as never,
+      thinking: { type: "disabled" } as never,
       system,
       messages: [{ role: "user", content: user }],
     });
