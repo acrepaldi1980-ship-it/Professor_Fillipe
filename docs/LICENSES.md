@@ -286,3 +286,9 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - A licença permite usar em software e reformatar os dados; pede crédito e link da fonte (feito na página Fontes e licenças). Guardamos só no banco; não republicamos os arquivos.
 - Uso no app: `original_words` (palavras do texto Nestlé-Aland, tipos N*) e `lexicon_entries` (TBESG).
 - **Não importados:** TBESH (léxico hebraico): o cabeçalho diz que é preciso permissão da Online Bible para usar as definições (derivadas do BDB abreviado) — licença duvidosa, fica fora. TAHOT (hebraico) fica para depois por espaço no banco.
+
+## STEPBible TVTMS — mapeamento de versificação
+- Fonte: https://github.com/STEPBible/STEPBible-Data (pasta Versification). Licença CC BY 4.0; crédito igual ao da ficha do TAGNT. Só guardamos os versículos cuja numeração difere (`verse_map`).
+
+## Referências cruzadas (Treasury of Scripture Knowledge)
+- Fonte: https://github.com/CrossReferences-org/bible-cross-references (arquivo `tsv/crossreferences_kjv.tsv`), licença CC BY 4.0 do conjunto; o conteúdo-base (TSK) é de domínio público. Crédito: "Referências cruzadas do Treasury of Scripture Knowledge (domínio público), no conjunto de dados CrossReferences.org (CC BY 4.0)". Obra `tsk_crossrefs` na tabela `works`.
