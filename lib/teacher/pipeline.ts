@@ -36,6 +36,10 @@ export interface TurnInput {
   student?: StudentProfile;
   bible?: BibleSettings;
   intent?: Intent;
+  /** Recent conversation loaded from the database (survives serverless instances); falls back to the in-memory copy. */
+  history?: ChatMessage[];
+  /** Bible references of the previous answer, so "esse texto" can be resolved. */
+  lastRefs?: string[];
 }
 
 export interface TurnResult {
@@ -60,6 +64,15 @@ export interface TurnResult {
     retrievalMs: number;
     llmMs: number;
   };
+}
+
+const ANAPHORA = /\b(desse|dessa|disso|nesse|nessa|nisso|esse texto|essa passagem|essa parabola|esse trecho|sobre ele|sobre ela|dele|dela|continue|continua|aprofund|detalh|mais sobre|e o |e a |e os |e as |por que ele|por que ela)\b/i;
+
+/** A question with no subject of its own that leans on the previous turn. */
+export function isFollowUp(text: string, hasOwnRefs: boolean, intent: Intent): boolean {
+  if (hasOwnRefs) return false;
+  const t = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return ANAPHORA.test(t) || ["deepen", "other_traditions", "compare_versions"].includes(intent) || t.split(/\s+/).length < 8;
 }
 
 const DEEP_INTENTS: Intent[] = ["deepen", "other_traditions", "compare_versions"];
@@ -100,17 +113,28 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 2) Intent and 3) references cited by the student.
   const intent = input.intent ?? classifyIntent(input.text);
   const mentioned = findReferences(input.text).flatMap((r) => r.refs);
+  const priorHistory = input.history ?? memory.get(input.sessionId);
+  // Follow-ups ("aprofunde esse texto", "e o irmão mais velho?") carry no subject of their own: borrow it from the conversation.
+  const followUp = isFollowUp(input.text, mentioned.length > 0, intent);
+  const lastUser = [...priorHistory].reverse().find((m) => m.role === "user")?.content ?? "";
+  const searchText = followUp && lastUser ? `${lastUser} ${input.text}` : input.text;
+  const carriedRefs = followUp ? (input.lastRefs ?? []) : [];
 
   // 4) Retrieval.
   const tSearch = Date.now();
-  const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(input.text) : null;
-  const { chunks } = await deps.search(rewritten ? [input.text, rewritten] : input.text, { lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
-  const verses = mentioned.length ? await deps.getVerses(bible.main_version_id, mentioned.slice(0, 20)) : [];
+  const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(searchText) : null;
+  const { chunks } = await deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined });
+  const wantedVerses = [...mentioned, ...carriedRefs];
+  const verses = wantedVerses.length ? await deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : [];
 
   const retrievalMs = Date.now() - tSearch;
 
   // 5) Prompt and 6) generation.
-  const notice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
+  const deepNote = DEEP_INTENTS.includes(intent)
+    ? "MODO APROFUNDAR: o aluno quer a análise detalhada. Coloque o detalhamento em display_markdown (títulos curtos e listas, até 250 palavras por bloco, só com o que está nos trechos) e use speech para um resumo falado de até 250 palavras que convide a continuar. Se os trechos não cobrirem algum ponto, diga qual."
+    : "";
+  const baseNotice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
+  const notice = [baseNotice, deepNote].filter(Boolean).join("\n\n") || undefined;
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
   let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars });
@@ -125,7 +149,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       return normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id);
     }
   };
-  const history = memory.get(input.sessionId).slice(-(deps.historyMessages ?? 24));
+  const history = priorHistory.slice(-(deps.historyMessages ?? 24));
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
   const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
 

@@ -24,6 +24,8 @@ export class AnthropicTeacherLlm implements TeacherLlm {
       // Forced tool_choice (any/tool) is rejected by the newer models (400); the tool is asked for in the prompt and `auto` is used.
       // Effort `medium` keeps chat answers quick and cheap; thinking is adaptive by default on these models.
       output_config: { effort: tier === "deep" ? "medium" : "low" },
+      // Everyday turns do not need hidden reasoning: between_tools keeps thinking off, which cuts seconds and cost.
+      ...(tier === "fast" ? { thinking: { type: "between_tools" } as never } : {}),
       // The stable part (rules, student, lens) is cached: later turns of the same conversation read it at a fraction of the price.
       system: systemParts
         ? [

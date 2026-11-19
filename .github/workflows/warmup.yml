@@ -1,0 +1,12 @@
+# Keeps the app warm during the day (07h-23h Brasília) so the first question of a study session is not slow.
+name: warmup
+on:
+  schedule:
+    - cron: "*/20 10-23,0-2 * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the teacher
+        run: curl -sS -m 90 https://professor-filipe.vercel.app/api/v1/warmup || true

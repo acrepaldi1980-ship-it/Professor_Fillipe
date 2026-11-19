@@ -7,6 +7,7 @@ import { studentForPrompt } from "@/lib/auth/profile";
 import { createTurnDeps, teacherProvider } from "@/lib/teacher/deps";
 import { runTurn } from "@/lib/teacher/pipeline";
 import { INTENTS } from "@/lib/teacher/schema";
+import { findReferences } from "@/lib/knowledge/refs-parser";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -47,7 +48,17 @@ export async function POST(req: Request) {
       const enc = new TextEncoder();
       try {
         const student = await studentForPrompt(db, user.id);
-        const { response, meta } = await runTurn({ ...parsed.data, student }, createTurnDeps());
+        // Conversation context comes from the database, so it survives serverless instances (the in-memory copy does not).
+        const { data: recent } = await db.from("messages").select("role,text,speech,structured").eq("session_id", session.id).order("created_at", { ascending: false }).limit(8);
+        const ordered = (recent ?? []).reverse();
+        const history = ordered.map((m) => ({ role: (m.role === "teacher" ? "assistant" : "user") as "assistant" | "user", content: m.speech || m.text }));
+        const lastTeacher = [...ordered].reverse().find((m) => m.role === "teacher");
+        const structured = lastTeacher?.structured as { citations?: { type: string; ref?: string }[]; speech?: string; display_markdown?: string } | null | undefined;
+        const lastRefs = [
+          ...(structured?.citations ?? []).filter((c) => c.type === "bible" && c.ref).map((c) => c.ref as string),
+          ...findReferences(`${structured?.speech ?? ""} ${structured?.display_markdown ?? ""}`, { strictCase: true }).flatMap((r) => r.refs),
+        ].slice(0, 10);
+        const { response, meta } = await runTurn({ ...parsed.data, student, history, lastRefs }, createTurnDeps());
 
         if (response.pastoral_flag) {
           await db.from("pastoral_events").insert({ user_id: user.id });

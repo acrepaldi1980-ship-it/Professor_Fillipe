@@ -40,6 +40,8 @@ export interface SearchOptions {
   perSignal?: number;
   /** Words of the question (and its English keywords): a dictionary entry titled with one of them gets a boost. */
   terms?: string[];
+  /** References carried over from the previous turn (follow-up questions). */
+  extraRefs?: string[];
 }
 
 /** Authority layers (spec 8.10.6). */
@@ -117,7 +119,7 @@ export async function searchChunks(
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 40;
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
-  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? "")]);
+  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
 
   const results = await Promise.all(
     queries.map(async (q, i) => {

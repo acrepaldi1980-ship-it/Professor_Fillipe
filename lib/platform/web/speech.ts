@@ -1,3 +1,4 @@
+import { prepareForSpeech } from "@/lib/voice/speech-text";
 import { levelAt, planText, wordAt } from "@/lib/voice/visemes";
 import type { Speech, SpeechOptions } from "../types";
 
@@ -62,8 +63,10 @@ export class WebSpeech implements Speech {
     return this.voice;
   }
 
-  async speak(text: string, opts: SpeechOptions = {}): Promise<void> {
+  async speak(raw: string, opts: SpeechOptions = {}): Promise<void> {
     if (!this.isSupported()) return;
+    // "Lucas 15:11-32" must be spoken as "Lucas, capítulo 15, versículos 11 a 32" (not read as a clock time), and names get their pronunciation.
+    const text = prepareForSpeech(raw);
     const voice = await this.pickVoice(opts.voiceName);
     return new Promise<void>((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
