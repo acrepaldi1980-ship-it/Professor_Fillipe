@@ -61,3 +61,11 @@ export async function requireAdmin(req: Request): Promise<AuthedContext> {
   if (data?.role !== "admin") throw new HttpError(403, "forbidden");
   return ctx;
 }
+
+/** Reviewers (conselho teológico) and admins; returns the role so callers can apply the workflow rules. */
+export async function requireReviewer(req: Request): Promise<AuthedContext & { role: "reviewer" | "admin" }> {
+  const ctx = await requireUser(req);
+  const { data } = await ctx.db.from("profiles").select("role").eq("user_id", ctx.user.id).maybeSingle();
+  if (data?.role !== "admin" && data?.role !== "reviewer") throw new HttpError(403, "forbidden");
+  return { ...ctx, role: data.role };
+}

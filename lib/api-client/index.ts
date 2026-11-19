@@ -145,3 +145,18 @@ export interface LibraryAdminReport {
 export async function getLibraryAdminReport(): Promise<LibraryAdminReport> {
   return apiJson<LibraryAdminReport>("/admin/library");
 }
+
+// ---- Own notes review (Prompt 1.4, spec 8.11) ----
+export type NoteStatus = "draft" | "in_review" | "approved" | "published";
+export interface NoteListItem { id: string; kind: string; book_code: string | null; ref_range: string | null; title: string; status: NoteStatus; originality_score: number | null; rewrite_count: number; updated_at: string }
+export interface NoteDetail extends NoteListItem {
+  body: string;
+  sources: { type: string; id: string; label: string }[];
+  originality_report: { threshold: number; maxSimilarity: number; rewrites: number; paragraphs: { index: number; ngram: number; cosine: number; similarity: number; source: string | null; flagged: boolean }[] } | null;
+}
+export interface NoteComment { id: string; user_id: string; body: string; created_at: string }
+
+export const listNotes = (status?: NoteStatus) => apiJson<{ role: "reviewer" | "admin"; items: NoteListItem[] }>(`/admin/notes${status ? `?status=${status}` : ""}`);
+export const getNote = (id: string) => apiJson<{ role: "reviewer" | "admin"; note: NoteDetail; comments: NoteComment[] }>(`/admin/notes/${id}`);
+export const patchNote = (id: string, body: { status?: NoteStatus; body?: string; title?: string }) => apiJson<{ ok: boolean; status: NoteStatus }>(`/admin/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+export const commentNote = (id: string, body: string) => apiJson<{ ok: boolean }>(`/admin/notes/${id}/comments`, { method: "POST", body: JSON.stringify({ body }) });
