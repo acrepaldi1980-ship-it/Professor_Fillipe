@@ -53,7 +53,7 @@ function poseFor(state: AvatarState): Pose {
     case "empathetic":
       p.shR = [-0.6, 0, -0.1]; p.shL = [-0.6, 0, 0.1]; p.elR = [-1.45, 0, 0]; p.elL = [-1.45, 0, 0]; p.head = [0.06, 0, -0.1]; break;
     case "pointing":
-      p.shL = [-0.2, 0, 1.2]; p.elL = [-0.1, 0, 0]; p.head = [0, 0.3, 0]; break;
+      p.shL = [-0.9, 0, 0.55]; p.elL = [-0.35, 0, 0]; p.head = [0, 0.3, 0]; break;
     default:
       break;
   }
@@ -85,20 +85,32 @@ function Arm({ side, rig }: { side: "R" | "L"; rig: React.MutableRefObject<Recor
   const x = side === "R" ? -0.215 : 0.215;
   return (
     <group ref={(o) => void (rig.current["sh" + side] = o)} position={[x, 0.15, 0]}>
-      <Ball r={0.07} color={C.tunic} />
-      <Capsule r={0.06} len={0.2} color={C.tunic} pos={[0, -0.16, 0]} />
+      <Ball r={0.078} color={C.tunic} />
+      <mesh position={[0, -0.165, 0]} castShadow>
+        <cylinderGeometry args={[0.074, 0.064, 0.3, 28]} />
+        <meshStandardMaterial color={C.tunic} roughness={0.9} />
+      </mesh>
       <group ref={(o) => void (rig.current["el" + side] = o)} position={[0, -0.31, 0]}>
-        <Ball r={0.056} color={C.tunic} />
-        <Capsule r={0.05} len={0.18} color={C.tunic} pos={[0, -0.14, 0]} />
-        <mesh position={[0, -0.24, 0]}>
-          <cylinderGeometry args={[0.062, 0.062, 0.035, 20]} />
+        <Ball r={0.064} color={C.tunic} />
+        {/* wide sleeve, flaring towards the wrist, with a darker hem */}
+        <mesh position={[0, -0.14, 0]} castShadow>
+          <cylinderGeometry args={[0.064, 0.09, 0.28, 28]} />
+          <meshStandardMaterial color={C.tunic} roughness={0.9} />
+        </mesh>
+        <mesh position={[0, -0.285, 0]}>
+          <cylinderGeometry args={[0.092, 0.091, 0.03, 28]} />
           <meshStandardMaterial color={C.tunicDark} roughness={0.9} />
         </mesh>
-        <group position={[0, -0.31, 0]}>
-          <Ball r={0.056} color={C.skin} scale={[1, 1.25, 0.7]} />
-          <Capsule r={0.016} len={0.04} color={C.skin} pos={[side === "R" ? 0.05 : -0.05, -0.01, 0.02]} rot={[0, 0, side === "R" ? -0.6 : 0.6]} />
+        <mesh position={[0, -0.272, 0]}>
+          <cylinderGeometry args={[0.0915, 0.0915, 0.008, 28]} />
+          <meshStandardMaterial color={C.mantle} roughness={0.8} />
+        </mesh>
+        <group position={[0, -0.33, 0]}>
+          <Ball r={0.05} color={C.skin} scale={[1, 1.3, 0.62]} />
+          <Capsule r={0.02} len={0.06} color={C.skin} pos={[0, -0.075, 0]} scale={[2.3, 1, 0.8]} />
+          <Capsule r={0.017} len={0.045} color={C.skin} pos={[side === "R" ? 0.05 : -0.05, -0.012, 0.018]} rot={[0, 0, side === "R" ? -0.6 : 0.6]} />
           {side === "R" && (
-            <group position={[0, -0.02, 0.05]} rotation={[0, 0, Math.PI / 2]}>
+            <group position={[0, -0.03, 0.05]} rotation={[0, 0, Math.PI / 2]}>
               <mesh><cylinderGeometry args={[0.026, 0.026, 0.22, 16]} /><meshStandardMaterial color={C.parchment} roughness={0.9} /></mesh>
               {[-1, 1].map((e) => (
                 <mesh key={e} position={[0, e * 0.115, 0]}><cylinderGeometry args={[0.02, 0.02, 0.025, 12]} /><meshStandardMaterial color={C.rod} roughness={0.7} /></mesh>
@@ -106,7 +118,7 @@ function Arm({ side, rig }: { side: "R" | "L"; rig: React.MutableRefObject<Recor
             </group>
           )}
           <group ref={(o) => void (rig.current["index" + side] = o)} visible={false}>
-            <Capsule r={0.014} len={0.07} color={C.skin} pos={[0, -0.09, 0.01]} />
+            <Capsule r={0.014} len={0.07} color={C.skin} pos={[0, -0.12, 0.01]} />
           </group>
         </group>
       </group>
@@ -121,7 +133,7 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       <Ball r={0.15} color={C.skin} scale={[0.95, 1.08, 1]} pos={[0, 0.07, 0]} />
       <Ball r={0.03} color={C.skinDark} pos={[-0.145, 0.07, 0]} scale={[0.45, 1.1, 0.7]} />
       <Ball r={0.03} color={C.skinDark} pos={[0.145, 0.07, 0]} scale={[0.45, 1.1, 0.7]} />
-      <Ball r={0.024} color={C.skinDark} pos={[0, 0.04, 0.152]} scale={[1, 1.15, 1]} />
+      <Ball r={0.028} color={C.skinDark} pos={[0, 0.036, 0.153]} scale={[1, 1.1, 1]} />
       {/* head wrap (keffiyeh-style cloth of a 1st-century scholar) + grey hair at the sides */}
       <mesh position={[0, 0.1, -0.012]} rotation={[0.12, 0, 0]} scale={[1.0, 1.02, 1.02]} castShadow>
         <sphereGeometry args={[0.168, 32, 24, 0, Math.PI * 2, 0, 1.2]} />
@@ -134,6 +146,15 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       <Capsule r={0.05} len={0.16} color={C.wrap} pos={[0, 0.0, -0.15]} rot={[0.25, 0, 0]} scale={[1.8, 1, 0.5]} />
       <Capsule r={0.016} len={0.05} color={C.hair} pos={[-0.148, 0.115, 0.01]} />
       <Capsule r={0.016} len={0.05} color={C.hair} pos={[0.148, 0.115, 0.01]} />
+      <mesh position={[0, 0.15, 0.0]} rotation={[Math.PI / 2 - 0.15, 0.12, 0]} castShadow>
+        <torusGeometry args={[0.162, 0.009, 8, 40]} />
+        <meshStandardMaterial color={C.band} roughness={0.8} />
+      </mesh>
+      <Capsule r={0.032} len={0.2} color={C.wrap} pos={[0.12, -0.03, -0.085]} rot={[0.3, 0, 0.22]} scale={[1.2, 1, 0.7]} />
+      {/* sideburns joining the beard */}
+      <Capsule r={0.02} len={0.04} color={C.beard} pos={[-0.128, 0.0, 0.05]} />
+      <Capsule r={0.02} len={0.04} color={C.beard} pos={[0.128, 0.0, 0.05]} />
+      <Ball r={0.06} color={C.beard} pos={[0, -0.13, 0.06]} scale={[0.9, 1.8, 0.7]} />
       {/* beard (lower face) and mustache */}
       <mesh position={[0, 0.07, -0.002]} scale={[0.98, 1.08, 1.01]} castShadow>
         <sphereGeometry args={[0.152, 32, 24, 0, Math.PI * 2, 1.95, 1.2]} />
@@ -163,7 +184,15 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       {/* eyes */}
       {[-1, 1].map((s) => (
         <group key={s} position={[s * 0.056, 0.082, 0.128]} ref={(o) => void (rig.current[s < 0 ? "eyeR" : "eyeL"] = o)}>
-          <Ball r={0.024} color="#fbf7ef" scale={[1, 1, 0.55]} />
+          <Ball r={0.024} color="#f3ede3" scale={[1, 1, 0.55]} />
+          <mesh position={[0, 0.004, 0.008]}>
+            <torusGeometry args={[0.025, 0.0032, 6, 18, Math.PI]} />
+            <meshStandardMaterial color={C.skinDark} roughness={0.8} />
+          </mesh>
+          <mesh position={[0.006, 0.006, 0.0215]}>
+            <sphereGeometry args={[0.0035, 8, 8]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
           <mesh position={[0, 0, 0.012]} ref={(o) => void (rig.current[s < 0 ? "pupilR" : "pupilL"] = o)}>
             <sphereGeometry args={[0.0155, 16, 12]} />
             <meshStandardMaterial color="#241711" roughness={0.3} />
@@ -172,10 +201,10 @@ function Head({ rig }: { rig: React.MutableRefObject<Record<string, THREE.Object
       ))}
       {/* eyebrows */}
       <group ref={(o) => void (rig.current.browR = o)} position={[-0.056, 0.128, 0.138]}>
-        <Capsule r={0.0085} len={0.05} color={C.brow} rot={[0, 0, Math.PI / 2]} />
+        <Capsule r={0.0105} len={0.055} color={C.brow} rot={[0, 0, Math.PI / 2]} />
       </group>
       <group ref={(o) => void (rig.current.browL = o)} position={[0.056, 0.128, 0.138]}>
-        <Capsule r={0.0085} len={0.05} color={C.brow} rot={[0, 0, Math.PI / 2]} />
+        <Capsule r={0.0105} len={0.055} color={C.brow} rot={[0, 0, Math.PI / 2]} />
       </group>
     </group>
   );
@@ -306,15 +335,22 @@ function Filipe({ state, level, reduceMotion }: { state: AvatarState; level: num
       <group position={[0, 0.8, 0]}>
         {/* long linen tunic down to the ankles, sandals peeking out */}
         <mesh position={[0, -0.39, 0]} castShadow>
-          <cylinderGeometry args={[0.19, 0.29, 0.8, 36]} />
+          <cylinderGeometry args={[0.19, 0.32, 0.8, 40]} />
           <meshStandardMaterial color={C.tunic} roughness={0.92} />
         </mesh>
         <mesh position={[0, -0.78, 0]}>
-          <cylinderGeometry args={[0.292, 0.295, 0.035, 36]} />
+          <cylinderGeometry args={[0.322, 0.325, 0.035, 40]} />
           <meshStandardMaterial color={C.tunicDark} roughness={0.9} />
         </mesh>
+        <mesh position={[0, -0.74, 0]}>
+          <cylinderGeometry args={[0.3205, 0.3215, 0.014, 40]} />
+          <meshStandardMaterial color={C.mantle} roughness={0.8} />
+        </mesh>
+        {[-0.12, -0.06, 0, 0.06, 0.12].map((fx) => (
+          <Capsule key={fx} r={0.007} len={0.5} color={C.tunicDark} pos={[fx, -0.42, Math.sqrt(0.26 * 0.26 - fx * fx) + 0.002]} rot={[0.12, 0, 0]} />
+        ))}
         {[-1, 1].map((s) => (
-          <Ball key={s} r={0.07} color={C.shoe} pos={[s * 0.09, -0.79, 0.2]} scale={[1, 0.45, 1.7]} />
+          <Ball key={s} r={0.07} color={C.shoe} pos={[s * 0.09, -0.79, 0.24]} scale={[1, 0.45, 1.7]} />
         ))}
         <group ref={(o) => void (rig.current.spine = o)} position={[0, 0.02, 0]}>
           <Capsule r={0.175} len={0.16} color={C.tunic} pos={[0, 0.16, 0]} scale={[1.05, 1, 0.85]} />
@@ -329,6 +365,9 @@ function Filipe({ state, level, reduceMotion }: { state: AvatarState; level: num
               <mesh><boxGeometry args={[0.1, 0.58, 0.025]} /><meshStandardMaterial color={C.mantle} roughness={0.9} /></mesh>
               <mesh position={[0, -0.2, 0.014]}><boxGeometry args={[0.1, 0.018, 0.004]} /><meshStandardMaterial color={C.stripe} /></mesh>
               <mesh position={[0, -0.24, 0.014]}><boxGeometry args={[0.1, 0.008, 0.004]} /><meshStandardMaterial color={C.stripe} /></mesh>
+              {[-0.04, -0.013, 0.013, 0.04].map((tx) => (
+                <Capsule key={tx} r={0.005} len={0.05} color={C.stripe} pos={[tx, -0.32, 0.005]} />
+              ))}
             </group>
           ))}
           <group ref={(o) => void (rig.current.chest = o)} position={[0, 0.3, 0]}>
@@ -401,6 +440,7 @@ export function Avatar3D({ state, level = 0, mode = "full", className }: { state
         <hemisphereLight args={[light, "#8a6a4a", 1.05]} />
         <directionalLight position={[2.5, 4, 3.5]} intensity={1.7} castShadow shadow-mapSize={[1024, 1024]} />
         <directionalLight position={[-3, 1.5, 2]} intensity={0.6} color="#ffd9b8" />
+        <directionalLight position={[0, 2.5, -3]} intensity={0.8} color="#ffe6c8" />
         <Rig mode={mode} />
         <Filipe state={state} level={level} reduceMotion={reduce} />
         <ContactShadows position={[0, 0.001, 0]} opacity={0.35} scale={4} blur={2.4} far={2} />
