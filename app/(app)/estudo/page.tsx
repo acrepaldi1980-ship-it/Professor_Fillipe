@@ -72,26 +72,38 @@ export default function StudyPage() {
     setState("idle");
   }, []);
 
+  // Server voice (Gemini, the same family as the greeting video) first; if it is unavailable the device voice takes over for the rest.
+  const serverVoice = useRef<"unknown" | "ok" | "down">("unknown");
   const speak = useCallback(async (speech: string, cue?: AvatarState) => {
     const my = ++playId.current;
     const sentences = splitSentences(speech);
     const platform = getPlatform();
     setState("speaking");
     try {
-      if (platform.speech.isSupported()) {
-        // Free on-device voice (D-04 prototype): sentence by sentence, mouth driven by the speech level.
-        for (const sentence of sentences) {
-          if (my !== playId.current) return;
-          await platform.speech.speak(sentence, { voiceName: (await loadPrefs()).voiceName, onLevel: (lv) => my === playId.current && setLevel(lv) });
+      let next: Promise<Blob> | null = serverVoice.current !== "down" ? speakSentence(sentences[0]) : null;
+      next?.catch(() => undefined);
+      for (let i = 0; i < sentences.length; i++) {
+        if (my !== playId.current) return;
+        let played = false;
+        if (next) {
+          try {
+            const blob = await next;
+            if (my !== playId.current) return;
+            serverVoice.current = "ok";
+            next = i + 1 < sentences.length ? speakSentence(sentences[i + 1]) : null;
+            next?.catch(() => undefined);
+            await platform.audioPlayer.play(blob); // the mouth follows the real audio level
+            played = true;
+          } catch {
+            serverVoice.current = "down";
+            next = null;
+          }
         }
-      } else {
-        let next = speakSentence(sentences[0]);
-        for (let i = 0; i < sentences.length; i++) {
-          const blob = await next;
-          if (my !== playId.current) return;
-          if (i + 1 < sentences.length) next = speakSentence(sentences[i + 1]);
-          await platform.audioPlayer.play(blob);
-          if (my !== playId.current) return;
+        if (!played && my === playId.current) {
+          if (platform.speech.isSupported()) {
+            const voiceName = (await loadPrefs()).voiceName;
+            await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv) });
+          } else setError(t("study.error.voice"));
         }
       }
     } catch {

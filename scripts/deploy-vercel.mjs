@@ -44,11 +44,13 @@ async function setEnv(project) {
     ["NEXT_PUBLIC_APP_VERSION", "0.1.0", "plain"],
     ["GROQ_API_KEY", envFile.GROQ_API_KEY, "sensitive"],
     ["REFERENCE_DATABASE_URL", envFile.REFERENCE_DATABASE_URL, "sensitive"],
+    ["GEMINI_API_KEY", envFile.GEMINI_API_KEY, "sensitive"],
+    ["VOICE_PROVIDER", "gemini", "plain"],
     ["TEACHER_LLM_PROVIDER", "groq", "plain"],
     ["TRANSFORMERS_CACHE_DIR", "/tmp/hf-cache", "plain"],
   ];
   if (!has("FIELD_ENCRYPTION_KEY")) vars.push(["FIELD_ENCRYPTION_KEY", randomBytes(32).toString("base64"), "sensitive"]);
-  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
+  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
   await post(`/v10/projects/${project.id}/env?upsert=true`, body);
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }
