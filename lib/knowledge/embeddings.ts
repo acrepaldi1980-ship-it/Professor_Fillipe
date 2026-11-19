@@ -1,3 +1,6 @@
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 // Embedding provider (spec 8.10.4, D-09). Default: open multilingual model running locally,
 // so Portuguese questions find English passages with no paid API. Swappable via EMBEDDING_PROVIDER.
 export interface EmbeddingProvider {
@@ -13,6 +16,27 @@ type Extractor = (
 ) => Promise<{ tolist(): number[][] }>;
 
 /** multilingual-e5-small (384 dims, MIT license) via transformers.js / ONNX. Needs "query: " / "passage: " prefixes. */
+/** Path of the bundled model folder (and joins the two ONNX parts into /tmp on first use), or null when it is not bundled. */
+function bundledModelDir(model: string): string | null {
+  const root = join(process.cwd(), "models");
+  const dir = join(root, model);
+  if (!existsSync(join(dir, "config.json"))) return null;
+  const onnx = join(dir, "onnx", "model_quantized.onnx");
+  if (existsSync(onnx)) return root;
+  const p1 = `${onnx}.part1`;
+  if (!existsSync(p1)) return null;
+  // The deployment is read-only: rebuild the folder in /tmp (config, tokenizer and the joined model).
+  const tmpRoot = join(tmpdir(), "e5-models");
+  const tmpDir = join(tmpRoot, model);
+  const target = join(tmpDir, "onnx", "model_quantized.onnx");
+  if (!existsSync(target)) {
+    mkdirSync(join(tmpDir, "onnx"), { recursive: true });
+    for (const f of ["config.json", "tokenizer.json", "tokenizer_config.json"]) copyFileSync(join(dir, f), join(tmpDir, f));
+    writeFileSync(target, Buffer.concat([readFileSync(p1), readFileSync(`${onnx}.part2`)]));
+  }
+  return tmpRoot;
+}
+
 export class LocalE5Provider implements EmbeddingProvider {
   readonly name: string;
   private extractor: Promise<Extractor> | null = null;
@@ -27,6 +51,13 @@ export class LocalE5Provider implements EmbeddingProvider {
   private load(): Promise<Extractor> {
     this.extractor ??= (async () => {
       const { pipeline, env } = await import("@huggingface/transformers");
+      // Production bundles the model with the function (models/, split in two parts because of the upload size limit):
+      // loading it from disk takes seconds, downloading it on every cold start took ~30 s.
+      const bundled = bundledModelDir(this.model);
+      if (bundled) {
+        env.localModelPath = bundled;
+        env.allowRemoteModels = false;
+      }
       // Serverless file systems are read-only except /tmp: cache the downloaded model there.
       if (process.env.VERCEL || process.env.TRANSFORMERS_CACHE_DIR) env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? "/tmp/hf-cache";
       return (await pipeline("feature-extraction", this.model, {

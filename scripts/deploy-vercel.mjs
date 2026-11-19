@@ -55,8 +55,10 @@ async function setEnv(project) {
 
 async function deploy() {
   const files = execSync("git ls-files", { encoding: "utf8" }).split("\n").filter(Boolean).filter((f) => existsSync(f) && !f.startsWith("data/") && !f.startsWith("docs/") && !f.startsWith("evals/reports/") && !f.startsWith(".github/"));
+  // The embedding model is bundled with the deployment (not in git: too large); see lib/knowledge/embeddings.ts.
+  const extra = existsSync("models") ? execSync("find models -type f", { encoding: "utf8" }).split("\n").filter(Boolean) : [];
   const entries = [];
-  for (const f of files) {
+  for (const f of [...files, ...extra]) {
     const buf = readFileSync(f);
     const sha = createHash("sha1").update(buf).digest("hex");
     entries.push({ file: f, sha, size: buf.length });

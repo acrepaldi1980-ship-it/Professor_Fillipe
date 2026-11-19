@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "onnxruntime-common", "sharp"],
   // The tracer cannot see the native ONNX runtime (loaded dynamically): include it explicitly, Linux x64 only.
   outputFileTracingIncludes: {
+    "/api/v1/teacher/**": ["models/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/package.json",
       "node_modules/onnxruntime-node/dist/**",
