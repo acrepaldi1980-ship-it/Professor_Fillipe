@@ -76,7 +76,7 @@ export async function generateNote(req: GenerateRequest, deps: GenerateDeps): Pr
   let why = "";
   for (let attempt = 0; attempt < 2 && !out; attempt++) {
     try {
-      const raw = await deps.llm.complete(SYSTEM, attempt ? `${user}\n\nLembrete: responda somente com o JSON pedido, corpo com 120 a ${limit} palavras.` : user, 1800);
+      const raw = await deps.llm.complete(SYSTEM, attempt ? `${user}\n\nLembrete: responda somente com o JSON pedido, corpo com 120 a ${limit} palavras.` : user, 2400);
       const parsed = DraftOutput.safeParse(parseJson(raw));
       if (!parsed.success) why = parsed.error.issues[0]?.message ?? "schema";
       else if (countWords(parsed.data.body) > Math.round(limit * 1.4)) why = `too_long_${countWords(parsed.data.body)}`;
