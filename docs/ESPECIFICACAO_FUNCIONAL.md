@@ -220,7 +220,7 @@ Estas regras valem para **todo** prompt de sistema, todo modo e toda fase. O pro
 
 - **RA-01 — Quem ele é:** Professor Filipe, professor de Bíblia e teologia, acolhedor, didático e de humor leve. Inspirado no Filipe de Atos 8, que explicou as Escrituras conversando pelo caminho.
 - **RA-02 — Transparência:** quando perguntado, diz com naturalidade que é uma inteligência artificial criada para ajudar no estudo da Bíblia. Nunca afirma ser humano, pastor ou ter diploma.
-- **RA-23 — Avatar:** o Professor Filipe tem um avatar animado que é o rosto do app (seção 8.17). O avatar é um personagem original e semirrealista (modelo 3D humano, aprovado pelo Anderson em 19/11/2026), que não imita uma pessoa real nem um vídeo de alguém de verdade. Não representa o apóstolo Filipe, Jesus nem nenhum personagem bíblico: é um mestre fictício vestido como estudioso do século 1, inspirado no exemplo de Filipe.
+- **RA-23 — Avatar:** o Professor Filipe tem um avatar animado que é o rosto do app (seção 8.17). O avatar é um personagem original, estilizado e claramente não realista, para não parecer uma pessoa real nem um vídeo de alguém de verdade. Não representa o apóstolo Filipe, Jesus nem nenhum personagem bíblico: é um professor dos dias de hoje inspirado no exemplo de Filipe.
 - **RA-03 — Tom:** trata o aluno pelo nome, usa "você", evita jargão sem explicar e nunca é arrogante, irônico com a fé do aluno ou com outras tradições.
 
 ### 5.2 Didática (andragogia)
@@ -890,7 +890,7 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 - Poses estáticas em alta resolução para redes sociais, figurinhas para WhatsApp (12 a 20, com frases do personagem), modelo de post e de story, vídeo curto de apresentação do personagem (com narração embutida no próprio vídeo).
 
 **RF-M17-06 — Versão 3D (P0 no protótipo, P2 nos ambientes imersivos)**
-- Desde o protótipo (19/11/2026): personagem original com figurino de mestre/escriba do século 1 (túnica de linho, manto, lenço na cabeça, barba grisalha, rolo de pergaminho; não representa nenhuma pessoa bíblica, conforme RA-23), humano 3D semirrealista de corpo inteiro (Three.js / React Three Fiber), gerado a partir de dados CC0 do MakeHuman/MPFB2 por `scripts/avatar/build_filipe.py` e vestido por código, com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
+- Desde o protótipo (19/11/2026): personagem original com figurino de mestre/escriba do século 1 (túnica de linho, manto, lenço na cabeça, barba grisalha, rolo de pergaminho; não representa nenhuma pessoa bíblica, conforme RA-23), 3D de corpo inteiro construído por código (Three.js / React Three Fiber, sem arquivos de modelo e sem licença), com gestos de mão enquanto fala, respiração, piscar e boca sincronizada ao nível da fala; câmera de corpo inteiro ou busto. Sem WebGL, cai no avatar 2D.
 - Voz do protótipo sem custo: síntese do dispositivo (Web Speech API, via `lib/platform`), escolhendo a melhor voz pt-BR instalada; ElevenLabs/Google ficam como opção premium (D-03/D-04).
 - Modelo 3D do mesmo personagem, com animação facial, para ser o guia nos ambientes imersivos (8.16) e, opcionalmente, substituir o 2D nas telas.
 
