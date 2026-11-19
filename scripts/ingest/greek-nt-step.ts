@@ -1,11 +1,13 @@
 // Greek New Testament word by word (STEPBible TAGNT, Tyndale House, CC BY 4.0) + Greek brief lexicon (TBESG, based on
 // Abbott-Smith, CC BY 4.0). Hebrew data is NOT loaded here: the Hebrew brief lexicon (TBESH) says permission from
 // Online Bible is needed, so it stays out until that is clarified (rule: doubtful license = not imported).
-// Usage: NODE_OPTIONS=--use-env-proxy tsx scripts/ingest/greek-nt-step.ts   (needs a clone of STEPBible-Data in $STEP_DIR)
+// Words and lexicon go to the Neon reference database (hybrid, D-20); the `works` record stays in Supabase.
+// Usage: NODE_OPTIONS=--use-env-proxy tsx --env-file=.env.local scripts/ingest/greek-nt-step.ts   (needs a clone of STEPBible-Data in $STEP_DIR)
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { checkLicense } from "../../lib/knowledge/licenses";
 import { sql } from "../db.mjs";
+import { nsql } from "../neon.mjs";
 
 const DIR = process.env.STEP_DIR ?? "/tmp/mh/STEPBible-Data";
 const FILES = [
@@ -33,7 +35,7 @@ async function words() {
   let total = 0;
   const flush = async () => {
     if (!rows.length) return;
-    await sql(`insert into original_words (ref,position,surface,lemma,strong,morph,translit,gloss,source) values ${rows.join(",")} on conflict do nothing`);
+    await nsql(`insert into original_words (ref,position,surface,lemma,strong,morph,translit,gloss,source) values ${rows.join(",")} on conflict do nothing`);
     total += rows.length;
     rows.length = 0;
   };
@@ -64,7 +66,7 @@ async function lexicon() {
   let total = 0;
   const flush = async () => {
     if (!rows.length) return;
-    await sql(`insert into lexicon_entries (id,strong,lemma,language,source,definition) values ${rows.join(",")} on conflict (id) do update set definition=excluded.definition, lemma=excluded.lemma, updated_at=now()`);
+    await nsql(`insert into lexicon_entries (id,strong,lemma,language,source,definition) values ${rows.join(",")} on conflict (id) do update set definition=excluded.definition, lemma=excluded.lemma, updated_at=now()`);
     total += rows.length;
     rows.length = 0;
   };

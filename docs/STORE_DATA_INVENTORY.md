@@ -27,3 +27,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Fala no dispositivo (`lib/platform` → `speech`)
 - Usa a síntese de voz do sistema (Web Speech API / equivalente nativo). O texto falado não sai do aparelho para essa etapa e nada é armazenado.
+
+## Banco de referência (Neon)
+- Só conteúdo público (palavras dos originais, léxicos, referências cruzadas, versificação). Não guarda dado de usuário, então não entra no formulário de privacidade das lojas.

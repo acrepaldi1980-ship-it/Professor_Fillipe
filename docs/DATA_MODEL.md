@@ -50,3 +50,6 @@ erDiagram
 | Conteúdo próprio | own_notes, illustrations | só publicadas/aprovadas (revisores veem tudo) | revisores e servidor |
 
 `profiles.role` só muda pelo servidor: um gatilho impede que o usuário se promova a administrador.
+
+## Banco de referência (Neon, D-20)
+`original_words`, `lexicon_entries`, `cross_refs` e `verse_map` vivem no Neon (`neon/0001_reference.sql`), com a mesma forma das tabelas do Supabase, que ficam vazias e sem uso (migrations 0005 e 0009 mantidas só pela história). Nenhum dado pessoal está no Neon.

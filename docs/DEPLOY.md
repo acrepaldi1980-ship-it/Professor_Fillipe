@@ -20,6 +20,7 @@ O script envia os arquivos versionados no Git (sem conexão com o GitHub), garan
 | `GROQ_API_KEY` | sensível | IA gratuita do protótipo |
 | `TEACHER_LLM_PROVIDER` | normal | `groq` (trocar para `anthropic` quando houver chave) |
 | `TRANSFORMERS_CACHE_DIR` | normal | `/tmp/hf-cache` (cache do modelo de busca) |
+| `REFERENCE_DATABASE_URL` | sensível | banco de referência no Neon, usuário `app_reader` (só leitura). O administrador (`NEON_OWNER_URL`) nunca vai para a Vercel |
 | `FIELD_ENCRYPTION_KEY` | sensível | chave de criptografia dos campos de fé, gerada só para produção |
 
 O app em produção **não usa** o token pessoal do Supabase: só a chave pública e as funções restritas (migration 0007).
@@ -33,3 +34,10 @@ O modelo multilíngue (multilingual-e5-small) roda dentro da função da Vercel 
 - **Groq (gratuito):** teto de 200 mil tokens por dia por modelo (≈ 60 respostas por modelo). Ao acabar, o professor responde com a mensagem amigável de falha (`degraded`), sem quebrar a tela. A janela é rolante (libera em ~20 a 40 min).
 - **E-mail do link mágico:** o Supabase limita a ~2 e-mails por hora; para a turma, configurar SMTP próprio gratuito (Resend ou Brevo).
 - **Google (modo Teste):** só e-mails cadastrados como "usuários de teste" no Google Cloud conseguem entrar até o app ser publicado.
+
+## Banco híbrido (Neon)
+
+- Esquema em `neon/*.sql`; aplicar com `node --env-file=.env.local scripts/neon-migrate.mjs` (cria também o usuário `app_reader` e grava `REFERENCE_DATABASE_URL` no `.env.local`).
+- Carga: `scripts/ingest/greek-nt-step.ts`, `hebrew-ot-step.ts`, `versification-step.ts` e `crossrefs-tsk.ts` (todos gravam no Neon; a ficha da obra em `works` fica no Supabase).
+- Para rodar scripts aqui, o ambiente precisa liberar o endereço do projeto Neon (`ep-...neon.tech`) e a chave da API `console.neon.tech`.
+- Plano gratuito: 1 GB por projeto; ao passar disso a escrita falha (sem cobrança). Novo projeto = mais 1 GB.

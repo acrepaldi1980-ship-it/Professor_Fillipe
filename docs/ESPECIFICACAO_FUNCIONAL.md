@@ -995,7 +995,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | Avatar | Rive (2D com máquina de estados) no MVP; modelo 3D do mesmo personagem na Fase 3 (D-18) |
 | Estado | TanStack Query no cliente para as telas do app; React Server Components só nas páginas públicas (landing, termos, fontes e licenças), conforme 10.6.1 |
 | Back-end | Rotas de API do Next.js (Node runtime para streaming) |
-| Banco | Supabase: Postgres, Auth, Storage, pgvector, Row Level Security |
+| Banco | Supabase: Postgres, Auth, Storage, pgvector, Row Level Security (usuários, conversas, busca do acervo). **Banco de referência no Neon** (Postgres, só leitura para o app): palavras dos originais, léxicos, referências cruzadas e mapa de versificação, e o acervo que não couber no Supabase (D-20, 19/11/2026) |
 | IA | API da Anthropic (Claude), SDK oficial, streaming e tool use |
 | Embeddings | Fornecedor multilíngue configurável (D-09) |
 | Voz | Adaptador `VoiceProvider` (D-04) |
@@ -1005,7 +1005,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | Pagamentos | Adaptador `PaymentProvider`, primeiro Asaas |
 | PDF | Geração no servidor (React-PDF ou Playwright) |
 | Testes | Vitest (unidade), Playwright (ponta a ponta) |
-| Deploy | Vercel (app) + Supabase (dados) |
+| Deploy | Vercel (app) + Supabase (usuários e busca) + Neon (referência) |
 | Observabilidade | Sentry (erros) + logs estruturados + painel de métricas próprio |
 
 ### 10.2 Visão geral

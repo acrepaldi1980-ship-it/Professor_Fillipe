@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { checkLicense } from "../../lib/knowledge/licenses";
 import { parseReference } from "../../lib/knowledge/refs-parser";
 import { sql } from "../db.mjs";
+import { nsql } from "../neon.mjs";
 
 const FILE = `${process.env.XREF_DIR ?? "/tmp/mh/bible-cross-references"}/tsv/crossreferences_kjv.tsv`;
 const CREDIT =
@@ -52,7 +53,7 @@ async function main() {
   console.log("pairs:", all.length);
   for (let i = 0; i < all.length; i += 3000) {
     const rows = all.slice(i, i + 3000).map((p) => { const [a, b] = p.split("|"); return `('${a}','${b}',0,'tsk')`; }).join(",");
-    await safeSql(`insert into cross_refs (from_ref,to_ref,votes,source) values ${rows} on conflict do nothing`);
+    await nsql(`insert into cross_refs (from_ref,to_ref,votes,source) values ${rows} on conflict do nothing`);
     if ((i / 3000) % 20 === 0) console.log("stored", Math.min(i + 3000, all.length));
   }
   console.log("done");

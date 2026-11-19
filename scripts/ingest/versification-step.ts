@@ -2,7 +2,7 @@
 // Usage: NODE_OPTIONS=--use-env-proxy tsx scripts/ingest/versification-step.ts   (needs STEPBible-Data in $STEP_DIR)
 import { readFileSync, readdirSync } from "node:fs";
 import { parseTvtmsCondensed } from "../../lib/knowledge/versification";
-import { sql } from "../db.mjs";
+import { nsql } from "../neon.mjs";
 
 async function main() {
   const DIR = `${process.env.STEP_DIR ?? "/tmp/mh/STEPBible-Data"}/Versification`;
@@ -14,7 +14,7 @@ async function main() {
   console.log("differing verses:", rows.length);
   for (let i = 0; i < rows.length; i += 800) {
     const part = rows.slice(i, i + 800).map((r) => `('${r.tradition}','${r.ref}','${r.engRef}')`).join(",");
-    await sql(`insert into verse_map (tradition,ref,eng_ref) values ${part} on conflict do nothing`);
+    await nsql(`insert into verse_map (tradition,ref,eng_ref) values ${part} on conflict do nothing`);
   }
   console.log("stored");
 
