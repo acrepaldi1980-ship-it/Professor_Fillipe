@@ -279,3 +279,8 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Data da coleta: 2026-11-18
 - Hash SHA-256 do arquivo: 88513d3c0e852f219ca64d040591b640858e8f8292fe9ef503bdcc94ca88811b
 - Observações: CC BY-SA e só Novo Testamento: mantida separada de qualquer texto próprio.
+
+## Avatar 3D — dados do MakeHuman / MPFB2
+- Fonte: https://github.com/makehumancommunity/mpfb2 (pasta `src/mpfb/data`: malha base, alvos de morfologia, esqueleto e pesos).
+- Licença dos dados: CC0 1.0 (`LICENSE.ASSETS.md` do repositório). O código do MPFB2 (GPL) não é usado nem distribuído; só os arquivos de dados.
+- Uso: `scripts/avatar/build_filipe.py` gera `public/models/filipe.glb`. O modelo gerado é do projeto.
