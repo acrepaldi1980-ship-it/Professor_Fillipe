@@ -50,7 +50,7 @@ function fakeDb(store: Map<string, { alt: string }>, quota = { n: 0, limit: 3 })
     },
   } as never;
 }
-const provider = (calls: string[]) => ({ name: "fake", async generate(p: string) { calls.push(p); return { b64: "aGk=", mime: "image/webp" }; } });
+const provider = (calls: string[]) => ({ name: "fake", async generate(p: { prompt: string } | string) { calls.push(typeof p === "string" ? p : p.prompt); return { b64: "aGk=", mime: "image/webp" }; } });
 
 describe("illustration service", () => {
   it("generates once with the fixed style, then serves from cache", async () => {

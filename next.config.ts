@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/v1/teacher/**": ["models/**"],
     "/api/v1/sessions/**": ["node_modules/pdfkit/js/data/**"],
+    "/api/v1/visuals/**": ["lib/visuals/refs/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/package.json",
       "node_modules/onnxruntime-node/dist/**",

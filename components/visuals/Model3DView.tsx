@@ -22,9 +22,9 @@ export default function Model3DView({ modelId, onOpenRef }: { modelId: string; o
       <div className="min-h-[280px] flex-1 overflow-hidden rounded-control border border-line bg-[#e9dfc8]" role="img" aria-label={model.alt}>
         <Canvas camera={{ position: model.camera, fov: 45 }} dpr={[1, 1.5]} aria-hidden>
           <color attach="background" args={["#efe6d2"]} />
-          <ambientLight intensity={0.9} />
-          <directionalLight position={[5, 8, 5]} intensity={1.6} />
-          <directionalLight position={[-4, 3, -3]} intensity={0.5} />
+          <ambientLight intensity={0.55} />
+          <directionalLight position={[5, 8, 5]} intensity={2.2} />
+          <directionalLight position={[-4, 3, -3]} intensity={0.6} />
           <Scene />
           {model.hotspots.map((h) => (
             <Html key={h.id} position={h.at} center zIndexRange={[10, 0]}>

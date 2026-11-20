@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { imageProvider, type ImageProvider } from "./image-provider";
+import { referencesFor } from "./refs";
 import { applyRa20 } from "./ra20";
 import { STYLE_PREFIX, STYLE_SUFFIX, STYLE_VERSION } from "./style";
 
@@ -34,7 +35,7 @@ export async function getOrCreateIllustration(db: SupabaseClient, input: { promp
   const quota = await db.rpc("api_illustration_quota", { p_limit: limit });
   if (!quota.data) return { status: "limit" };
   try {
-    const img = await (opts.provider ?? imageProvider()).generate(`${STYLE_PREFIX}${safe.prompt}.${STYLE_SUFFIX}`);
+    const img = await (opts.provider ?? imageProvider()).generate({ prompt: `${STYLE_PREFIX}${safe.prompt}.${STYLE_SUFFIX}`, references: referencesFor(safe.prompt).map((r) => ({ b64: r.b64 })) });
     const { error } = await db.rpc("api_illustration_put", { p_hash: hash, p_prompt: safe.prompt, p_image: img.b64, p_mime: img.mime, p_alt: alt, p_style: STYLE_VERSION });
     if (error) return { status: "unavailable" };
     return { status: "ok", hash, alt, cached: false };
