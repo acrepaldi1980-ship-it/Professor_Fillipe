@@ -82,7 +82,8 @@ export function rerankAndSelect(
   const scored: Retrieved[] = rows
     .map((r) => {
       const a = authorityLayer(r.kind, r.tradition, opts.lenses);
-      return { ...r, ...a, score: r.rrf * a.weight * entryBoost(r, opts.terms) };
+      // Chunks found by the student's lens search (works of their tradition) are what the student asked to hear: boost them.
+      return { ...r, ...a, score: r.rrf * a.weight * entryBoost(r, opts.terms) * (r.signals.includes("lens") ? LENS_BOOST : 1) };
     })
     .sort((x, y) => y.score - x.score);
 
@@ -112,6 +113,7 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 // dictionary entries (Supabase) always answer. Repeated questions are served from a small cache.
 const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const LENS_BOOST = 1.7;
 const lensCache = new Map<string, { at: number; ids: string[] }>();
 async function lensWorkIds(store: KnowledgeStore, lenses: string[]): Promise<string[]> {
   if (!store.lensWorks || !lenses.length) return [];
@@ -153,8 +155,10 @@ export async function searchChunks(
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
   const lensSearch = async (): Promise<Row[]> => {
     if (!lensIds.length) return [];
-    const vec = await emb.embedQuery(queries[0]);
-    const args = { embedding: vec, text: queries[0], refs: [] as string[], perSignal: 12, workIds: lensIds };
+    // The lens works are mostly English: search with the English keywords when the question was rewritten.
+    const lensText = queries[queries.length - 1];
+    const vec = await emb.embedQuery(lensText);
+    const args = { embedding: vec, text: lensText, refs: [] as string[], perSignal: 12, workIds: lensIds };
     const [main, lib] = await Promise.all([store.searchChunks(args).catch(() => [] as Row[]), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
     return [...main, ...lib];
   };
