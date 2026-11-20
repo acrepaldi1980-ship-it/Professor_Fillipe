@@ -1,5 +1,6 @@
 // Catalog of visuals the teacher may open (spec 8.8): ids of maps, places and timelines, the prompt layer that lists them,
 // and the validation of the visuals the model returns (unknown ids are dropped: nothing invented reaches the screen).
+import { MODELS_3D } from "./models3d";
 import { ROUTES } from "./route-data";
 import { TIMELINES } from "./timeline-data";
 
@@ -10,6 +11,8 @@ export function visualsCatalogPrompt(): string {
 Mapas (visuals: {"kind":"map","map_id":...,"highlight_place_ids":[os lugares de que você está falando agora]}):
 ${maps}
 Ilustrações (visuals: {"kind":"illustration","prompt":"descrição curta da cena em inglês","alt":"descrição em português"}): só para cenas, objetos e lugares; NUNCA peça o rosto de Jesus nem uma imagem de Deus Pai.
+Modelos 3D (visuals: {"kind":"model3d","model_id":...}): só quando o aluno perguntar sobre esses objetos ou lugares:
+${MODELS_3D.map((m) => `${m.id}: ${m.name}`).join("\n")}
 Linhas do tempo (visuals: {"kind":"timeline","timeline_id":...,"focus_event_id":...}):
 ${lines}`;
 }
@@ -27,8 +30,10 @@ export function sanitizeVisuals<T extends Visual>(visuals: T[]): T[] {
       const t = TIMELINES.find((x) => x.id === v.timeline_id);
       if (!t) continue;
       out.push({ ...v, focus_event_id: t.events.some((x) => x.id === v.focus_event_id) ? v.focus_event_id : undefined });
+    } else if (v.kind === "model3d") {
+      if (MODELS_3D.some((m) => m.id === (v as { model_id?: string }).model_id)) out.push(v);
     } else {
-      out.push(v); // illustrations and 3D: validated by their own modules
+      out.push(v); // illustrations: validated by their own module
     }
   }
   return out.slice(0, 2);

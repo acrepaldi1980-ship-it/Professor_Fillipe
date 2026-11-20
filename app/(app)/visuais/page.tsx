@@ -15,10 +15,11 @@ type Visual = TeacherResponse["visuals"][number];
 export default function VisualsPage() {
   const [maps, setMaps] = useState<{ id: string; name: string }[]>([]);
   const [timelines, setTimelines] = useState<{ id: string; name: string }[]>([]);
+  const [models, setModels] = useState<{ id: string; name: string }[]>([]);
   const [open, setOpen] = useState<Visual | null>(null);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   useEffect(() => {
-    void listVisuals().then((r) => { setMaps(r.maps); setTimelines(r.timelines); }).catch(() => undefined);
+    void listVisuals().then((r) => { setMaps(r.maps); setTimelines(r.timelines); setModels(r.models); }).catch(() => undefined);
   }, []);
   async function openRef(ref: string) {
     try {
@@ -35,6 +36,8 @@ export default function VisualsPage() {
         <ul className="grid gap-2 sm:grid-cols-2">{maps.map((m) => <li key={m.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "map", map_id: m.id, highlight_place_ids: [] })}>{m.name}</button></li>)}</ul></section>
       <section><h2 className="mb-2 text-xl">{t("visuals.timelines")}</h2>
         <ul className="grid gap-2 sm:grid-cols-2">{timelines.map((x) => <li key={x.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "timeline", timeline_id: x.id })}>{x.name}</button></li>)}</ul></section>
+      <section><h2 className="mb-2 text-xl">{t("visuals.models")}</h2>
+        <ul className="grid gap-2 sm:grid-cols-2">{models.map((x) => <li key={x.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "model3d", model_id: x.id })}>{x.name}</button></li>)}</ul></section>
       {open && <VisualPanel visual={open} durationMs={7000} onClose={() => setOpen(null)} onOpenRef={(r) => void openRef(r)} />}
       {verse && (
         <Modal title={verse.title} onClose={() => setVerse(null)}>

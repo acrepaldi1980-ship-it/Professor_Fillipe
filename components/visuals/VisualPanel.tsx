@@ -1,6 +1,7 @@
 "use client";
 
 // Visual panel (RF-M08-01): full screen over the conversation on the phone (the speech keeps playing), side panel on tablet and desktop.
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { getMapRoute, getTimeline } from "@/lib/api-client";
@@ -11,6 +12,9 @@ import type { TimelineEvent } from "@/lib/visuals/timeline-data";
 import { MapView } from "./MapView";
 import { IllustrationView } from "./IllustrationView";
 import { TimelineView } from "./TimelineView";
+
+// The 3D engine is loaded only when a 3D model is opened.
+const Model3DView = dynamic(() => import("./Model3DView"), { ssr: false });
 
 type Visual = TeacherResponse["visuals"][number];
 
@@ -31,6 +35,7 @@ export function VisualPanel({ visual, durationMs, onClose, onOpenRef }: { visual
       <div className="min-h-0 flex-1 overflow-auto">
         {failed && <p role="alert" className="text-muted">{t("consent.error")}</p>}
         {visual.kind === "map" && route && <MapView key={route.id} route={route} highlight={visual.highlight_place_ids} durationMs={durationMs} onOpenRef={onOpenRef} />}
+        {visual.kind === "model3d" && <Model3DView modelId={visual.model_id} onOpenRef={onOpenRef} />}
         {visual.kind === "illustration" && <IllustrationView prompt={visual.prompt} alt={visual.alt} />}
         {visual.kind === "timeline" && tl && <TimelineView name={tl.name} events={tl.events} focus={visual.focus_event_id} onOpenRef={onOpenRef} />}
       </div>

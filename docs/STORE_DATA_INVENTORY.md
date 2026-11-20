@@ -42,3 +42,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Modos guiados (Prompt 1.8)
 - `sessions.context` guarda a configuração do modo (tema, texto-base, faixa etária, minutos, tipo de sermão). `lesson_plans` e `sermon_outlines` guardam os planos de aula e esboços de sermão do usuário (conteúdo criado por ele, ligado à conta). O PDF é gerado na hora e não é guardado.
+
+## Visuais (Prompt 1.9)
+- Mapas, linhas do tempo e modelos 3D são conteúdo público, sem dado do aluno. Ilustrações: o texto da cena (em inglês, sem dado pessoal) vai ao fornecedor de imagem (Google); a imagem fica em cache compartilhado (`illustrations`). `usage_counters.illustrations` conta o uso diário por aluno.

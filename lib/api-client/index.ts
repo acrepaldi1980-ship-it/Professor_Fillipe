@@ -204,9 +204,9 @@ export async function getMapRoute(id: string): Promise<{ id: string; name: strin
 export async function getTimeline(id: string): Promise<{ id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] }> {
   return (await apiJson<{ timeline: { id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] } }>(`/visuals/timelines?id=${encodeURIComponent(id)}`)).timeline;
 }
-export async function listVisuals(): Promise<{ maps: { id: string; name: string }[]; timelines: { id: string; name: string }[] }> {
-  const [m, t] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines")]);
-  return { maps: m.routes, timelines: t.timelines };
+export async function listVisuals(): Promise<{ maps: { id: string; name: string }[]; timelines: { id: string; name: string }[]; models: { id: string; name: string }[] }> {
+  const [m, t, d] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines"), apiJson<{ models: { id: string; name: string }[] }>("/visuals/models")]);
+  return { maps: m.routes, timelines: t.timelines, models: d.models };
 }
 
 export type IllustrationResult = { status: "ok"; hash: string; alt: string } | { status: "refused" | "limit" | "unavailable" };

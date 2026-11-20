@@ -308,11 +308,14 @@
   "visuals.maps": "Mapas",
   "visuals.timelines": "Linhas do tempo",
   "home.visuals": "Mapas e linhas do tempo",
-  "home.visuals.help": "Rotas bíblicas animadas e a cronologia da vida de Jesus e da igreja primitiva.",
+  "home.visuals.help": "Rotas bíblicas animadas, a cronologia, e a Arca, o Tabernáculo e o Templo em 3D.",
   "illustration.loading": "Preparando a ilustração...",
   "illustration.refused": "Não posso ilustrar essa cena. Que tal ver o texto bíblico?",
   "illustration.limit": "Você já usou as ilustrações de hoje. Amanhã tem mais.",
   "illustration.unavailable": "A ilustração não ficou disponível agora. A descrição vale por ela.",
   "visual.open.illustration": "Ver ilustração",
-  "illustration.caption": "Ilustração gerada por IA, só uma imaginação da cena."
+  "illustration.caption": "Ilustração gerada por IA, só uma imaginação da cena.",
+  "model3d.hint": "Gire, aproxime e toque nos pontos + para ver o que cada parte significa.",
+  "visual.open.model3d": "Ver em 3D",
+  "visuals.models": "Modelos em 3D"
 }

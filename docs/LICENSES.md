@@ -309,3 +309,6 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 ## Natural Earth (mapa-base dos visuais)
 - Fonte: https://github.com/nvkelso/natural-earth-vector (terra, lagos e rios, escala 1:50 milhões). Domínio público. Recortado para o Mediterrâneo e o Oriente Médio e simplificado (`public/maps/*.json`, 86 KB). Crédito exibido no mapa: "Mapa-base: Natural Earth (domínio público)".
 - Rotas e linhas do tempo (`lib/visuals/route-data.ts`, `timeline-data.ts`): conteúdo próprio do app. Coordenadas aproximadas conferidas com o OpenBible.info Geocoding (CC BY 4.0) e o Theographic (CC BY-SA 4.0).
+
+## Modelos 3D (Arca, Tabernáculo, Templo)
+- Construídos no código a partir de formas simples e das medidas bíblicas (`lib/visuals/models3d.ts`, `components/visuals/models/scenes.tsx`). Conteúdo próprio do app, sem arquivos de terceiros. Bibliotecas: three.js (MIT), @react-three/fiber (MIT), @react-three/drei (MIT).

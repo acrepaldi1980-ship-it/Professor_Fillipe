@@ -61,6 +61,29 @@ try {
   await p.click("[role=dialog] button:has-text('Crucificação')");
   say("clicking an event shows the verses and the uncertainty note", (await p.locator("[role=dialog] button:has-text('Mateus 27')").count()) > 0);
   await p.screenshot({ path: "/tmp/visuals-timeline.png" });
+  // 3D models
+  await p.click("[role=dialog] button:text('Fechar')");
+  say("library lists the 3 models", (await p.locator("section:has(h2:text('Modelos em 3D')) li").count()) === 3);
+  await p.click("button:text('A Arca da Aliança')");
+  await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
+  await p.waitForTimeout(2500);
+  say("3D: the Ark renders with 5 hotspots", (await p.locator("[role=dialog] button.map-pin").count()) === 5);
+  await p.screenshot({ path: "/tmp/visuals-ark.png" });
+  await p.locator("[role=dialog] button[aria-label='O propiciatório']").click();
+  say("3D: tapping a hotspot shows its text and verses", (await p.locator("[role=dialog] >> text=onde Deus prometeu se encontrar").count()) > 0 && (await p.locator("[role=dialog] button:has-text('Êxodo 25')").count()) > 0);
+  say("3D: text alternative exists", (await p.locator("[role=dialog] [role=img][aria-label*='Arca da Aliança']").count()) > 0);
+  await p.click("[role=dialog] button:text('Fechar')");
+  await p.click("button:text('O Tabernáculo (maquete)')");
+  await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
+  await p.waitForTimeout(2500);
+  await p.screenshot({ path: "/tmp/visuals-tabernacle.png" });
+  say("3D: the Tabernacle renders with 9 hotspots", (await p.locator("[role=dialog] button.map-pin").count()) === 9);
+  await p.click("[role=dialog] button:text('Fechar')");
+  await p.click("button:text('O Templo de Salomão')");
+  await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
+  await p.waitForTimeout(2500);
+  await p.screenshot({ path: "/tmp/visuals-temple.png" });
+  say("3D: Solomon's Temple renders with 7 hotspots", (await p.locator("[role=dialog] button.map-pin").count()) === 7);
   // phone: the panel covers the screen
   await p.setViewportSize({ width: 390, height: 800 });
   const box = await p.locator("[role=dialog]").boundingBox();
