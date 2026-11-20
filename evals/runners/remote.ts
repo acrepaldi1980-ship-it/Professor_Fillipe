@@ -2,7 +2,6 @@
 // Needs the Supabase management token (scripts/db.mjs) to create and delete the users. Users are removed by close().
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
-import { encryptField } from "../../lib/security/field-crypto";
 import { sql } from "../../scripts/db.mjs";
 import type { TeacherResponse } from "../../lib/teacher/schema";
 
@@ -30,8 +29,8 @@ export async function remoteTurn(text: string, level: string, lens?: string): Pr
   if (!current || current.used >= PER_USER) current = await newUser();
   current.used++;
   await sql(`update profiles set level='${level}' where user_id='${current.id}'`);
-  const enc = lens ? `'${encryptField(JSON.stringify([lens]))}'` : "null";
-  await sql(`insert into preferences (user_id, lenses_enc) values ('${current.id}', ${enc}) on conflict (user_id) do update set lenses_enc = excluded.lenses_enc`);
+  // Through the API, so the deployment encrypts with its own key (a locally encrypted value could not be read there).
+  await fetch(`${BASE}/preferences`, { method: "PUT", headers: current.headers, body: JSON.stringify({ lenses: lens ? [lens] : [] }) });
   // Every case is a fresh conversation: sharing a session made the teacher notice "repeated" questions across unrelated cases.
   const sess = (await (await fetch(`${BASE}/sessions`, { method: "POST", headers: current.headers, body: JSON.stringify({ mode: "free" }) })).json()) as { sessionId: string };
   const res = await fetch(`${BASE}/teacher/turn`, { method: "POST", headers: current.headers, body: JSON.stringify({ sessionId: sess.sessionId, text }) });
