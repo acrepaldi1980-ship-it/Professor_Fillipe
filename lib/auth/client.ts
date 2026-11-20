@@ -40,6 +40,8 @@ export async function signInWithGoogle(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  // the offline cache holds the student's private data: drop it with the session
+  try { (await navigator.serviceWorker?.ready)?.active?.postMessage("clear"); } catch { /* no service worker */ }
   await sb().auth.signOut();
   setAccessToken(null);
 }

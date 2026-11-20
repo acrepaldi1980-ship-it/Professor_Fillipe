@@ -14,7 +14,7 @@ import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
-import { closeSession, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -41,10 +41,12 @@ export default function StudyPage() {
   const [error, setError] = useState<string | null>(null);
   const [textOnly, setTextOnly] = useState(false);
   const [greeting, setGreeting] = useState(false);
-  const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
+  const [verse, setVerse] = useState<{ title: string; ref?: string; lines: { ref: string; text: string }[] } | null>(null);
+  const [marked, setMarked] = useState(false);
   const sessionId = useRef("");
   const firstLesson = useRef(false); // arrived from the welcome card (RF-M03-04)
   const firstFired = useRef(false);
+  const themeRef = useRef<string | null>(null); // a topic suggested by the home screen (?tema=)
   const [sessionReady, setSessionReady] = useState(false);
   const [mode, setMode] = useState<string>("free");
   const [tab, setTab] = useState<"chat" | "doc">("chat");
@@ -58,6 +60,7 @@ export default function StudyPage() {
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     if (query.get("primeira")) firstLesson.current = true;
+    if (query.get("tema")) { firstLesson.current = true; themeRef.current = query.get("tema"); }
     const existing = query.get("s");
     if (existing) {
       sessionId.current = existing;
@@ -75,6 +78,12 @@ export default function StudyPage() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
     setDocKey((k) => k + 1); // the teacher may have filled a section of the document
+  }, [messages]);
+  // 10 minutes without a message closes the session by itself (RF-M09-01): summary, map and cards wait in the notebook.
+  useEffect(() => {
+    if (messages.length < 2) return;
+    const h = window.setTimeout(() => void closeSessionFull(sessionId.current).catch(() => undefined), 10 * 60 * 1000);
+    return () => clearTimeout(h);
   }, [messages]);
   useEffect(() => {
     if (sessionReady) void getSessionDocument(sessionId.current).then((d) => setMode(d.mode)).catch(() => undefined);
@@ -164,6 +173,7 @@ export default function StudyPage() {
   useEffect(() => {
     if (!sessionReady || !firstLesson.current || firstFired.current) return;
     firstFired.current = true;
+    if (themeRef.current) return void send(t("study.first.ask").replace("{topic}", themeRef.current));
     void getMe().then((m) => {
       const topic = m.profile?.first_topic;
       if (topic) void send(t("study.first.ask").replace("{topic}", topic));
@@ -217,7 +227,8 @@ export default function StudyPage() {
   const openRef = useCallback(async (ref: string) => {
     try {
       const r = await getBibleVerses(MAIN_VERSION, ref);
-      setVerse({ title: formatRefPt(ref), lines: r.verses });
+      setMarked(false);
+      setVerse({ title: formatRefPt(ref), ref, lines: r.verses });
     } catch {
       setVerse({ title: formatRefPt(ref), lines: [{ ref, text: "—" }] });
     }
@@ -283,7 +294,7 @@ export default function StudyPage() {
         <Button type="submit">{t("study.send")}</Button>
       </form>
       <div className="flex items-center justify-between pb-3 text-sm">
-        {messages.length > 0 && <a href={`/feedback?s=${sessionId.current}`} onClick={() => void closeSession(sessionId.current).catch(() => undefined)} className="inline-flex min-h-11 items-center rounded-control border border-line px-3">{t("study.end")}</a>}
+        {messages.length > 0 && <a href={`/fechamento?s=${sessionId.current}`} className="inline-flex min-h-11 items-center rounded-control border border-line px-3">{t("study.end")}</a>}
         <label className="flex items-center gap-2"><input type="checkbox" checked={textOnly} onChange={(e) => setTextOnly(e.target.checked)} />{t("study.textonly")}</label>
         {state === "speaking" && <Button type="button" variant="ghost" onClick={stopSpeaking}>{t("study.interrupt")}</Button>}
       </div>
@@ -295,6 +306,7 @@ export default function StudyPage() {
           {verse.lines.map((l) => (
             <p key={l.ref} className="mb-2 text-[17px]"><sup className="mr-1 text-muted">{l.ref.split(".").pop()}</sup>{l.text}</p>
           ))}
+          {verse.ref && <Button type="button" variant="ghost" onClick={() => void addBookmark(verse.ref!, MAIN_VERSION).then(() => setMarked(true)).catch(() => undefined)} className="mt-2">{marked ? t("bookmark.done") : t("bookmark.add")}</Button>}
           <Button type="button" variant="ghost" onClick={() => setVerse(null)} className="mt-2">{t("study.verse.close")}</Button>
         </Modal>
       )}

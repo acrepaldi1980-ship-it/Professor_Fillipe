@@ -77,3 +77,30 @@ export function sermonPdf(o: SermonOutline): Promise<Buffer> {
     if (o.sources?.length) { heading(doc, "Fontes"); list(doc, o.sources); }
   });
 }
+
+export interface NotebookPdfItem {
+  kind: string;
+  title: string;
+  date: string;
+  text?: string;
+  mindMap?: { nodes: { id: string; label: string }[]; edges: { from: string; to: string; label?: string }[] };
+}
+
+/** Notebook export (RF-M09-04): one item or the whole notebook, A4. */
+export function notebookPdf(title: string, items: NotebookPdfItem[]): Promise<Buffer> {
+  return build(title, `${items.length} ${items.length === 1 ? "item" : "itens"} do seu caderno de estudos`, (doc) => {
+    items.forEach((it, i) => {
+      if (i > 0) doc.addPage();
+      doc.fillColor("#B5532D").font("Helvetica-Bold").fontSize(10).text(`${it.kind.toUpperCase()} · ${new Date(it.date).toLocaleDateString("pt-BR")}`);
+      doc.moveDown(0.3).fillColor("#2E2A24").font("Helvetica-Bold").fontSize(18).text(it.title);
+      doc.moveDown(0.5).font("Helvetica").fontSize(11.5);
+      if (it.text) doc.text(it.text, { lineGap: 3 });
+      if (it.mindMap) {
+        heading(doc, "Mapa mental");
+        const label = (id: string) => it.mindMap!.nodes.find((n) => n.id === id)?.label ?? id;
+        it.mindMap.nodes.forEach((n) => doc.text(`• ${n.label}`));
+        if (it.mindMap.edges.length) { doc.moveDown(0.4).fillColor("#6B645A"); it.mindMap.edges.forEach((e) => doc.text(`${label(e.from)} → ${label(e.to)}${e.label ? ` (${e.label})` : ""}`)); doc.fillColor("#2E2A24"); }
+      }
+    });
+  });
+}

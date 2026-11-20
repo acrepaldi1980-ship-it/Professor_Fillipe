@@ -29,3 +29,15 @@ export async function POST(req: Request) {
     return errorResponse(e);
   }
 }
+
+// GET /api/v1/sessions?limit=5 -> the student's latest sessions (for "Continuar de onde parei").
+export async function GET(req: Request) {
+  try {
+    const { db } = await requireUser(req);
+    const limit = Math.min(20, Number(new URL(req.url).searchParams.get("limit")) || 5);
+    const { data } = await db.from("sessions").select("id, mode, topic, started_at, ended_at").order("started_at", { ascending: false }).limit(limit);
+    return Response.json({ sessions: data ?? [] });
+  } catch (e) {
+    return errorResponse(e);
+  }
+}

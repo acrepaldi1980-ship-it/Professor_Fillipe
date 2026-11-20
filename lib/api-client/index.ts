@@ -221,3 +221,24 @@ export async function getIllustrationBlob(hash: string): Promise<Blob> {
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return res.blob();
 }
+
+// ---- Closing, review and notebook (Prompt 1.10) ----
+import type { MindMapData } from "@/components/review/MindMapView";
+export interface ClosingData { summary: string; mind_map: MindMapData; topics: string[]; cards: { id: string; question: string; answer: string; ref: string | null }[] }
+export const closeSessionFull = (sessionId: string) => apiJson<{ ok: boolean; closed: boolean; cards?: number }>(`/sessions/${sessionId}/close`, { method: "POST" });
+export const getClosing = (sessionId: string) => apiJson<ClosingData>(`/sessions/${sessionId}/closing`);
+export interface DueCard { id: string; question: string; ref: string | null }
+export const getDueCards = (limit = 10) => apiJson<{ cards: DueCard[]; total: number }>(`/review/due?limit=${limit}`);
+export const gradeCard = (cardId: string, answer: string) => apiJson<{ verdict: "wrong" | "partial" | "right"; feedback: string; expected: string; nextInDays: number }>("/review/grade", { method: "POST", body: JSON.stringify({ cardId, answer }) });
+export interface NotebookEntry { id: string; kind: string; title: string; snippet: string; date: string; books: string[]; sessionId?: string; ref?: string }
+export const getNotebook = (q = "", book = "", kind = "") => apiJson<{ items: NotebookEntry[] }>(`/notebook?q=${encodeURIComponent(q)}&book=${book}&kind=${kind}`);
+export const addNote = (title: string, text: string, book?: string) => apiJson<{ id: string }>("/notebook/notes", { method: "POST", body: JSON.stringify({ title, text, book }) });
+export const deleteNote = (id: string) => apiJson<{ ok: boolean }>(`/notebook/notes?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+export const addBookmark = (ref: string, versionId: string) => apiJson<{ ok: boolean }>("/notebook/bookmarks", { method: "POST", body: JSON.stringify({ ref, version_id: versionId }) });
+export async function exportNotebook(id = "all"): Promise<void> {
+  const res = await apiFetch(`/notebook/export?id=${encodeURIComponent(id)}`);
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  await getPlatform().files.save(id === "all" ? "meu-caderno.pdf" : "item-do-caderno.pdf", await res.blob());
+}
+export interface SessionRow { id: string; mode: string; topic: string | null; started_at: string; ended_at: string | null }
+export const getRecentSessions = (limit = 5) => apiJson<{ sessions: SessionRow[] }>(`/sessions?limit=${limit}`);

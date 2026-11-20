@@ -45,3 +45,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Visuais (Prompt 1.9)
 - Mapas, linhas do tempo e modelos 3D são conteúdo público, sem dado do aluno. Ilustrações: o texto da cena (em inglês, sem dado pessoal) vai ao fornecedor de imagem (Google); a imagem fica em cache compartilhado (`illustrations`). `usage_counters.illustrations` conta o uso diário por aluno.
+
+## Fechamento, revisão e caderno (Prompt 1.10)
+- Tabelas do aluno, protegidas por RLS: `session_closings` (resumo, mapa mental), `review_cards` e `review_logs` (cartões e notas da revisão), `notebook_items` (sessões, notas pessoais), `bookmarks` (versículos marcados). O texto das conversas é enviado ao modelo de linguagem para gerar o fechamento e corrigir respostas da revisão (nunca em sessões com evento pastoral). Cache offline no aparelho (service worker): Bíblia aberta, caderno, cartões do dia e perfil; apagado ao sair da conta.
