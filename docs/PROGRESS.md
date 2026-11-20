@@ -41,6 +41,8 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 | ID | Escolha | Data |
 | --- | --- | --- |
+| D-07 | Cronologia de referência do AT: **conservadora moderna** (Êxodo c. 1446 a.C. pela leitura de 1 Reis 6:1; reis de Israel e Judá por Thiele); datas sempre com incerteza e aviso de divergência | 2026-11-21 |
+| D-05 | Gerador de ilustrações: **Gemini Imagen** (mesma conta e crédito do Google AI Studio da voz) | 2026-11-21 |
 | D-06 | Sermão "explicativo" = explicar um conceito ou doutrina (parte de uma pergunta; divisões: o que é, de onde vem na Bíblia, o que muda na vida; textos de vários lugares) | 2026-11-20 |
 | D-08 | Ciência do responsável obrigatória para 13 a 17 anos (e-mail do responsável opcional); sem assinatura de plano sem responsável; menores com modo RA-22 | 2026-11-18 |
 | D-17 | MVP em `*.vercel.app` (gratuito); domínio próprio antes do lançamento público e do prompt 2.5 | 2026-11-18 |

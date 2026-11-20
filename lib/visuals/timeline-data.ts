@@ -1,5 +1,6 @@
 // Timelines (spec 8.8, RF-M08-03). Dates are approximate and carry their uncertainty ("c.", a range) on purpose.
-// The Old Testament timelines (patriarchs, judges, kings, prophets) wait for decision D-07 (reference chronology).
+// Old Testament chronology: D-07 (21/11/2026) = conservative modern (Exodus c. 1446 BC from 1 Kings 6:1; kings of Israel and Judah after Thiele).
+// Every date is approximate: other chronologies (late Exodus c. 1260 BC, Ussher) exist and the teacher says so.
 export interface TimelineEvent {
   id: string;
   name: string;
@@ -44,5 +45,54 @@ export const TIMELINES: TimelineDef[] = [
     e("arrest", "Prisão de Paulo em Jerusalém", 57, ["ACT.21.27-ACT.21.36"], "Dois anos em Cesareia.", 56, 58),
     e("rome", "Paulo em Roma", 60, ["ACT.28.16-ACT.28.31"], "Prisão domiciliar por dois anos.", 59, 62),
     e("fall", "Destruição de Jerusalém", 70, ["MAT.24.1-MAT.24.2"], "O templo é queimado pelos romanos.", 70, 70),
+  ] },
+
+  { id: "patriarchs", name: "Os patriarcas e o Êxodo", era: "ot", events: [
+    e("abraham_call", "O chamado de Abraão", -2090, ["GEN.12.1-GEN.12.4"], "Sai de Harã para Canaã aos 75 anos.", -2100, -1950),
+    e("isaac", "Nascimento de Isaque", -2066, ["GEN.21.1-GEN.21.5"], "Abraão tinha 100 anos.", -2080, -1940),
+    e("jacob", "Nascimento de Jacó e Esaú", -2006, ["GEN.25.24-GEN.25.26"], "Isaque tinha 60 anos.", -2020, -1880),
+    e("joseph_sold", "José vendido ao Egito", -1898, ["GEN.37.28"], "Tinha 17 anos.", -1910, -1700),
+    e("jacob_egypt", "Jacó desce ao Egito", -1876, ["GEN.46.1-GEN.46.7"], "A família de Jacó se instala em Gósen.", -1890, -1690),
+    e("exodus", "O Êxodo", -1446, ["EXO.12.40-EXO.12.41", "1KI.6.1"], "Pela leitura de 1 Reis 6:1 (480 anos antes do templo). O êxodo tardio propõe c. 1260 a.C.", -1446, -1260),
+    e("sinai", "A aliança no Sinai", -1445, ["EXO.19.1-EXO.20.17"], "Cerca de três meses depois da saída.", -1445, -1259),
+    e("conquest", "Travessia do Jordão e conquista de Canaã", -1406, ["JOS.3.14-JOS.3.17", "JOS.6.20"], "Quarenta anos depois do Êxodo.", -1406, -1220),
+  ] },
+  { id: "judges", name: "Os juízes", era: "ot", events: [
+    e("othniel", "Otniel", -1375, ["JDG.3.7-JDG.3.11"], "O primeiro juiz.", -1390, -1330),
+    e("ehud", "Eúde", -1315, ["JDG.3.12-JDG.3.30"], "Livra Israel de Eglom, rei de Moabe.", -1330, -1250),
+    e("deborah", "Débora e Baraque", -1209, ["JDG.4.1-JDG.5.31"], "A vitória sobre Sísera.", -1240, -1130),
+    e("gideon", "Gideão", -1169, ["JDG.6.11-JDG.8.28"], "Trezentos homens vencem Midiã.", -1200, -1100),
+    e("jephthah", "Jefté", -1100, ["JDG.11.1-JDG.12.7"], "Juiz em Gileade.", -1120, -1070),
+    e("samson", "Sansão", -1065, ["JDG.13.1-JDG.16.31"], "A luta contra os filisteus.", -1090, -1040),
+    e("samuel", "Samuel, o último juiz", -1050, ["1SA.3.19-1SA.3.21", "1SA.7.15"], "Faz a ponte para a monarquia.", -1070, -1020),
+  ] },
+  { id: "kings", name: "Os reis de Israel e Judá", era: "ot", events: [
+    e("saul", "Saul, primeiro rei", -1050, ["1SA.10.1", "1SA.11.15"], "Reinado de cerca de 40 anos.", -1050, -1010),
+    e("david", "Davi", -1010, ["2SA.5.4-2SA.5.5"], "Rei em Hebrom e depois em Jerusalém.", -1010, -970),
+    e("solomon", "Salomão e o templo", -966, ["1KI.6.1", "1KI.6.37-1KI.6.38"], "O templo começa a ser construído no 4º ano de Salomão.", -970, -931),
+    e("division", "A divisão do reino", -931, ["1KI.12.1-1KI.12.20"], "Roboão em Judá e Jeroboão em Israel.", -931, -931),
+    e("ahab", "Acabe e Elias", -874, ["1KI.16.29-1KI.16.33", "1KI.18.20-1KI.18.40"], "Reinado de Acabe, c. 874 a 853 a.C.", -874, -853),
+    e("jehu", "Jeú extingue a casa de Acabe", -841, ["2KI.9.1-2KI.10.31"], "O golpe de Jeú em Israel.", -841, -841),
+    e("samaria_fall", "Queda de Samaria", -722, ["2KI.17.5-2KI.17.6"], "A Assíria leva o reino do norte.", -722, -722),
+    e("hezekiah", "Ezequias", -715, ["2KI.18.1-2KI.19.37"], "A reforma e o livramento de Senaqueribe.", -715, -686),
+    e("josiah", "Josias", -640, ["2KI.22.1-2KI.23.30"], "A reforma e a redescoberta do livro da Lei.", -640, -609),
+    e("jerusalem_fall", "Queda de Jerusalém", -586, ["2KI.25.8-2KI.25.10"], "Nabucodonosor destrói o templo; início do exílio completo.", -587, -586),
+    e("cyrus", "Decreto de Ciro", -538, ["EZR.1.1-EZR.1.4"], "Autoriza o retorno dos exilados.", -538, -538),
+    e("temple2", "Segundo templo concluído", -516, ["EZR.6.14-EZR.6.15"], "Sob Zorobabel, Ageu e Zacarias.", -516, -516),
+    e("nehemiah", "Neemias reconstrói as muralhas", -445, ["NEH.2.1-NEH.2.8", "NEH.6.15"], "No 20º ano de Artaxerxes.", -445, -444),
+  ] },
+  { id: "prophets", name: "Os profetas", era: "ot", events: [
+    e("elijah", "Elias", -860, ["1KI.17.1", "2KI.2.11"], "No reino do norte, no tempo de Acabe.", -874, -850),
+    e("elisha", "Eliseu", -840, ["2KI.2.9-2KI.2.15", "2KI.13.20"], "Sucessor de Elias.", -850, -795),
+    e("jonah", "Jonas", -780, ["JON.1.1-JON.1.3", "2KI.14.25"], "Enviado a Nínive.", -790, -760),
+    e("amos", "Amós", -760, ["AMO.1.1"], "Profeta de Judá no reino do norte.", -765, -750),
+    e("hosea", "Oseias", -750, ["HOS.1.1"], "Amor fiel de Deus ao povo infiel.", -755, -715),
+    e("isaiah", "Isaías", -740, ["ISA.1.1", "ISA.6.1-ISA.6.8"], "Ministério de cerca de 60 anos em Jerusalém.", -740, -680),
+    e("micah", "Miqueias", -730, ["MIC.1.1"], "Contemporâneo de Isaías.", -735, -700),
+    e("jeremiah", "Jeremias", -627, ["JER.1.1-JER.1.10"], "Chamado no 13º ano de Josias; profeta até o exílio.", -627, -586),
+    e("daniel", "Daniel na Babilônia", -605, ["DAN.1.1-DAN.1.6"], "Levado cativo no 3º ano de Jeoaquim.", -605, -535),
+    e("ezekiel", "Ezequiel", -593, ["EZK.1.1-EZK.1.3"], "Profeta entre os exilados.", -593, -571),
+    e("haggai_zech", "Ageu e Zacarias", -520, ["HAG.1.1", "ZEC.1.1"], "Incentivam a reconstrução do templo.", -520, -518),
+    e("malachi", "Malaquias", -430, ["MAL.1.1"], "O último profeta do Antigo Testamento.", -450, -420),
   ] },
 ];

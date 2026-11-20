@@ -37,6 +37,11 @@ describe("timelines", () => {
     expect(dateLabel({ year: 30, from: 30, to: 33 })).toBe("c. 30 d.C. a 33 d.C.");
     expect(dateLabel({ year: -5, from: -7, to: -4 })).toBe("c. 7 a.C. a 4 a.C.");
   });
+  it("has the 6 MVP timelines, 4 of them for the Old Testament (D-07)", () => {
+    expect(TIMELINES.map((t) => t.id).sort()).toEqual(["early_church", "jesus_life", "judges", "kings", "patriarchs", "prophets"]);
+    expect(TIMELINES.filter((t) => t.era === "ot")).toHaveLength(4);
+    expect(TIMELINES.find((t) => t.id === "patriarchs")!.events.find((x) => x.id === "exodus")).toMatchObject({ year: -1446, to: -1260 });
+  });
   it("events are in chronological order and ranges contain the year", () => {
     for (const t of TIMELINES) {
       const years = t.events.map((e) => e.year);

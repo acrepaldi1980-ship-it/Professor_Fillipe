@@ -208,3 +208,16 @@ export async function listVisuals(): Promise<{ maps: { id: string; name: string 
   const [m, t] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines")]);
   return { maps: m.routes, timelines: t.timelines };
 }
+
+export type IllustrationResult = { status: "ok"; hash: string; alt: string } | { status: "refused" | "limit" | "unavailable" };
+export async function requestIllustration(prompt: string, alt?: string): Promise<IllustrationResult> {
+  const res = await apiFetch("/visuals/illustration", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt, alt }) });
+  const body = (await res.json().catch(() => ({ status: "unavailable" }))) as IllustrationResult;
+  if (res.status === 401) throw new Error("api_error_401");
+  return body;
+}
+export async function getIllustrationBlob(hash: string): Promise<Blob> {
+  const res = await apiFetch(`/visuals/illustration/${hash}`);
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return res.blob();
+}

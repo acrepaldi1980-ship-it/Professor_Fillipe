@@ -34,7 +34,7 @@ try {
   }, { key: `sb-${REF}-auth-token`, value: JSON.stringify(data.session) });
   await p.goto(`${BASE}/visuais`, { waitUntil: "networkidle" });
   await p.waitForSelector("text=Mapas e linhas do tempo", { timeout: 20000 });
-  say("library lists 11 maps and 2 timelines", (await p.locator("section:has(h2:text('Mapas')) li").count()) === 11 && (await p.locator("section:has(h2:text('Linhas do tempo')) li").count()) === 2);
+  say("library lists 11 maps and 6 timelines", (await p.locator("section:has(h2:text('Mapas')) li").count()) === 11 && (await p.locator("section:has(h2:text('Linhas do tempo')) li").count()) === 6);
   await p.click("button:text('A 2ª viagem missionária de Paulo')");
   await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
   say("map renders (MapLibre canvas)", true);

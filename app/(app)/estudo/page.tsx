@@ -319,9 +319,9 @@ function TeacherExtras({ r, onRef, onVisual, onOption }: { r: TeacherResponse; o
           <Button type="button" variant="ghost" className="mt-1 text-sm" onClick={() => onOption(t("study.divergence.compare"), "other_traditions")}>{t("study.divergence.compare")}</Button>
         </Toast>
       )}
-      {r.visuals.filter((v) => v.kind === "map" || v.kind === "timeline").length > 0 && (
+      {r.visuals.filter((v) => v.kind === "map" || v.kind === "timeline" || v.kind === "illustration").length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {r.visuals.map((v, i) => (v.kind === "map" || v.kind === "timeline" ? <Button key={i} type="button" className="text-sm" onClick={() => onVisual(v)}>{t(v.kind === "map" ? "visual.open.map" : "visual.open.timeline")}</Button> : null))}
+          {r.visuals.map((v, i) => (v.kind === "map" || v.kind === "timeline" || v.kind === "illustration" ? <Button key={i} type="button" className="text-sm" onClick={() => onVisual(v)}>{t(v.kind === "map" ? "visual.open.map" : v.kind === "timeline" ? "visual.open.timeline" : "visual.open.illustration")}</Button> : null))}
         </div>
       )}
       {refs.size > 0 && (

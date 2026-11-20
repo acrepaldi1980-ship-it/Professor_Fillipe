@@ -17,7 +17,7 @@ const citation = z.discriminatedUnion("type", [
 const visual = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("map"), map_id: z.string(), highlight_place_ids: z.array(z.string()).default([]) }),
   z.object({ kind: z.literal("timeline"), timeline_id: z.string(), focus_event_id: z.string().optional() }),
-  z.object({ kind: z.literal("illustration"), prompt: z.string(), style: z.string().default("app_default") }),
+  z.object({ kind: z.literal("illustration"), prompt: z.string(), style: z.string().default("app_default"), alt: z.string().optional() }),
   z.object({ kind: z.literal("model3d"), model_id: z.string() }),
 ]);
 

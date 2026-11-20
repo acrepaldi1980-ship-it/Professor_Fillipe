@@ -653,10 +653,10 @@ Todos os modos usam o mesmo motor (M05). O que muda é a camada de modo no promp
 **RF-M08-03 — Linhas do tempo**
 - Catálogo `timelines` (P0: 6; P1: 15): patriarcas, juízes, reis de Israel e Judá, profetas, vida de Jesus, igreja primitiva.
 - Zoom, eventos clicáveis com versículos e datas aproximadas com indicação de incerteza ("c. 1010 a.C.").
-- **[DECISÃO D-07]**: cronologia de referência para o AT.
+- D-07 (decidida em 21/11/2026): cronologia conservadora moderna para o AT (Êxodo c. 1446 a.C.; reis por Thiele), com a incerteza sempre visível e aviso quando há outras datações.
 
 **RF-M08-04 — Ilustrações**
-- Gerador de imagem configurável **[DECISÃO D-05]**; estilo fixo do app (definido em `lib/visuals/style.ts`).
+- Gerador de imagem configurável (D-05, decidida em 21/11/2026: Gemini Imagen, atrás do adaptador `ImageProvider`); estilo fixo do app (definido em `lib/visuals/style.ts`).
 - Regras RA-20 aplicadas no prompt da imagem e num filtro de prompts proibidos.
 - Cache por hash do prompt; antes de gerar, procura na biblioteca de ilustrações aprovadas.
 - Limite por plano (seção 8.12).
@@ -1496,9 +1496,9 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-02 | Modelos de IA padrão | Rápido: claude-sonnet-5-5; profundo: claude-opus-5-5 | Prompt 0.1 |
 | D-03 | Voz do professor (uma ou várias) | Uma voz masculina pt-BR no MVP | Prompt 0.1 |
 | D-04 | Fornecedor de voz (STT/TTS) | Claude Code apresenta 2–3 opções com preço e latência | Prompt 0.1 |
-| D-05 | Fornecedor de ilustrações | Claude Code apresenta opções com preço | Prompt 1.9 |
+| D-05 | Fornecedor de ilustrações | **Decidida em 21/11/2026:** Gemini Imagen | Prompt 1.9 |
 | D-06 | Definição do sermão "explicativo" | **Decidida em 20/11/2026:** explicar um conceito ou doutrina (opção A) | Antes do prompt 1.8 |
-| D-07 | Cronologia de referência do AT | Exibir datas com incerteza; escolher uma cronologia base | Prompt 1.9 |
+| D-07 | Cronologia de referência do AT | **Decidida em 21/11/2026:** conservadora moderna, datas com incerteza | Prompt 1.9 |
 | D-08 | Regras para menores de 13 a 17 anos | **Decidida:** ciência do responsável (caixa obrigatória); sem assinatura sem responsável | Prompt 1.1 |
 | D-09 | Fornecedor de embeddings | Multilíngue, com bom desempenho em português | Prompt 0.1 |
 | D-10 | Compra dentro dos apps das lojas | Pesquisar regras atuais no Brasil | Prompt 2.5 |

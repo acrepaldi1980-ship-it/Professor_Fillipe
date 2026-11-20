@@ -9,6 +9,7 @@ export function visualsCatalogPrompt(): string {
   return `VISUAIS DISPONÍVEIS (use no máximo 2 por turno, só quando ajudarem, com ids EXATOS desta lista; nunca invente ids):
 Mapas (visuals: {"kind":"map","map_id":...,"highlight_place_ids":[os lugares de que você está falando agora]}):
 ${maps}
+Ilustrações (visuals: {"kind":"illustration","prompt":"descrição curta da cena em inglês","alt":"descrição em português"}): só para cenas, objetos e lugares; NUNCA peça o rosto de Jesus nem uma imagem de Deus Pai.
 Linhas do tempo (visuals: {"kind":"timeline","timeline_id":...,"focus_event_id":...}):
 ${lines}`;
 }

@@ -9,6 +9,7 @@ import type { TeacherResponse } from "@/lib/teacher/schema";
 import type { RouteDef } from "@/lib/visuals/route-data";
 import type { TimelineEvent } from "@/lib/visuals/timeline-data";
 import { MapView } from "./MapView";
+import { IllustrationView } from "./IllustrationView";
 import { TimelineView } from "./TimelineView";
 
 type Visual = TeacherResponse["visuals"][number];
@@ -30,6 +31,7 @@ export function VisualPanel({ visual, durationMs, onClose, onOpenRef }: { visual
       <div className="min-h-0 flex-1 overflow-auto">
         {failed && <p role="alert" className="text-muted">{t("consent.error")}</p>}
         {visual.kind === "map" && route && <MapView key={route.id} route={route} highlight={visual.highlight_place_ids} durationMs={durationMs} onOpenRef={onOpenRef} />}
+        {visual.kind === "illustration" && <IllustrationView prompt={visual.prompt} alt={visual.alt} />}
         {visual.kind === "timeline" && tl && <TimelineView name={tl.name} events={tl.events} focus={visual.focus_event_id} onOpenRef={onOpenRef} />}
       </div>
     </section>

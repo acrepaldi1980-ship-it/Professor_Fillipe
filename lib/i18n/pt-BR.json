@@ -308,5 +308,11 @@
   "visuals.maps": "Mapas",
   "visuals.timelines": "Linhas do tempo",
   "home.visuals": "Mapas e linhas do tempo",
-  "home.visuals.help": "Rotas bíblicas animadas e a cronologia da vida de Jesus e da igreja primitiva."
+  "home.visuals.help": "Rotas bíblicas animadas e a cronologia da vida de Jesus e da igreja primitiva.",
+  "illustration.loading": "Preparando a ilustração...",
+  "illustration.refused": "Não posso ilustrar essa cena. Que tal ver o texto bíblico?",
+  "illustration.limit": "Você já usou as ilustrações de hoje. Amanhã tem mais.",
+  "illustration.unavailable": "A ilustração não ficou disponível agora. A descrição vale por ela.",
+  "visual.open.illustration": "Ver ilustração",
+  "illustration.caption": "Ilustração gerada por IA, só uma imaginação da cena."
 }
