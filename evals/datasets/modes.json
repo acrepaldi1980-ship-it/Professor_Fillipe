@@ -1,0 +1,126 @@
+[
+ {
+  "id": "mod-lesson-1",
+  "mode": "lesson",
+  "context": {
+   "topic": "Filipe e o eunuco etíope",
+   "ref": "Atos 8:26-40",
+   "age_group": "adults",
+   "minutes": 45
+  },
+  "turns": 15,
+  "expect": "Plano de aula com objetivo, quebra-gelo, contexto, 3 a 5 pontos, dinâmica, 4 a 8 perguntas, aplicação e versículo, em até 15 trocas, adaptado à faixa etária; uma seção por vez, só depois da aprovação."
+ },
+ {
+  "id": "mod-lesson-2",
+  "mode": "lesson",
+  "context": {
+   "topic": "A parábola do filho pródigo",
+   "ref": "Lucas 15:11-32",
+   "age_group": "kids",
+   "minutes": 30
+  },
+  "turns": 15,
+  "expect": "Plano de aula com objetivo, quebra-gelo, contexto, 3 a 5 pontos, dinâmica, 4 a 8 perguntas, aplicação e versículo, em até 15 trocas, adaptado à faixa etária; uma seção por vez, só depois da aprovação."
+ },
+ {
+  "id": "mod-lesson-3",
+  "mode": "lesson",
+  "context": {
+   "topic": "O fruto do Espírito",
+   "ref": "Gálatas 5:22-23",
+   "age_group": "youth",
+   "minutes": 60
+  },
+  "turns": 15,
+  "expect": "Plano de aula com objetivo, quebra-gelo, contexto, 3 a 5 pontos, dinâmica, 4 a 8 perguntas, aplicação e versículo, em até 15 trocas, adaptado à faixa etária; uma seção por vez, só depois da aprovação."
+ },
+ {
+  "id": "mod-lesson-4",
+  "mode": "lesson",
+  "context": {
+   "topic": "Davi e Golias",
+   "ref": "1 Samuel 17",
+   "age_group": "teens",
+   "minutes": 45
+  },
+  "turns": 15,
+  "expect": "Plano de aula com objetivo, quebra-gelo, contexto, 3 a 5 pontos, dinâmica, 4 a 8 perguntas, aplicação e versículo, em até 15 trocas, adaptado à faixa etária; uma seção por vez, só depois da aprovação."
+ },
+ {
+  "id": "mod-sermon-1",
+  "mode": "sermon",
+  "context": {
+   "sermon_type": "Temático",
+   "ref_or_theme": "A graça de Deus"
+  },
+  "turns": 16,
+  "expect": "Esboço temático com divisões vindas do tema e apoiadas em vários textos."
+ },
+ {
+  "id": "mod-sermon-2",
+  "mode": "sermon",
+  "context": {
+   "sermon_type": "Textual",
+   "ref_or_theme": "João 3:16"
+  },
+  "turns": 16,
+  "expect": "Esboço textual: divisões vindas do próprio versículo."
+ },
+ {
+  "id": "mod-sermon-3",
+  "mode": "sermon",
+  "context": {
+   "sermon_type": "Expositivo",
+   "ref_or_theme": "Atos 8:26-40"
+  },
+  "turns": 16,
+  "expect": "Esboço expositivo de Atos 8:26-40 com todas as divisões vindas do fluxo do texto."
+ },
+ {
+  "id": "mod-sermon-4",
+  "mode": "sermon",
+  "context": {
+   "sermon_type": "Explicativo",
+   "ref_or_theme": "O que é a graça?"
+  },
+  "turns": 16,
+  "expect": "Esboço explicativo (D-06): o que é, de onde vem na Bíblia, o que muda na vida; textos de vários lugares."
+ },
+ {
+  "id": "mod-deep-1",
+  "mode": "deep",
+  "context": {
+   "ref": "João 1:1-5"
+  },
+  "turns": 3,
+  "expect": "Texto na versão principal, palavras-chave no original com lema e Strong vindos dos trechos, contexto, visões por tradição e bibliografia; nada inventado."
+ },
+ {
+  "id": "mod-deep-2",
+  "mode": "deep",
+  "context": {
+   "ref": "Romanos 3:21-26"
+  },
+  "turns": 3,
+  "expect": "Texto na versão principal, palavras-chave no original com lema e Strong vindos dos trechos, contexto, visões por tradição e bibliografia; nada inventado."
+ },
+ {
+  "id": "mod-deep-3",
+  "mode": "deep",
+  "context": {
+   "ref": "Atos 8:30-35"
+  },
+  "turns": 3,
+  "expect": "Texto na versão principal, palavras-chave no original com lema e Strong vindos dos trechos, contexto, visões por tradição e bibliografia; nada inventado."
+ },
+ {
+  "id": "mod-deep-4",
+  "mode": "deep",
+  "context": {
+   "ref": "Salmos 23:1-6"
+  },
+  "turns": 3,
+  "expect": "Texto na versão principal, palavras-chave no original com lema e Strong vindos dos trechos, contexto, visões por tradição e bibliografia; nada inventado."
+ }
+]

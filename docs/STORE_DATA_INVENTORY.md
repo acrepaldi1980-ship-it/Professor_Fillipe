@@ -39,3 +39,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Entrevista guiada e configuração (Prompt 1.7)
 - Em `profiles`: tempo de estudo bíblico, objetivos, minutos por dia, formatos preferidos, primeiro tema e nível estimado. A **função no ministério** e a **faixa etária que ensina** são dado religioso: só são gravadas com o consentimento de dado sensível, a função criptografada (AES-256-GCM). Em `preferences`: lentes (criptografadas, só com consentimento) e versões da Bíblia. Entram no formulário de privacidade das lojas como "preferências e dados de uso do app, ligados à conta".
+
+## Modos guiados (Prompt 1.8)
+- `sessions.context` guarda a configuração do modo (tema, texto-base, faixa etária, minutos, tipo de sermão). `lesson_plans` e `sermon_outlines` guardam os planos de aula e esboços de sermão do usuário (conteúdo criado por ele, ligado à conta). O PDF é gerado na hora e não é guardado.

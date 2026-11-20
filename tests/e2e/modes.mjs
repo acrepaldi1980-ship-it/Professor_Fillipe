@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { sql } from "../../scripts/db.mjs";
 const require = createRequire((process.env.GLOBAL_NM ?? "/opt/node22/lib/node_modules") + "/x.js");
-const { chromium, devices } = require("playwright");
+const { chromium } = require("playwright");
 const REF = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
 const BASE = process.env.APP_URL ?? "http://localhost:3100";
 let ok = true;
