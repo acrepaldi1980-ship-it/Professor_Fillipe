@@ -69,7 +69,7 @@ const UNWANTED = /Fiction|Poetry|Drama|Juvenile|Humor|Cooking|Short stories|Dete
 const EXCLUDED = /Swedenborg|Eddy, Mary|Christian Science|Science and Health|Mormon|Snow, Eliza|Smith, Joseph|Young, Brigham|Book of Mormon|Doré|Weymouth New Testament|Lives of the Saints|Popish|Nunneries|Jesuit|Romanism|Russell, Charles|Watch Tower|Theosoph/i;
 
 const TRADITIONS: [RegExp, string][] = [
-  [/Spurgeon|Gill, John|Bunyan|Strong, Augustus|Carey, William|Judson|Wayland/, "baptist"],
+  [/Spurgeon|Gordon, A\. J|Gill, John|Bunyan|Strong, Augustus|Carey, William|Judson|Wayland/, "baptist"],
   [/Luther|Melanchthon|Walther|Chemnitz/, "lutheran"],
   [/Calvin|Hodge|Edwards, Jonathan|Warfield|Knox, John|Owen, John|Baxter|Watson, Thomas|Boston, Thomas|Bonar|Murray, Andrew|Kuyper/, "reformed"],
   [/Wesley|Fletcher, John|Clarke, Adam|Watson, Richard|Asbury|Booth|Finney|Simpson, A\. B\./, "wesleyan"],
