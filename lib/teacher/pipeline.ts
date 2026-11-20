@@ -1,12 +1,11 @@
 // One teacher turn (spec 8.5.1): crisis check → intent → references → retrieval → prompt → model → validation
 // → citation verification → memory. Every dependency is injected so the pipeline is testable without network.
-import { findReferences } from "../knowledge/refs-parser";
 import type { BibleVerse, Retrieved, SearchOptions } from "../knowledge/search";
-import { classifyIntent } from "./intents";
 import { memory, type ChatMessage } from "./memory";
-import { detectPastoralCrisis, pastoralResponse } from "./pastoral";
-import { buildSystemParts, DEFAULT_BIBLE, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
-import { countWords, teacherResponseSchema, WORD_LIMITS, type Intent, type TeacherResponse } from "./schema";
+import { pastoralResponse } from "./pastoral";
+import { classify, DEEP_INTENTS, extractRefs, moderate, resolveSearch, selectTier, wordLimit } from "./stages";
+import { buildSystemParts, DEFAULT_BIBLE, PROMPT_DB_VERSION, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
+import { countWords, teacherResponseSchema, type Intent, type TeacherResponse } from "./schema";
 import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
 import { ensureClosingQuestion } from "./speech";
@@ -56,6 +55,8 @@ export interface TurnResult {
     pastoral: boolean;
     retrievedChunks: number;
     lensChunks?: number;
+    /** Version of the prompt layers used (prompt_versions). */
+    promptVersion?: number;
     removedCitations: number;
     schemaRetries: number;
     speechRewrites: number;
@@ -72,16 +73,7 @@ export interface TurnResult {
   };
 }
 
-const ANAPHORA = /\b(desse|dessa|disso|nesse|nessa|nisso|esse texto|essa passagem|essa parabola|esse trecho|sobre ele|sobre ela|dele|dela|continue|continua|aprofund|detalh|mais sobre|e o |e a |e os |e as |por que ele|por que ela)\b/i;
-
-/** A question with no subject of its own that leans on the previous turn. */
-export function isFollowUp(text: string, hasOwnRefs: boolean, intent: Intent): boolean {
-  if (hasOwnRefs) return false;
-  const t = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  return ANAPHORA.test(t) || ["deepen", "other_traditions", "compare_versions"].includes(intent) || t.split(/\s+/).length < 8;
-}
-
-const DEEP_INTENTS: Intent[] = ["deepen", "other_traditions", "compare_versions"];
+export { isFollowUp } from "./stages";
 
 /** Builds a minimal valid response from whatever speech text the model produced (no citations: nothing unverified is claimed). */
 export function salvageText(raw: unknown, name: string): TeacherResponse | null {
@@ -115,7 +107,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const baseMeta = { retrievedChunks: 0, removedCitations: 0, schemaRetries: 0, speechRewrites: 0, retrievalMs: 0, llmMs: 0 };
 
   // 1) Crisis detection happens before any generation and the text is never stored (RA-17).
-  if (detectPastoralCrisis(input.text)) {
+  if (moderate(input.text).crisis) {
     const response = pastoralResponse(student.preferred_name);
     return {
       response,
@@ -125,14 +117,11 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   }
 
   // 2) Intent and 3) references cited by the student.
-  const intent = input.intent ?? classifyIntent(input.text);
-  const mentioned = findReferences(input.text).flatMap((r) => r.refs);
+  const intent = classify(input.text, input.intent);
+  const mentioned = extractRefs(input.text);
   const priorHistory = input.history ?? memory.get(input.sessionId);
   // Follow-ups ("aprofunde esse texto", "e o irmão mais velho?") carry no subject of their own: borrow it from the conversation.
-  const followUp = isFollowUp(input.text, mentioned.length > 0, intent);
-  const lastUser = [...priorHistory].reverse().find((m) => m.role === "user")?.content ?? "";
-  const searchText = followUp && lastUser ? `${lastUser} ${input.text}` : input.text;
-  const carriedRefs = followUp ? (input.lastRefs ?? []) : [];
+  const { searchText, carriedRefs } = resolveSearch({ text: input.text, intent, mentioned, history: priorHistory, lastRefs: input.lastRefs });
 
   // 4) Retrieval.
   const tSearch = Date.now();
@@ -170,7 +159,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   };
   const history = priorHistory.slice(-(deps.historyMessages ?? 24));
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
-  const tier = DEEP_INTENTS.includes(intent) ? "deep" : "fast";
+  const tier = selectTier({ intent, lenses: bible.lenses });
 
   const tLlm = Date.now();
   // Optional extra passes (retry, shorter version, rewrite) must never break a turn that already has an answer.
@@ -206,7 +195,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   }
 
   // RA-06: spoken turns have a word limit; ask once for a shorter version (summary/deep intents have more room).
-  const limit = DEEP_INTENTS.includes(intent) ? WORD_LIMITS.deep : WORD_LIMITS.normal;
+  const limit = wordLimit(intent);
   let lengthRewrites = 0;
   if (countWords(parsed.data.speech) > Math.round(limit * 1.1)) {
     lengthRewrites = 1;
@@ -246,6 +235,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       tier,
       pastoral: response.pastoral_flag,
       retrievedChunks: chunks.length,
+      promptVersion: layers?.version ?? PROMPT_DB_VERSION,
       lensChunks: chunks.filter((c) => c.signals?.includes("lens")).length,
       removedCitations: ver.removed.length,
       schemaRetries,

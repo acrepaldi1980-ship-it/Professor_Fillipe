@@ -270,7 +270,12 @@ function TeacherExtras({ r, onRef, onOption }: { r: TeacherResponse; onRef(ref: 
   const works = r.citations.filter((c) => c.type === "work");
   return (
     <div className="mt-2 space-y-2">
-      {r.lens_divergence.present && <Toast tone="warn">Aqui as tradições divergem. {r.lens_divergence.summary}</Toast>}
+      {r.lens_divergence.present && (
+        <Toast tone="warn">
+          <strong>{t("study.divergence")}</strong> {r.lens_divergence.summary}
+          <Button type="button" variant="ghost" className="mt-1 text-sm" onClick={() => onOption(t("study.divergence.compare"), "other_traditions")}>{t("study.divergence.compare")}</Button>
+        </Toast>
+      )}
       {refs.size > 0 && (
         <div className="flex flex-wrap gap-2">
           {[...refs].slice(0, 6).map((ref) => (
