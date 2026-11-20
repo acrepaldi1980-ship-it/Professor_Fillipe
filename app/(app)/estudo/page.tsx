@@ -12,7 +12,7 @@ import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
-import { closeSession, createSession, flagAnswer, getBibleVerses, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { closeSession, createSession, flagAnswer, getBibleVerses, getMe, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -41,21 +41,28 @@ export default function StudyPage() {
   const [greeting, setGreeting] = useState(false);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   const sessionId = useRef("");
+  const firstLesson = useRef(false); // arrived from the welcome card (RF-M03-04)
+  const firstFired = useRef(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const nextId = useRef(1);
   const playId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   // The conversation lives in a server-side session: /estudo?s=<id> (query string keeps the screen exportable for Capacitor).
   useEffect(() => {
-    const existing = new URLSearchParams(window.location.search).get("s");
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("primeira")) firstLesson.current = true;
+    const existing = query.get("s");
     if (existing) {
       sessionId.current = existing;
+      setSessionReady(true);
       return;
     }
     void createSession("free")
       .then(({ sessionId: id }) => {
         sessionId.current = id;
         router.replace(`/estudo?s=${id}`);
+        setSessionReady(true);
       })
       .catch(() => router.replace("/login"));
   }, [router]);
@@ -140,6 +147,16 @@ export default function StudyPage() {
     },
     [speak, stopSpeaking, textOnly, router],
   );
+
+  // First lesson (RF-M03-04): a free-study session opens with the topic the student named in the interview.
+  useEffect(() => {
+    if (!sessionReady || !firstLesson.current || firstFired.current) return;
+    firstFired.current = true;
+    void getMe().then((m) => {
+      const topic = m.profile?.first_topic;
+      if (topic) void send(t("study.first.ask").replace("{topic}", topic));
+    });
+  }, [sessionReady, send]);
 
   const stopRecordingAndSend = useCallback(async () => {
     setRecording(false);

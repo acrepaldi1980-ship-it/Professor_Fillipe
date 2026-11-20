@@ -22,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         if (me.onboarding.needsConsent) return router.replace("/onboarding/consentimento");
         if (me.onboarding.needsReligiousChoice) return router.replace("/onboarding/dado-religioso");
+        if (me.onboarding.needsInterview) return router.replace("/onboarding/entrevista");
         setReady(true);
       } catch {
         if (!cancelled) router.replace("/login");

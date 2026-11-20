@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       profile: profile ? safe : null,
       consents,
       termsVersion: TERMS_VERSION,
-      onboarding: { needsConsent: !!needsConsent, needsReligiousChoice: !consents.sensitive_religious },
+      onboarding: { needsConsent: !!needsConsent, needsReligiousChoice: !consents.sensitive_religious, needsInterview: !profile?.level },
     });
   } catch (e) {
     return errorResponse(e);

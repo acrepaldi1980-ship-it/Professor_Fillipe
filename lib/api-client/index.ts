@@ -105,10 +105,10 @@ export async function getBibleVerses(version: string, ref: string) {
 // ---- Account, profile and sessions ----
 export interface MeResponse {
   user: { id: string; email?: string };
-  profile: { display_name: string | null; preferred_name: string | null; birth_date: string | null; is_minor: boolean; ui_prefs: Record<string, unknown>; role: string } | null;
+  profile: { first_topic?: string | null; level?: string | null; level_score?: number | null; goals?: string[]; preferred_formats?: string[]; daily_minutes?: number | null; display_name: string | null; preferred_name: string | null; birth_date: string | null; is_minor: boolean; ui_prefs: Record<string, unknown>; role: string } | null;
   consents: Record<string, { granted: boolean; version: string }>;
   termsVersion: string;
-  onboarding: { needsConsent: boolean; needsReligiousChoice: boolean };
+  onboarding: { needsConsent: boolean; needsReligiousChoice: boolean; needsInterview: boolean };
 }
 
 export const getMe = () => apiJson<MeResponse>("/me");
@@ -165,5 +165,22 @@ export const commentNote = (id: string, body: string) => apiJson<{ ok: boolean }
 
 export const flagAnswer = (messageId: string, reason?: string) => apiJson<{ ok: boolean }>("/teacher/flag", { method: "POST", body: JSON.stringify({ messageId, reason }) });
 export const closeSession = (sessionId: string) => apiJson<{ ok: boolean; summarized: boolean }>(`/sessions/${sessionId}/close`, { method: "POST" });
-export const getLenses = () => apiJson<{ lenses: string[]; available: string[] }>("/preferences");
+export interface BibleVersionInfo { id: string; name: string; abbreviation: string; language: string; audience: string }
+export const getLenses = () => apiJson<{ lenses: string[]; available: string[]; versions: BibleVersionInfo[]; main_version_id: string; compare_version_ids: string[] }>("/preferences");
+export const saveVersions = (main_version_id: string, compare_version_ids: string[]) => apiJson<{ ok: boolean }>("/preferences", { method: "PUT", body: JSON.stringify({ main_version_id, compare_version_ids }) });
 export const saveLensesApi = (lenses: string[]) => apiJson<{ ok: boolean }>("/preferences", { method: "PUT", body: JSON.stringify({ lenses }) });
+
+// ---- Interview, level and settings (Prompt 1.7) ----
+export interface InterviewAnswers {
+  preferred_name: string;
+  study_experience: "starting" | "lt_2y" | "2_10y" | "gt_10y";
+  goals: string[];
+  ministry_role?: string;
+  teaching_age_group?: string;
+  daily_minutes: number;
+  preferred_formats: string[];
+  first_topic: string;
+}
+export const submitInterview = (a: InterviewAnswers) => apiJson<{ score: number; level: "iniciante" | "intermediário" | "avançado" }>("/me/interview", { method: "POST", body: JSON.stringify(a) });
+export const getLevel = () => apiJson<{ level: string; suggestion: string | null }>("/me/level");
+export const setLevel = (level: string) => apiJson<{ ok: boolean }>("/me/level", { method: "POST", body: JSON.stringify({ level }) });

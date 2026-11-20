@@ -36,3 +36,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Notas de Estudo Pentecostais (Prompt 1.4)
 - Tabelas `own_notes` e `own_note_comments`: conteúdo editorial e comentários de revisores (usuário com papel `reviewer` ou `admin`). Nenhum dado de aluno. Os comentários guardam apenas o `user_id` do revisor e o texto. Não entra no formulário de privacidade das lojas além do que já consta para contas de revisor.
+
+## Entrevista guiada e configuração (Prompt 1.7)
+- Em `profiles`: tempo de estudo bíblico, objetivos, minutos por dia, formatos preferidos, primeiro tema e nível estimado. A **função no ministério** e a **faixa etária que ensina** são dado religioso: só são gravadas com o consentimento de dado sensível, a função criptografada (AES-256-GCM). Em `preferences`: lentes (criptografadas, só com consentimento) e versões da Bíblia. Entram no formulário de privacidade das lojas como "preferências e dados de uso do app, ligados à conta".
