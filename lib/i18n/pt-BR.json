@@ -296,5 +296,17 @@
   "doc.item.illustration": "Ilustração",
   "doc.item.application": "Aplicação",
   "doc.item.add": "Adicionar",
-  "doc.item.remove": "Remover"
+  "doc.item.remove": "Remover",
+  "map.alt": "Mapa: {name}. Lugares em ordem: {places}.",
+  "visual.open.map": "Ver no mapa",
+  "visual.open.timeline": "Ver na linha do tempo",
+  "visual.close": "Fechar",
+  "visual.panel": "Painel de visuais",
+  "timeline.alt": "Linha do tempo: {name}. Eventos em ordem: {events}.",
+  "timeline.uncertain": "datas aproximadas",
+  "visuals.title": "Mapas e linhas do tempo",
+  "visuals.maps": "Mapas",
+  "visuals.timelines": "Linhas do tempo",
+  "home.visuals": "Mapas e linhas do tempo",
+  "home.visuals.help": "Rotas bíblicas animadas e a cronologia da vida de Jesus e da igreja primitiva."
 }

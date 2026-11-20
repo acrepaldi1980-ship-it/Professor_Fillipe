@@ -196,3 +196,15 @@ export async function downloadSessionPdf(sessionId: string): Promise<void> {
   const cd = res.headers.get("Content-Disposition") ?? "";
   await getPlatform().files.save(/filename="([^"]+)"/.exec(cd)?.[1] ?? "documento.pdf", await res.blob());
 }
+
+// ---- Visuals: maps and timelines (Prompt 1.9) ----
+export async function getMapRoute(id: string): Promise<{ id: string; name: string; steps: { text: string; steps: import("@/lib/visuals/route-data").RouteStep[] }; sources: string[] }> {
+  return (await apiJson<{ route: { id: string; name: string; steps: { text: string; steps: import("@/lib/visuals/route-data").RouteStep[] }; sources: string[] } }>(`/visuals/maps?id=${encodeURIComponent(id)}`)).route;
+}
+export async function getTimeline(id: string): Promise<{ id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] }> {
+  return (await apiJson<{ timeline: { id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] } }>(`/visuals/timelines?id=${encodeURIComponent(id)}`)).timeline;
+}
+export async function listVisuals(): Promise<{ maps: { id: string; name: string }[]; timelines: { id: string; name: string }[] }> {
+  const [m, t] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines")]);
+  return { maps: m.routes, timelines: t.timelines };
+}

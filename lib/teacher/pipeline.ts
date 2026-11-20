@@ -6,6 +6,7 @@ import { pastoralResponse } from "./pastoral";
 import { classify, DEEP_INTENTS, extractRefs, moderate, resolveSearch, selectTier, wordLimit } from "./stages";
 import { buildSystemParts, DEFAULT_BIBLE, PROMPT_DB_VERSION, DEFAULT_STUDENT, type BibleSettings, type StudentProfile } from "./prompts";
 import { countWords, teacherResponseSchema, type Intent, type TeacherResponse } from "./schema";
+import { sanitizeVisuals } from "../visuals/catalog";
 import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
 import { ensureClosingQuestion } from "./speech";
@@ -229,7 +230,8 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   }
 
   // 8) Memory (only what was said, never crisis text).
-  const response = { ...ver.response, speech: ensureClosingQuestion(ver.response.speech) };
+  // Visuals: only catalog ids reach the screen (max 2 per turn).
+  const response = { ...ver.response, speech: ensureClosingQuestion(ver.response.speech), visuals: sanitizeVisuals(ver.response.visuals as never) as typeof ver.response.visuals };
   memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
 
   const words = countWords(response.speech);

@@ -305,3 +305,7 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 ## Notas de Estudo Pentecostais (conteúdo próprio do app)
 - Obra `own_notes_pentecostal` (criada ao publicar a primeira nota). Redação original do app, escrita por IA a partir **somente** do texto bíblico (Bíblia Livre) e das obras liberadas da base, revisada e aprovada pelo conselho teológico antes de publicar. Direitos: do Anderson/app (marcada como `licensed`, conteúdo próprio, sem contrato de terceiros).
 - Proibido copiar, parafrasear ou seguir a estrutura da Bíblia de Estudo Pentecostal (CPAD) ou de outra obra protegida. Cada nota guarda as fontes usadas e o relatório de originalidade (`own_notes.originality_report`).
+
+## Natural Earth (mapa-base dos visuais)
+- Fonte: https://github.com/nvkelso/natural-earth-vector (terra, lagos e rios, escala 1:50 milhões). Domínio público. Recortado para o Mediterrâneo e o Oriente Médio e simplificado (`public/maps/*.json`, 86 KB). Crédito exibido no mapa: "Mapa-base: Natural Earth (domínio público)".
+- Rotas e linhas do tempo (`lib/visuals/route-data.ts`, `timeline-data.ts`): conteúdo próprio do app. Coordenadas aproximadas conferidas com o OpenBible.info Geocoding (CC BY 4.0) e o Theographic (CC BY-SA 4.0).

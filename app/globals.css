@@ -184,3 +184,8 @@ label:has(> input[type="checkbox"]) {
 .welcome-card { animation: welcome-in 1.2s ease-out both; }
 @keyframes welcome-in { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .welcome-card { animation: none; } }
+
+/* Map pins (MapLibre markers). */
+.map-pin { width: 26px; height: 26px; border-radius: 50%; background: var(--primary, #b5532d); color: #fff; border: 2px solid #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.35); transition: opacity .3s, transform .3s; cursor: pointer; }
+.map-pin[data-active="1"] { transform: scale(1.35); background: #2e6b4f; }
+@media (prefers-reduced-motion: reduce) { .map-pin { transition: none; } }

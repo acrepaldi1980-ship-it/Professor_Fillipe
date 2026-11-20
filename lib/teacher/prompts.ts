@@ -1,6 +1,7 @@
 // Layered system prompt (spec 11). Layers are versioned in `prompt_versions` later (Prompt 1.5);
 // version 1 of the texts lives here.
 import type { Retrieved, BibleVerse } from "../knowledge/search";
+import { visualsCatalogPrompt } from "../visuals/catalog";
 
 export const PROMPT_VERSION = 4; // v4 = lens rule (both sides with sources) and a 110-word target
 /** Version of the editable layers in prompt_versions (v2: Prompt 1.5 adjustments approved after the first evals). */
@@ -131,7 +132,7 @@ export interface PromptInput {
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

@@ -44,6 +44,7 @@ export default function HomePage() {
           </Link>
         ))}
       </section>
+      <Link href="/visuais" className="rounded-control border border-line bg-surface p-3"><strong>{t("home.visuals")}</strong><span className="block text-sm text-muted">{t("home.visuals.help")}</span></Link>
       {offer && (
         <Card className="flex flex-col gap-2" role="status">
           <p>{t("home.level.offer").replace("{dir}", up ? "mais fundo" : "com mais dificuldade").replace("{act}", up ? "suba" : "desça")}</p>

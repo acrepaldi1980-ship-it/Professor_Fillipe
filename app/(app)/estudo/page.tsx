@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AvatarState } from "@/components/teacher/Avatar";
 import { AvatarArt } from "@/components/teacher/AvatarArt";
 import { DocPanel } from "@/components/modes/DocPanel";
+import { VisualPanel } from "@/components/visuals/VisualPanel";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -48,6 +49,7 @@ export default function StudyPage() {
   const [mode, setMode] = useState<string>("free");
   const [tab, setTab] = useState<"chat" | "doc">("chat");
   const [docKey, setDocKey] = useState(0);
+  const [panel, setPanel] = useState<{ visual: TeacherResponse["visuals"][number]; durationMs: number } | null>(null);
   const nextId = useRef(1);
   const playId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
@@ -142,6 +144,8 @@ export default function StudyPage() {
       try {
         const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
         setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
+        // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
+        if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });
         if (response.pastoral_flag) setState("empathetic");
         const cue: AvatarState = response.pastoral_flag ? "empathetic" : response.avatar_cue && response.avatar_cue !== "neutral" ? CUE_STATE[response.avatar_cue] : response.visuals.length ? "pointing" : "idle";
         if (!textOnly) await speak(response.speech, cue);
@@ -255,7 +259,7 @@ export default function StudyPage() {
         {messages.map((m) => (
           <Bubble key={m.id} from={m.role} className="flex flex-col">
             <MiniMarkdown text={m.text} className="text-[17px] leading-relaxed" />
-            {m.response && <TeacherExtras r={m.response} onRef={openRef} onOption={(label, intent) => void send(label, intent)} />}
+            {m.response && <TeacherExtras r={m.response} onRef={openRef} onVisual={(v) => setPanel({ visual: v, durationMs: 0 })} onOption={(label, intent) => void send(label, intent)} />}
             {m.messageId && <FlagButton messageId={m.messageId} />}
           </Bubble>
         ))}
@@ -284,6 +288,8 @@ export default function StudyPage() {
         {state === "speaking" && <Button type="button" variant="ghost" onClick={stopSpeaking}>{t("study.interrupt")}</Button>}
       </div>
 
+      {panel && <VisualPanel visual={panel.visual} durationMs={panel.durationMs} onClose={() => setPanel(null)} onOpenRef={(r) => void openRef(r)} />}
+
       {verse && (
         <Modal title={verse.title} onClose={() => setVerse(null)}>
           {verse.lines.map((l) => (
@@ -300,7 +306,7 @@ export default function StudyPage() {
   );
 }
 
-function TeacherExtras({ r, onRef, onOption }: { r: TeacherResponse; onRef(ref: string): void; onOption(label: string, intent: string): void }) {
+function TeacherExtras({ r, onRef, onVisual, onOption }: { r: TeacherResponse; onRef(ref: string): void; onVisual(v: TeacherResponse["visuals"][number]): void; onOption(label: string, intent: string): void }) {
   const refs = new Set<string>();
   for (const c of r.citations) if (c.type === "bible") refs.add(c.ref);
   for (const f of findReferences(`${r.speech} ${r.display_markdown}`, { strictCase: true })) if (!f.invalid) f.refs.forEach((x) => refs.add(x));
@@ -312,6 +318,11 @@ function TeacherExtras({ r, onRef, onOption }: { r: TeacherResponse; onRef(ref: 
           <strong>{t("study.divergence")}</strong> {r.lens_divergence.summary}
           <Button type="button" variant="ghost" className="mt-1 text-sm" onClick={() => onOption(t("study.divergence.compare"), "other_traditions")}>{t("study.divergence.compare")}</Button>
         </Toast>
+      )}
+      {r.visuals.filter((v) => v.kind === "map" || v.kind === "timeline").length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {r.visuals.map((v, i) => (v.kind === "map" || v.kind === "timeline" ? <Button key={i} type="button" className="text-sm" onClick={() => onVisual(v)}>{t(v.kind === "map" ? "visual.open.map" : "visual.open.timeline")}</Button> : null))}
+        </div>
       )}
       {refs.size > 0 && (
         <div className="flex flex-wrap gap-2">
