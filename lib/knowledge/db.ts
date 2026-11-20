@@ -27,6 +27,8 @@ export interface KnowledgeStore {
   bibleVerses(version: string, refs: string[], chapters: string[]): Promise<VerseRow[]>;
   /** Dictionary/encyclopedia entries whose title equals one of the given words (optional: test doubles may omit it). */
   titleChunks?(titles: string[]): Promise<ChunkRow[]>;
+  /** Ids of the enabled works of the given traditions (the student's lenses). */
+  lensWorks?(traditions: string[]): Promise<string[]>;
 }
 
 export class SupabaseRpcStore implements KnowledgeStore {
@@ -54,6 +56,12 @@ export class SupabaseRpcStore implements KnowledgeStore {
     const { data, error } = await this.client.rpc("api_title_chunks", { p_titles: titles.slice(0, 40), p_limit: 24 });
     if (error) throw new Error(`title_failed: ${error.message.slice(0, 120)}`);
     return (data ?? []) as ChunkRow[];
+  }
+
+  async lensWorks(traditions: string[]): Promise<string[]> {
+    const { data, error } = await this.client.rpc("api_lens_works", { p_traditions: traditions });
+    if (error) throw new Error(`lens_failed: ${error.message.slice(0, 120)}`);
+    return ((data ?? []) as { id: string }[]).map((r) => r.id);
   }
 
   async bibleVerses(version: string, refs: string[], chapters: string[]): Promise<VerseRow[]> {

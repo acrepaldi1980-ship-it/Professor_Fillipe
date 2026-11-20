@@ -112,6 +112,17 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 // dictionary entries (Supabase) always answer. Repeated questions are served from a small cache.
 const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const lensCache = new Map<string, { at: number; ids: string[] }>();
+async function lensWorkIds(store: KnowledgeStore, lenses: string[]): Promise<string[]> {
+  if (!store.lensWorks || !lenses.length) return [];
+  const key = [...lenses].sort().join(",");
+  const hit = lensCache.get(key);
+  if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.ids;
+  const ids = await store.lensWorks(lenses).catch(() => [] as string[]);
+  lensCache.set(key, { at: Date.now(), ids });
+  return ids;
+}
+
 const searchCache = new Map<string, { at: number; value: { chunks: Retrieved[]; refs: string[] } }>();
 
 const within = <T>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -138,6 +149,17 @@ export async function searchChunks(
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
   const titlePromise = store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([]);
 
+  // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
+  const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
+  const lensSearch = async (): Promise<Row[]> => {
+    if (!lensIds.length) return [];
+    const vec = await emb.embedQuery(queries[0]);
+    const args = { embedding: vec, text: queries[0], refs: [] as string[], perSignal: 12, workIds: lensIds };
+    const [main, lib] = await Promise.all([store.searchChunks(args).catch(() => [] as Row[]), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+    return [...main, ...lib];
+  };
+  const lensPromise = lensSearch();
+
   const results = await Promise.all(
     queries.map(async (q, i) => {
       const vec = await emb.embedQuery(q);
@@ -154,6 +176,10 @@ export async function searchChunks(
     }
   }
   for (const r of await titlePromise) if (!merged.has(r.id)) merged.set(r.id, r);
+  for (const r of await lensPromise) {
+    const prev = merged.get(r.id);
+    merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals, "lens"])] } : { ...r, signals: [...r.signals, "lens"] });
+  }
   const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
   if (cacheKey) {
     searchCache.set(cacheKey, { at: Date.now(), value });

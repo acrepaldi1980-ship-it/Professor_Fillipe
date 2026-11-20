@@ -207,7 +207,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // RA-06: spoken turns have a word limit; ask once for a shorter version (summary/deep intents have more room).
   const limit = DEEP_INTENTS.includes(intent) ? WORD_LIMITS.deep : WORD_LIMITS.normal;
   let lengthRewrites = 0;
-  if (countWords(parsed.data.speech) > Math.round(limit * 1.3)) {
+  if (countWords(parsed.data.speech) > Math.round(limit * 1.1)) {
     lengthRewrites = 1;
     const hint = `Sua fala tem ${countWords(parsed.data.speech)} palavras. Reduza a "speech" para no máximo ${limit} palavras, sem resumo nem desafio, e termine com uma pergunta ou escolha. O texto longo pode ir em display_markdown.`;
     const shorterRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
