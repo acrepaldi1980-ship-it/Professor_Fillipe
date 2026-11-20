@@ -161,7 +161,13 @@ export async function searchChunks(
     const lensText = queries[queries.length - 1];
     const vec = await emb.embedQuery(lensText);
     const args = { embedding: vec, text: lensText, refs: [] as string[], perSignal: per, workIds: ids };
-    const [main, lib] = await Promise.all([store.searchChunks(args).catch(() => [] as Row[]), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+    // Library works (pg_...) live in the second database; the main one only holds the app's own notes. A filtered vector search over a long
+    // id list is slow there, so it is skipped unless there is a non-library id to look for.
+    const mainIds = ids.filter((id) => !id.startsWith("pg_"));
+    const [main, lib] = await Promise.all([
+      mainIds.length ? within(store.searchChunks({ ...args, workIds: mainIds }), 2500, [] as Row[]) : Promise.resolve([] as Row[]),
+      library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[]),
+    ]);
     return [...main, ...lib].map((r) => ({ ...r, signals: [...r.signals, signal] }));
   };
   // Divergent topics need both sides: the lens works, plus the works of the other traditions (so "another reading, with source" exists).
