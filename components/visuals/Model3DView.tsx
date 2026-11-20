@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { MODELS_3D, type Hotspot } from "@/lib/visuals/models3d";
-import { ArkScene, TabernacleScene, TempleScene } from "./models/scenes";
+import { ArkScene, TabernacleScene, TempleScene } from "./scenes3d/scenes";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
