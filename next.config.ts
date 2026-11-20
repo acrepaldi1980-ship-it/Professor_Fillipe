@@ -5,10 +5,11 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_STATIC ? { output: "export" as const, images: { unoptimized: true } } : {}),
   // The local embedding model (transformers.js + ONNX) runs inside the API function: keep it out of the bundler
   // and ship only the Linux binaries (the other platforms would exceed the function size limit).
-  serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "onnxruntime-common", "sharp"],
+  serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "onnxruntime-common", "sharp", "pdfkit"],
   // The tracer cannot see the native ONNX runtime (loaded dynamically): include it explicitly, Linux x64 only.
   outputFileTracingIncludes: {
     "/api/v1/teacher/**": ["models/**"],
+    "/api/v1/sessions/**": ["node_modules/pdfkit/js/data/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/package.json",
       "node_modules/onnxruntime-node/dist/**",

@@ -9,6 +9,7 @@ import { createTurnDeps, teacherProvider } from "@/lib/teacher/deps";
 import { runTurn } from "@/lib/teacher/pipeline";
 import { INTENTS } from "@/lib/teacher/schema";
 import { findReferences } from "@/lib/knowledge/refs-parser";
+import { applyModePayload, deepSources, loadSessionMode, sermonTypeDefinition } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -59,7 +60,11 @@ export async function POST(req: Request) {
           ...(structured?.citations ?? []).filter((c) => c.type === "bible" && c.ref).map((c) => c.ref as string),
           ...findReferences(`${structured?.speech ?? ""} ${structured?.display_markdown ?? ""}`, { strictCase: true }).flatMap((r) => r.refs),
         ].slice(0, 10);
-        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs }, createTurnDeps());
+        // Guided modes: the session carries its setup (age group, sermon type, passage...) and the live document is updated from mode_payload.
+        const sm = await loadSessionMode(db, session.id);
+        const mode = sm?.mode ?? "free";
+        const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
+        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources }, createTurnDeps());
 
         let messageId: string | undefined;
         if (response.pastoral_flag) {
@@ -71,6 +76,7 @@ export async function POST(req: Request) {
           ];
           const { data: saved } = await db.from("messages").insert(rows).select("id,role");
           messageId = saved?.find((m) => m.role === "teacher")?.id;
+          if (sm) await applyModePayload(db, user.id, sm, response, parsed.data.text).catch(() => null);
         }
 
         // Never log the student's text (spec 13): only metrics.

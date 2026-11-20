@@ -114,7 +114,7 @@ export interface MeResponse {
 export const getMe = () => apiJson<MeResponse>("/me");
 export const saveMe = (body: Record<string, unknown>) => apiJson<{ ok: true }>("/me", { method: "PUT", body: JSON.stringify(body) });
 export const saveConsent = (kind: string, granted: boolean) => apiJson<{ ok: true }>("/consents", { method: "POST", body: JSON.stringify({ kind, granted }) });
-export const createSession = (mode = "free") => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode }) });
+export const createSession = (mode = "free", context?: Record<string, unknown>) => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode, context }) });
 export async function deleteAccount(): Promise<void> {
   const res = await apiFetch("/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "EXCLUIR" }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
@@ -184,3 +184,15 @@ export interface InterviewAnswers {
 export const submitInterview = (a: InterviewAnswers) => apiJson<{ score: number; level: "iniciante" | "intermediário" | "avançado" }>("/me/interview", { method: "POST", body: JSON.stringify(a) });
 export const getLevel = () => apiJson<{ level: string; suggestion: string | null }>("/me/level");
 export const setLevel = (level: string) => apiJson<{ ok: boolean }>("/me/level", { method: "POST", body: JSON.stringify({ level }) });
+
+// ---- Guided modes: live document and PDF (Prompt 1.8) ----
+export interface SessionDocument { mode: "free" | "lesson" | "sermon" | "deep" | string; context: Record<string, unknown>; doc: Record<string, unknown> | null; gaps: string[] }
+export const getSessionDocument = (sessionId: string) => apiJson<SessionDocument>(`/sessions/${sessionId}/document`);
+export const saveSessionDocument = (sessionId: string, patch: Record<string, unknown>) => apiJson<{ ok: boolean }>(`/sessions/${sessionId}/document`, { method: "PUT", body: JSON.stringify({ patch }) });
+export const getSermonTypes = () => apiJson<{ types: { name: string; definition: string }[] }>("/sermon-types");
+export async function downloadSessionPdf(sessionId: string): Promise<void> {
+  const res = await apiFetch(`/sessions/${sessionId}/pdf`);
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  const cd = res.headers.get("Content-Disposition") ?? "";
+  await getPlatform().files.save(/filename="([^"]+)"/.exec(cd)?.[1] ?? "documento.pdf", await res.blob());
+}

@@ -39,6 +39,12 @@ export interface TurnInput {
   student?: StudentProfile;
   bible?: BibleSettings;
   intent?: Intent;
+  /** Guided mode of the session and its setup (lesson, sermon, deep). */
+  mode?: string;
+  modeContext?: Record<string, unknown>;
+  sermonTypeDefinition?: string;
+  /** Extra source lines (e.g. original-language words in the deepen mode), placed with the retrieved chunks. */
+  extraSources?: string;
   /** Recent conversation loaded from the database (survives serverless instances); falls back to the in-memory copy. */
   history?: ChatMessage[];
   /** Bible references of the previous answer, so "esse texto" can be resolved. */
@@ -144,7 +150,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const notice = [baseNotice, deepNote].filter(Boolean).join("\n\n") || undefined;
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
-  let parts = buildSystemParts({ student, bible, chunks, verses, notice, maxChunkChars, layers });
+  let parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice, input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
   const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   let lastRaw: unknown = null;
@@ -153,13 +159,13 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars, layers });
+      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
       return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     }
   };
   const history = priorHistory.slice(-(deps.historyMessages ?? 24));
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
-  const tier = selectTier({ intent, lenses: bible.lenses });
+  const tier = selectTier({ intent, mode: input.mode, lenses: bible.lenses });
 
   const tLlm = Date.now();
   // Optional extra passes (retry, shorter version, rewrite) must never break a turn that already has an answer.
@@ -195,7 +201,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   }
 
   // RA-06: spoken turns have a word limit; ask once for a shorter version (summary/deep intents have more room).
-  const limit = wordLimit(intent);
+  const limit = wordLimit(intent, input.mode);
   let lengthRewrites = 0;
   if (countWords(parsed.data.speech) > Math.round(limit * 1.1)) {
     lengthRewrites = 1;

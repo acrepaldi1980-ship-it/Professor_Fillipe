@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AvatarState } from "@/components/teacher/Avatar";
 import { AvatarArt } from "@/components/teacher/AvatarArt";
+import { DocPanel } from "@/components/modes/DocPanel";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -12,7 +13,7 @@ import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
-import { closeSession, createSession, flagAnswer, getBibleVerses, getMe, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { closeSession, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -44,6 +45,9 @@ export default function StudyPage() {
   const firstLesson = useRef(false); // arrived from the welcome card (RF-M03-04)
   const firstFired = useRef(false);
   const [sessionReady, setSessionReady] = useState(false);
+  const [mode, setMode] = useState<string>("free");
+  const [tab, setTab] = useState<"chat" | "doc">("chat");
+  const [docKey, setDocKey] = useState(0);
   const nextId = useRef(1);
   const playId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
@@ -68,7 +72,11 @@ export default function StudyPage() {
   }, [router]);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
+    setDocKey((k) => k + 1); // the teacher may have filled a section of the document
   }, [messages]);
+  useEffect(() => {
+    if (sessionReady) void getSessionDocument(sessionId.current).then((d) => setMode(d.mode)).catch(() => undefined);
+  }, [sessionReady]);
   useEffect(() => getPlatform().audioPlayer.onLevel(setLevel), []);
 
   const stopSpeaking = useCallback(() => {
@@ -211,10 +219,18 @@ export default function StudyPage() {
     }
   }, []);
 
+  const docMode = mode === "lesson" || mode === "sermon";
   const statusKey = recording ? "study.status.listening" : state === "thinking" ? "study.status.thinking" : state === "speaking" ? "study.status.speaking" : "study.status.idle";
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
+    <main className={`mx-auto min-h-dvh px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] ${docMode ? "grid max-w-5xl gap-4 md:grid-cols-2" : "flex max-w-2xl flex-col"}`}>
+      {docMode && (
+        <div role="tablist" className="flex gap-2 pt-2 md:hidden md:col-span-2">
+          <button role="tab" aria-selected={tab === "chat"} type="button" className={`min-h-11 flex-1 rounded-control border ${tab === "chat" ? "border-primary bg-primary text-primary-ink" : "border-line"}`} onClick={() => setTab("chat")}>{t("doc.tab.chat")}</button>
+          <button role="tab" aria-selected={tab === "doc"} type="button" className={`min-h-11 flex-1 rounded-control border ${tab === "doc" ? "border-primary bg-primary text-primary-ink" : "border-line"}`} onClick={() => setTab("doc")}>{t("doc.tab.doc")}</button>
+        </div>
+      )}
+      <div className={`flex min-w-0 flex-col ${docMode && tab === "doc" ? "hidden md:flex" : ""}`}>
       <header className="flex flex-col items-center gap-1 py-2">
         <div className="h-[46dvh] max-h-[460px] min-h-[260px] w-full max-w-sm">
           {greeting ? (
@@ -275,6 +291,10 @@ export default function StudyPage() {
           ))}
           <Button type="button" variant="ghost" onClick={() => setVerse(null)} className="mt-2">{t("study.verse.close")}</Button>
         </Modal>
+      )}
+      </div>
+      {docMode && sessionReady && (
+        <div className={`pt-2 ${tab === "chat" ? "hidden md:block" : ""}`}><DocPanel sessionId={sessionId.current} mode={mode as "lesson" | "sermon"} refreshKey={docKey} /></div>
       )}
     </main>
   );

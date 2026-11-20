@@ -610,7 +610,7 @@ Todos os modos usam o mesmo motor (M05). O que muda é a camada de modo no promp
 | Temático | Parte de um tema; as divisões vêm do tema, apoiadas em vários textos |
 | Textual | Parte de um texto curto (1 a 3 versículos); as divisões vêm do próprio texto, o desenvolvimento pode buscar outros textos |
 | Expositivo | Parte de uma passagem maior; as divisões e o desenvolvimento seguem o fluxo da passagem |
-| Explicativo **[DECISÃO D-06]** | Definição a ser fornecida pelo Anderson |
+| Explicativo (D-06, decidida em 20/11/2026) | Parte de uma pergunta ou doutrina ("O que é a graça?"). As divisões respondem em ordem: o que é, de onde vem na Bíblia, o que muda na vida; cada divisão apoia-se em textos de vários lugares |
 
 **Fluxo:**
 1. Tipo e texto ou tema.
@@ -1497,7 +1497,7 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-03 | Voz do professor (uma ou várias) | Uma voz masculina pt-BR no MVP | Prompt 0.1 |
 | D-04 | Fornecedor de voz (STT/TTS) | Claude Code apresenta 2–3 opções com preço e latência | Prompt 0.1 |
 | D-05 | Fornecedor de ilustrações | Claude Code apresenta opções com preço | Prompt 1.9 |
-| D-06 | Definição do sermão "explicativo" | Anderson fornece a definição ou o tipo sai da lista | Antes do prompt 1.8 |
+| D-06 | Definição do sermão "explicativo" | **Decidida em 20/11/2026:** explicar um conceito ou doutrina (opção A) | Antes do prompt 1.8 |
 | D-07 | Cronologia de referência do AT | Exibir datas com incerteza; escolher uma cronologia base | Prompt 1.9 |
 | D-08 | Regras para menores de 13 a 17 anos | **Decidida:** ciência do responsável (caixa obrigatória); sem assinatura sem responsável | Prompt 1.1 |
 | D-09 | Fornecedor de embeddings | Multilíngue, com bom desempenho em português | Prompt 0.1 |

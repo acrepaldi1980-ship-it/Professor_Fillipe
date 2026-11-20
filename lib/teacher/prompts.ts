@@ -87,6 +87,28 @@ export function layerChunks(chunks: Retrieved[], verses: BibleVerse[], mainVersi
   return parts.join("\n\n");
 }
 
+/** Layer 4 for the guided modes (spec 11.4). `ctx` is the session setup. */
+export function layerMode(mode: string | undefined, ctx: Record<string, unknown> | undefined, sermonTypeDefinition?: string): string {
+  const c = ctx ?? {};
+  if (mode === "lesson") {
+    return `MODO: PREPARAR AULA (EBD). Turma: ${c.age_group ?? "mista"}, duração: ${c.minutes ?? 45} min, tema: ${c.topic ?? ""}, texto-base: ${c.ref ?? "a definir com o professor"}, revista: ${c.magazine || "nenhuma"}.
+Conduza na ordem: objetivo → quebra-gelo → contexto → pontos principais → dinâmica → perguntas → aplicação → versículo para memorizar → distribuição do tempo.
+A cada turno, pergunte antes de preencher uma seção. Quando o professor aprovar o que você propôs, devolva em mode_payload SOMENTE a seção atualizada: {"section": "objective|icebreaker|context|points|dynamic|questions|application|memory_verse|timing", "content": ...}. Formatos: objective = lista de até 3 frases com verbo observável; icebreaker, context, dynamic, application, memory_verse = texto; points = lista de 3 a 5 {title, verses (refs como "ACT.8.30"), explanation, illustration}; questions = lista de 4 a 8 perguntas; timing = lista {section, minutes} somando ${c.minutes ?? 45}.
+Adapte linguagem, dinâmica e exemplos à faixa etária. Nunca entregue a aula pronta de uma vez: uma seção por vez.`;
+  }
+  if (mode === "sermon") {
+    return `MODO: SERMÃO. Tipo: ${c.sermon_type ?? "Temático"} — definição: ${sermonTypeDefinition ?? ""}. Texto ou tema: ${c.ref_or_theme ?? ""}.
+Conduza: contexto → exegese das palavras-chave → ideia central (o pregador formula, você ajuda) → esboço (título, introdução com gancho, divisões conforme o tipo, ilustrações, aplicações, conclusão, apelo) → revisão final apontando lacunas.
+Proponha opções e pergunte antes de colocar qualquer parte no esboço ("Posso colocar isso como sua segunda divisão?"). SÓ devolva mode_payload depois que o pregador aprovar na mensagem dele; então devolva SOMENTE a parte aprovada neste turno: {"part": "title|central_idea|introduction|division|conclusion|appeal", "content": ..., "index": número da divisão}. division = {title, texts (refs "ACT.8.30"), explanation, illustration, application}.
+Nunca escreva o sermão completo para leitura: você é parceiro de preparo, o sermão continua sendo do pregador.`;
+  }
+  if (mode === "deep") {
+    return `MODO: APROFUNDAR. Passagem: ${c.ref ?? ""}. Use o texto original, a morfologia e os léxicos fornecidos nos TRECHOS.
+Estruture: texto e tradução → palavras-chave no original (lema, Strong, sentido) → contexto histórico e literário → visões por tradição → bibliografia. Pode usar falas de até 250 palavras quando o aluno pedir explicação longa; o detalhamento vai em display_markdown.`;
+  }
+  return LAYER_MODE_FREE;
+}
+
 export interface PromptInput {
   /** Source warning injected when names in the question are not found in the retrieved sources. */
   notice?: string;
@@ -94,6 +116,10 @@ export interface PromptInput {
   bible?: BibleSettings;
   chunks: Retrieved[];
   verses: BibleVerse[];
+  /** Guided mode of the session (lesson, sermon, deep) with its setup. */
+  mode?: string;
+  modeContext?: Record<string, unknown>;
+  sermonTypeDefinition?: string;
   /** Active texts from prompt_versions (override the built-in version 1 of those layers). */
   layers?: { identity?: string; mode_free?: string } | null;
   /** Cap per retrieved chunk, in characters (free-tier prototype keeps prompts small). */
@@ -105,7 +131,7 @@ export interface PromptInput {
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

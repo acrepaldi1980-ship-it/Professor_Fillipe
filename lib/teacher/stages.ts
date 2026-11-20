@@ -48,8 +48,8 @@ export function selectTier(a: { intent: Intent; mode?: string; lenses?: string[]
 }
 
 /** Word limit of the spoken part (RA-06): deep turns have more room. */
-export function wordLimit(intent: Intent): number {
-  return DEEP_INTENTS.includes(intent) ? WORD_LIMITS.deep : WORD_LIMITS.normal;
+export function wordLimit(intent: Intent, mode?: string): number {
+  return DEEP_INTENTS.includes(intent) || mode === "deep" ? WORD_LIMITS.deep : WORD_LIMITS.normal;
 }
 
 /** Model of the short tasks (moderation, intent): TEACHER_MODEL_CLASSIFIER, a small fast model by default. */

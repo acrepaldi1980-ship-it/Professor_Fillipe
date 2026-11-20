@@ -36,6 +36,14 @@ export default function HomePage() {
       <Link href="/estudo" className="inline-flex min-h-14 items-center justify-center rounded-control bg-primary px-6 text-lg font-semibold text-primary-ink">
         {t("home.start")}
       </Link>
+      <section aria-label={t("modes.title")} className="grid grid-cols-2 gap-2">
+        {(["lesson", "sermon", "deep"] as const).map((m) => (
+          <Link key={m} href={`/modos?m=${m}`} className="rounded-control border border-line bg-surface p-3">
+            <strong>{t(`modes.${m}`)}</strong>
+            <span className="block text-sm text-muted">{t(`modes.${m}.help`)}</span>
+          </Link>
+        ))}
+      </section>
       {offer && (
         <Card className="flex flex-col gap-2" role="status">
           <p>{t("home.level.offer").replace("{dir}", up ? "mais fundo" : "com mais dificuldade").replace("{act}", up ? "suba" : "desça")}</p>
