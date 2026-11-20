@@ -55,6 +55,7 @@ export interface TurnResult {
     tier: "fast" | "deep" | "none";
     pastoral: boolean;
     retrievedChunks: number;
+    lensChunks?: number;
     removedCitations: number;
     schemaRetries: number;
     speechRewrites: number;
@@ -245,6 +246,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       tier,
       pastoral: response.pastoral_flag,
       retrievedChunks: chunks.length,
+      lensChunks: chunks.filter((c) => c.signals?.includes("lens")).length,
       removedCitations: ver.removed.length,
       schemaRetries,
       speechRewrites: speechRewrites + lengthRewrites,
