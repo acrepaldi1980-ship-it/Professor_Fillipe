@@ -14,7 +14,7 @@ describe("lens search", () => {
       async bibleVerses() { return []; },
       async lensWorks(t: string[]) { return t.includes("baptist") ? ["spurgeon", "gill"] : []; },
     };
-    const emb = { async embedQuery() { return [0.1, 0.2]; }, async embedPassages(t: string[]) { return t.map(() => [0.1, 0.2]); } };
+    const emb = { name: "t", dimensions: 2, async embedQuery() { return [0.1, 0.2]; }, async embedPassages(t: string[]) { return t.map(() => [0.1, 0.2]); } };
     const { chunks } = await searchChunks("Os dons ainda existem?", { lenses: ["baptist"] }, { store, embeddings: emb, library: null });
     expect(calls).toContainEqual(["spurgeon", "gill"]);
     expect(chunks.map((c) => c.id)).toEqual(expect.arrayContaining(["spurgeon:1", "easton:1"]));
@@ -23,7 +23,7 @@ describe("lens search", () => {
   it("does nothing extra without a lens", async () => {
     const calls: unknown[] = [];
     const store = { async searchChunks(a: { workIds?: string[] | null }) { calls.push(a.workIds); return [row("easton:1", "general")]; }, async bibleVerses() { return []; }, async lensWorks() { return ["x"]; } };
-    const emb = { async embedQuery() { return [0.1]; }, async embedPassages(t: string[]) { return t.map(() => [0.1]); } };
+    const emb = { name: "t", dimensions: 1, async embedQuery() { return [0.1]; }, async embedPassages(t: string[]) { return t.map(() => [0.1]); } };
     await searchChunks("pergunta qualquer", {}, { store, embeddings: emb, library: null });
     expect(calls).toHaveLength(1);
   });
