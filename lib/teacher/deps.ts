@@ -4,6 +4,7 @@ import { getVerses, searchChunks } from "../knowledge/search";
 import { AnthropicTeacherLlm } from "./anthropic";
 import { GroqTeacherLlm, rewriteQueryToEnglish } from "./groq";
 import type { TurnDeps } from "./pipeline";
+import { FallbackLlm } from "./fallback-llm";
 import { loadActiveLayers } from "./prompt-store";
 
 /** Provider: TEACHER_LLM_PROVIDER=anthropic|groq. Default: Anthropic when a key exists, otherwise Groq (free, prototype only). */
@@ -17,7 +18,8 @@ export function createTurnDeps(): TurnDeps {
   return {
     contextTokens: Number(process.env.TEACHER_CONTEXT_TOKENS) || (teacherProvider() === "groq" ? 1800 : 3200),
     historyMessages: teacherProvider() === "groq" ? 6 : 8,
-    llm: teacherProvider() === "anthropic" ? new AnthropicTeacherLlm() : new GroqTeacherLlm(),
+    // Claude first; when it is unavailable (no credit, overload) the free Groq model answers instead of an error.
+    llm: teacherProvider() === "anthropic" ? (process.env.GROQ_API_KEY ? new FallbackLlm(new AnthropicTeacherLlm(), new GroqTeacherLlm()) : new AnthropicTeacherLlm()) : new GroqTeacherLlm(),
     search: (q, opts) => searchChunks(q, opts),
     rewriteQuery: process.env.GROQ_API_KEY || process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
     getVerses: (versionId, refs) => getVerses(versionId, refs),
