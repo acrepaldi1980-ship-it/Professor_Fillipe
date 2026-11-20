@@ -83,7 +83,7 @@ export function rerankAndSelect(
     .map((r) => {
       const a = authorityLayer(r.kind, r.tradition, opts.lenses);
       // Chunks found by the student's lens search (works of their tradition) are what the student asked to hear: boost them.
-      return { ...r, ...a, score: r.rrf * a.weight * entryBoost(r, opts.terms) * (r.signals.includes("lens") ? LENS_BOOST : 1) };
+      return { ...r, ...a, score: r.rrf * a.weight * entryBoost(r, opts.terms) * (r.signals.includes("lens") ? LENS_BOOST : r.signals.includes("contrast") ? CONTRAST_BOOST : 1) };
     })
     .sort((x, y) => y.score - x.score);
 
@@ -114,6 +114,8 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const LENS_BOOST = 1.7;
+const CONTRAST_BOOST = 1.4;
+const ALL_LENSES = ["pentecostal", "baptist", "reformed", "wesleyan", "lutheran", "anabaptist", "dispensational", "catholic", "orthodox"];
 const lensCache = new Map<string, { at: number; ids: string[] }>();
 async function lensWorkIds(store: KnowledgeStore, lenses: string[]): Promise<string[]> {
   if (!store.lensWorks || !lenses.length) return [];
@@ -153,16 +155,18 @@ export async function searchChunks(
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
-  const lensSearch = async (): Promise<Row[]> => {
-    if (!lensIds.length) return [];
+  const lensSearch = async (ids: string[], signal: "lens" | "contrast", per: number): Promise<Row[]> => {
+    if (!ids.length) return [];
     // The lens works are mostly English: search with the English keywords when the question was rewritten.
     const lensText = queries[queries.length - 1];
     const vec = await emb.embedQuery(lensText);
-    const args = { embedding: vec, text: lensText, refs: [] as string[], perSignal: 12, workIds: lensIds };
+    const args = { embedding: vec, text: lensText, refs: [] as string[], perSignal: per, workIds: ids };
     const [main, lib] = await Promise.all([store.searchChunks(args).catch(() => [] as Row[]), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
-    return [...main, ...lib];
+    return [...main, ...lib].map((r) => ({ ...r, signals: [...r.signals, signal] }));
   };
-  const lensPromise = lensSearch();
+  // Divergent topics need both sides: the lens works, plus the works of the other traditions (so "another reading, with source" exists).
+  const contrastIds = lensIds.length ? await lensWorkIds(store, ALL_LENSES.filter((l) => !opts.lenses!.includes(l))) : [];
+  const lensPromise = Promise.all([lensSearch(lensIds, "lens", 12), lensSearch(contrastIds, "contrast", 8)]).then(([a, b]) => [...a, ...b]);
 
   const results = await Promise.all(
     queries.map(async (q, i) => {
@@ -182,7 +186,7 @@ export async function searchChunks(
   for (const r of await titlePromise) if (!merged.has(r.id)) merged.set(r.id, r);
   for (const r of await lensPromise) {
     const prev = merged.get(r.id);
-    merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals, "lens"])] } : { ...r, signals: [...r.signals, "lens"] });
+    merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
   }
   const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
   if (cacheKey) {
