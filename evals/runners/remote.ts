@@ -32,7 +32,9 @@ export async function remoteTurn(text: string, level: string, lens?: string): Pr
   await sql(`update profiles set level='${level}' where user_id='${current.id}'`);
   const enc = lens ? `'${encryptField(JSON.stringify([lens]))}'` : "null";
   await sql(`insert into preferences (user_id, lenses_enc) values ('${current.id}', ${enc}) on conflict (user_id) do update set lenses_enc = excluded.lenses_enc`);
-  const res = await fetch(`${BASE}/teacher/turn`, { method: "POST", headers: current.headers, body: JSON.stringify({ sessionId: current.sessionId, text }) });
+  // Every case is a fresh conversation: sharing a session made the teacher notice "repeated" questions across unrelated cases.
+  const sess = (await (await fetch(`${BASE}/sessions`, { method: "POST", headers: current.headers, body: JSON.stringify({ mode: "free" }) })).json()) as { sessionId: string };
+  const res = await fetch(`${BASE}/teacher/turn`, { method: "POST", headers: current.headers, body: JSON.stringify({ sessionId: sess.sessionId, text }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   const body = await res.text();
   const structured = /event: structured\ndata: (.+)/.exec(body)?.[1];
