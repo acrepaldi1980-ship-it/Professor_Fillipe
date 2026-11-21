@@ -10,6 +10,7 @@ import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import { deleteAccount, getLenses, getMe, saveConsent, saveLensesApi, type MeResponse } from "@/lib/api-client";
+import Link from "next/link";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
@@ -138,6 +139,14 @@ export default function AccountPage() {
           {religious ? t("account.religious.on") : t("account.religious.off")}
         </Button>
       </Card>
+
+      {(me?.profile?.role === "admin" || me?.profile?.role === "reviewer") && (
+        <Card className="flex flex-col gap-2">
+          <h2 className="text-lg">{t("account.admin")}</h2>
+          <Link href="/admin/notas" className="rounded-control border border-line p-3"><strong>{t("account.admin.notes")}</strong><span className="block text-sm text-muted">{t("account.admin.notes.help")}</span></Link>
+          {me.profile.role === "admin" && <Link href="/admin/biblioteca" className="rounded-control border border-line p-3"><strong>{t("account.admin.library")}</strong><span className="block text-sm text-muted">{t("account.admin.library.help")}</span></Link>}
+        </Card>
+      )}
 
       <Button type="button" variant="ghost" onClick={() => void logout()}>{t("account.logout")}</Button>
       <Button type="button" variant="danger" onClick={() => setConfirming(true)}>{t("account.delete")}</Button>

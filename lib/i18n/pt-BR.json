@@ -378,5 +378,10 @@
   "home.track": "Sugestão da trilha",
   "home.week": "Tema da semana",
   "home.week.go": "Estudar este tema",
-  "offline.banner": "Sem internet: mostrando o que está guardado no aparelho."
+  "offline.banner": "Sem internet: mostrando o que está guardado no aparelho.",
+  "account.admin": "Administração",
+  "account.admin.notes": "Revisar notas pentecostais",
+  "account.admin.notes.help": "Leia, comente, aprove e publique as notas de estudo.",
+  "account.admin.library": "Biblioteca e licenças",
+  "account.admin.library.help": "Totais da base e fila de revisão de licenças."
 }
