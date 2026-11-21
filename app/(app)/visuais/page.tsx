@@ -1,6 +1,7 @@
 "use client";
 
 // Visual library: maps and timelines the student can open at any time (the teacher also opens them during the conversation).
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -32,6 +33,10 @@ export default function VisualsPage() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-24">
       <h1 className="text-3xl">{t("visuals.title")}</h1>
+      <div className="grid grid-cols-2 gap-2">
+        <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("visuals.arch")}</strong><span className="block text-sm text-muted">{t("visuals.arch.open")}</span></Link>
+        <Link href="/curiosidades" className="rounded-control border border-line bg-surface p-3"><strong>{t("cur.title")}</strong><span className="block text-sm text-muted">{t("home.cur.help")}</span></Link>
+      </div>
       <section><h2 className="mb-2 text-xl">{t("visuals.maps")}</h2>
         <ul className="grid gap-2 sm:grid-cols-2">{maps.map((m) => <li key={m.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "map", map_id: m.id, highlight_place_ids: [] })}>{m.name}</button></li>)}</ul></section>
       <section><h2 className="mb-2 text-xl">{t("visuals.timelines")}</h2>

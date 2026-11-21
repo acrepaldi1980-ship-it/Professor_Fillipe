@@ -312,3 +312,13 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 
 ## Modelos 3D (Arca, Tabernáculo, Templo)
 - Construídos no código a partir de formas simples e das medidas bíblicas (`lib/visuals/models3d.ts`, `components/visuals/models/scenes.tsx`). Conteúdo próprio do app, sem arquivos de terceiros. Bibliotecas: three.js (MIT), @react-three/fiber (MIT), @react-three/drei (MIT).
+
+## Multimídia bíblica (spec 8.18, 21/11/2026)
+
+| Recurso | Fonte | Licença | Uso |
+| --- | --- | --- | --- |
+| Voz da narração (Piper `pt_BR-faber-medium`) | Conjunto de dados faber (OHF-Voice/voice-datasets), modelo do projeto Piper/sherpa-onnx | CC0 (domínio público); programa Piper em MIT | Narração pré-gravada e voz de reserva do professor |
+| Relevo do mapa | AWS Terrain Tiles (SRTM/NASADEM, GEBCO, ETOPO1) | Dados abertos (créditos exibidos no mapa) | `public/maps/relief.webp`, gerado por `scripts/media/build-relief.py` |
+| Linhas de costa, rios e lagos | Natural Earth | Domínio público | Mapas |
+| Fotos de arqueologia | Wikimedia Commons | Domínio público, CC0, CC BY ou CC BY-SA (nunca NC/ND); autor, licença e página guardados em `lib/archaeology/items.json` | Galeria `/arqueologia` e mini-filmes (CC BY-SA só na galeria, sem alteração) |
+| Textos das curiosidades e das peças | Nossos, a partir da Bíblia e dos artigos de referência citados em cada ficha | Próprio | Revisão do conselho teológico pendente antes do beta público |

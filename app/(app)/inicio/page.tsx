@@ -52,6 +52,10 @@ export default function HomePage() {
           </Link>
         ))}
       </section>
+      <section aria-label={t("home.explore")} className="grid grid-cols-2 gap-2">
+        <Link href="/curiosidades" className="rounded-control border border-line bg-surface p-3"><strong>{t("cur.title")}</strong><span className="block text-sm text-muted">{t("home.cur.help")}</span></Link>
+        <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("arch.title")}</strong><span className="block text-sm text-muted">{t("home.arch.help")}</span></Link>
+      </section>
       <Link href="/visuais" className="rounded-control border border-line bg-surface p-3"><strong>{t("home.visuals")}</strong><span className="block text-sm text-muted">{t("home.visuals.help")}</span></Link>
       {offer && (
         <Card className="flex flex-col gap-2" role="status">

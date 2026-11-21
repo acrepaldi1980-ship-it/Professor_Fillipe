@@ -1,7 +1,7 @@
 "use client";
 
 // Archaeology gallery (spec 8.18, RF-M18-01): free photos of pieces and sites tied to the Bible, with period, place, verses, source and credit.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
@@ -18,6 +18,11 @@ export default function ArchaeologyPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Item | null>(null);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
+  // opened from a place card on the map (?p=<id>)
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("p");
+    if (id) setOpen(ALL.find((i) => i.id === id) ?? null);
+  }, []);
   const list = useMemo(() => ALL.filter((i) => !q || norm(`${i.name} ${i.place} ${i.period} ${i.text}`).includes(norm(q))), [q]);
 
   async function openRef(ref: string) {

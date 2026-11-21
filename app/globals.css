@@ -189,3 +189,17 @@ label:has(> input[type="checkbox"]) {
 .map-pin { width: 26px; height: 26px; min-width: 26px; min-height: 26px; max-height: 26px; flex: none; padding: 0; box-sizing: border-box; aspect-ratio: 1 / 1; line-height: 1; border-radius: 50%; background: var(--primary, #b5532d); color: #fff; border: 2px solid #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.35); transition: opacity .3s, transform .3s; cursor: pointer; }
 .map-pin[data-active="1"] { transform: scale(1.35); background: #2e6b4f; }
 @media (prefers-reduced-motion: reduce) { .map-pin { transition: none; } }
+
+/* Detailed map (spec 8.18): places by type, names and road labels over the relief. */
+.map-place { display: flex; align-items: center; gap: 3px; padding: 0; background: none; border: 0; cursor: pointer; color: #3a2a18; font-size: 11px; font-weight: 700; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; white-space: nowrap; transform: translate(0, 0); }
+.map-place i { display: block; width: 9px; height: 9px; flex: none; background: #7a3b22; border: 1.5px solid #fff; border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,.5); }
+.map-place-port i { background: #2f6f8a; border-radius: 2px; }
+.map-place-mountain i { width: 0; height: 0; background: none; border: 5px solid transparent; border-bottom: 9px solid #5a4630; border-top: 0; border-radius: 0; box-shadow: none; }
+.map-place-site i { background: #8a6d1f; border-radius: 1px; transform: rotate(45deg); }
+.map-place[data-off="1"], .map-label[data-off="1"] { display: none !important; }
+.map-label { pointer-events: none; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 4px #fff; }
+.map-label-sea { color: #1f6a8a; font-style: italic; font-size: 12px; letter-spacing: .08em; }
+.map-label-river { color: #2a7a9a; font-style: italic; font-size: 10px; }
+.map-label-region { color: #5a3f1c; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.map-label-range { color: #6a4a2a; font-style: italic; font-size: 11px; }
+.map-label-road { color: #6b4a2a; font-size: 10px; font-style: italic; }
