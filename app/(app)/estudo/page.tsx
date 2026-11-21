@@ -13,8 +13,9 @@ import { Chip } from "@/components/ui/Chip";
 import { MiniMarkdown } from "@/components/ui/MiniMarkdown";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { isPlanBlock, addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -43,6 +44,8 @@ export default function StudyPage() {
   const [greeting, setGreeting] = useState(false);
   const [verse, setVerse] = useState<{ title: string; ref?: string; lines: { ref: string; text: string }[] } | null>(null);
   const [marked, setMarked] = useState(false);
+  const [planBlock, setPlanBlock] = useState<{ plan?: string } | null>(null);
+  const [fair, setFair] = useState(false);
   const sessionId = useRef("");
   const firstLesson = useRef(false); // arrived from the welcome card (RF-M03-04)
   const firstFired = useRef(false);
@@ -154,6 +157,7 @@ export default function StudyPage() {
       setState("thinking");
       try {
         const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
+        setFair(!!(meta as { fairUse?: boolean }).fairUse);
         setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
         // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
         if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });
@@ -165,6 +169,7 @@ export default function StudyPage() {
         setState("idle");
         const msg = (e as Error).message;
         if (msg === "api_error_401") return router.replace("/login");
+        if (isPlanBlock(e)) return setPlanBlock(e.data as { plan?: string });
         setError(msg === "api_error_503" ? t("study.error.unavailable") : msg === "api_error_429" ? t("study.error.limit") : t("study.error.turn"));
       }
     },
@@ -279,6 +284,8 @@ export default function StudyPage() {
         <div ref={endRef} />
       </section>
 
+      {planBlock && <div className="mb-2" role="alert"><Toast tone="warn">{t("limit.reached").replace("{plan}", planBlock.plan === "premium" ? "Premium" : planBlock.plan === "plus" ? "Plus" : "Grátis")} <Link className="underline" href="/planos">{t("limit.upgrade")}</Link></Toast></div>}
+      {fair && <div className="mb-2"><Toast tone="warn">{t("fair.use")}</Toast></div>}
       {error && <div className="mb-2"><Toast>{error}</Toast></div>}
 
       <form

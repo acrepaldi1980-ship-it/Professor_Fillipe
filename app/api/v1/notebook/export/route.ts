@@ -1,4 +1,5 @@
 // GET /api/v1/notebook/export?id=n:<uuid>|all -> a PDF of one notebook item or of the whole notebook.
+import { requireFeature } from "@/lib/entitlements/guard";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { notebookPdf, type NotebookPdfItem } from "@/lib/pdf/render";
 
@@ -7,7 +8,8 @@ export const maxDuration = 30;
 
 export async function GET(req: Request) {
   try {
-    const { db } = await requireUser(req);
+    const { user, db } = await requireUser(req);
+    await requireFeature(db, user.id, "pdf_export");
     const id = new URL(req.url).searchParams.get("id") ?? "all";
     const q = db.from("notebook_items").select("id, kind, title, content, created_at").order("created_at", { ascending: false }).limit(300);
     const m = /^n:([0-9a-f-]{36})$/.exec(id);

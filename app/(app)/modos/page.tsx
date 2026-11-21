@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
-import { createSession, getMe, getSermonTypes } from "@/lib/api-client";
+import Link from "next/link";
+import { createSession, getMe, getSermonTypes, isPlanBlock } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 
 const AGES = ["kids", "teens", "youth", "adults", "mixed"] as const;
@@ -26,6 +27,7 @@ export default function ModeSetupPage() {
   const [type, setType] = useState("Expositivo");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const [block, setBlock] = useState<{ error: string; needs?: string; plan?: string } | null>(null);
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("m");
@@ -41,8 +43,9 @@ export default function ModeSetupPage() {
       const context = mode === "lesson" ? { topic, ref: ref || undefined, age_group: age, minutes, magazine: magazine || undefined } : mode === "sermon" ? { sermon_type: type, ref_or_theme: ref } : { ref };
       const { sessionId } = await createSession(mode, context);
       router.replace(`/estudo?s=${sessionId}`);
-    } catch {
-      setError(true);
+    } catch (e) {
+      if (isPlanBlock(e)) setBlock(e.data as { error: string; needs?: string; plan?: string });
+      else setError(true);
       setBusy(false);
     }
   }
@@ -74,6 +77,7 @@ export default function ModeSetupPage() {
           </>
         )}
         {mode === "deep" && <label className="flex flex-col gap-1"><span className="text-sm">{t("deep.ref")}</span><input className={input} value={ref} onChange={(e) => setRef(e.target.value)} maxLength={120} /></label>}
+        {block && <Toast tone="warn">{block.error === "plan_required" ? t("plan.required").replace("{needs}", block.needs === "premium" ? "Premium" : "Plus") : t("limit.reached").replace("{plan}", block.plan === "plus" ? "Plus" : "Grátis")} <Link className="underline" href="/planos">{t("limit.upgrade")}</Link></Toast>}
         {error && <Toast>{t("consent.error")}</Toast>}
         <Button type="submit" disabled={!valid || busy}>{t("modes.start")}</Button>
       </form>

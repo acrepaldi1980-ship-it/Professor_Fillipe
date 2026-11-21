@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { errorResponse, requireUser } from "@/lib/auth/server";
+import { addUsage, enforceLimit } from "@/lib/entitlements/guard";
 import { ttsChain } from "@/lib/voice";
 import { prepareForSpeech } from "@/lib/voice/speech-text";
 
@@ -14,8 +15,10 @@ const cache = new Map<string, ArrayBuffer>();
 const MAX_CACHE = 60;
 
 export async function POST(req: Request) {
+  let ctx;
   try {
-    await requireUser(req);
+    ctx = await requireUser(req);
+    await enforceLimit(ctx.db, ctx.user.id, "voice_minutes_day");
   } catch (e) {
     return errorResponse(e);
   }
@@ -32,6 +35,7 @@ export async function POST(req: Request) {
         cache.set(key, audio);
         if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value as string);
       }
+      void addUsage(ctx.db, "voice_seconds", Math.max(1, Math.round(spoken.length / 14))); // ~14 characters per second of speech
       return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store" } });
     } catch {
       /* try the next provider */

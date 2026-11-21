@@ -48,3 +48,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Fechamento, revisão e caderno (Prompt 1.10)
 - Tabelas do aluno, protegidas por RLS: `session_closings` (resumo, mapa mental), `review_cards` e `review_logs` (cartões e notas da revisão), `notebook_items` (sessões, notas pessoais), `bookmarks` (versículos marcados). O texto das conversas é enviado ao modelo de linguagem para gerar o fechamento e corrigir respostas da revisão (nunca em sessões com evento pastoral). Cache offline no aparelho (service worker): Bíblia aberta, caderno, cartões do dia e perfil; apagado ao sair da conta.
+
+## Planos e cobrança (Prompt 1.11)
+- `subscriptions`, `entitlements`, `payment_events` e `usage_counters`: plano, situação, datas de cobrança, uso diário (mensagens, segundos de voz, ilustrações, custo estimado) por aluno. O pagamento em si (cartão, Pix, boleto) é tratado só pelo Asaas; o app não guarda dados de cartão. Nome e e-mail do aluno vão ao Asaas ao assinar. Compras nas lojas (Fase 2) gravarão em `entitlements`.

@@ -148,10 +148,17 @@ export default function AccountPage() {
         </Button>
       </Card>
 
+      <Card className="flex flex-col gap-2">
+        <h2 className="text-lg">{t("account.sub")}</h2>
+        <Link href="/assinatura" className="rounded-control border border-line p-3"><strong>{t("account.sub")}</strong><span className="block text-sm text-muted">{t("account.sub.help")}</span></Link>
+        <Link href="/planos" className="rounded-control border border-line p-3"><strong>{t("account.plans")}</strong></Link>
+      </Card>
+
       {(me?.profile?.role === "admin" || me?.profile?.role === "reviewer") && (
         <Card className="flex flex-col gap-2">
           <h2 className="text-lg">{t("account.admin")}</h2>
           <Link href="/admin/notas" className="rounded-control border border-line p-3"><strong>{t("account.admin.notes")}</strong><span className="block text-sm text-muted">{t("account.admin.notes.help")}</span></Link>
+          {me.profile.role === "admin" && <Link href="/admin/assinaturas" className="rounded-control border border-line p-3"><strong>{t("admin.billing.title")}</strong></Link>}
           {me.profile.role === "admin" && <Link href="/admin/biblioteca" className="rounded-control border border-line p-3"><strong>{t("account.admin.library")}</strong><span className="block text-sm text-muted">{t("account.admin.library.help")}</span></Link>}
         </Card>
       )}

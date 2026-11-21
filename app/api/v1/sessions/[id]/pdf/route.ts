@@ -1,4 +1,5 @@
 // GET -> the session's document as an A4 PDF (lesson plan or sermon outline).
+import { requireFeature } from "@/lib/entitlements/guard";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { lessonPdf, sermonPdf } from "@/lib/pdf/render";
 import { LessonPlan, SermonOutline } from "@/lib/modes/schema";
@@ -9,7 +10,8 @@ export const maxDuration = 30;
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { db } = await requireUser(req);
+    const { user, db } = await requireUser(req);
+    await requireFeature(db, user.id, "pdf_export");
     const { id } = await params;
     const sm = await loadSessionMode(db, id);
     if (!sm) throw new HttpError(404, "session_not_found");

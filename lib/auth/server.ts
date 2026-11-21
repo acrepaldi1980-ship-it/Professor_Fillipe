@@ -6,6 +6,8 @@ export class HttpError extends Error {
   constructor(
     public status: number,
     public code: string,
+    /** Extra fields for the client (e.g. which limit was reached and the plan that unlocks it). */
+    public extra?: Record<string, unknown>,
   ) {
     super(code);
   }
@@ -49,7 +51,7 @@ export async function requireUser(req: Request): Promise<AuthedContext> {
 }
 
 export function errorResponse(e: unknown): Response {
-  if (e instanceof HttpError) return Response.json({ error: e.code }, { status: e.status });
+  if (e instanceof HttpError) return Response.json({ error: e.code, ...(e.extra ?? {}) }, { status: e.status });
   console.error(JSON.stringify({ evt: "api_error", code: (e as Error).message?.slice(0, 80) }));
   return Response.json({ error: "internal_error" }, { status: 500 });
 }

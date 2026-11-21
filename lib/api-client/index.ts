@@ -22,11 +22,20 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   return fetch(`${API_BASE}${path}`, { ...init, headers: apiHeaders(init.headers) });
 }
 
+/** An API error: the message stays `api_error_<status>`; `data` carries the body (e.g. {error:"limit", plan, upgrade}). */
+export class ApiError extends Error {
+  constructor(public status: number, public data: Record<string, unknown> = {}) {
+    super(`api_error_${status}`);
+  }
+}
+/** The student's plan limit was reached / the feature belongs to another plan: the screens then invite to subscribe. */
+export const isPlanBlock = (e: unknown): e is ApiError => e instanceof ApiError && ((e.status === 429 && e.data.error === "limit") || (e.status === 403 && e.data.error === "plan_required"));
+
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = apiHeaders(init.headers);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
   return (await res.json()) as T;
 }
 
@@ -53,7 +62,7 @@ export async function teacherTurn(
     body: JSON.stringify(body),
     signal,
   });
-  if (!res.ok || !res.body) throw new Error(`api_error_${res.status}`);
+  if (!res.ok || !res.body) throw new ApiError(res.status, await res.json().catch(() => ({})));
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = "";
@@ -242,3 +251,22 @@ export async function exportNotebook(id = "all"): Promise<void> {
 }
 export interface SessionRow { id: string; mode: string; topic: string | null; started_at: string; ended_at: string | null }
 export const getRecentSessions = (limit = 5) => apiJson<{ sessions: SessionRow[] }>(`/sessions?limit=${limit}`);
+
+// ---- Plans and billing (Prompt 1.11) ----
+export interface PlanInfo { id: "free" | "plus" | "premium"; name: string; price_month: number | string; price_year: number | string | null; limits: Record<string, number | null>; features: Record<string, boolean | string | number> }
+export const getPlans = () => apiJson<{ plans: PlanInfo[]; provider: string }>("/plans");
+export interface MySubscription {
+  plan: "free" | "plus" | "premium";
+  limits: Record<string, number | null>;
+  features: Record<string, boolean | string | number>;
+  usage: { text_messages_day: number; voice_minutes_day: number; illustrations_day: number; lessons_month: number; deepen_month: number };
+  subscription: { plan: string; status: string; cycle: "month" | "year"; periodEnd: string | null; trialEnd: string | null; canceledAt: string | null; paidAccess: boolean } | null;
+  trialEligible: boolean;
+  provider: string;
+}
+export const getMySubscription = () => apiJson<MySubscription>("/billing/subscription");
+export const startCheckout = (plan: "plus" | "premium", cycle: "month" | "year", method: "pix" | "card" | "boleto") => apiJson<{ checkoutUrl: string; trial: boolean; amount: number }>("/billing/checkout", { method: "POST", body: JSON.stringify({ plan, cycle, method }) });
+export const cancelMySubscription = () => apiJson<{ ok: boolean }>("/billing/cancel", { method: "POST" });
+export const simulatePayment = (ref: string, event: "PAYMENT_CONFIRMED" | "PAYMENT_OVERDUE" | "SUBSCRIPTION_DELETED") => apiJson<{ ok: boolean; result: string }>("/billing/simulate", { method: "POST", body: JSON.stringify({ ref, event }) });
+export interface BillingAdmin { by_plan_status: { plan_id: string; status: string; n: number }[]; mrr_brl: number; canceled_30d: number; users: number; ai_cost_30d_brl: number; ai_cost_per_user: { user_id: string; cost: number; messages: number }[] }
+export const getBillingAdmin = () => apiJson<BillingAdmin>("/admin/billing");

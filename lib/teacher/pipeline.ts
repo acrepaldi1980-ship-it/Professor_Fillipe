@@ -44,6 +44,8 @@ export interface TurnInput {
   mode?: string;
   modeContext?: Record<string, unknown>;
   sermonTypeDefinition?: string;
+  /** Fair use: answer with the fast model even if the intent would use the deep one. */
+  forceFast?: boolean;
   /** Extra source lines (e.g. original-language words in the deepen mode), placed with the retrieved chunks. */
   extraSources?: string;
   /** Recent conversation loaded from the database (survives serverless instances); falls back to the in-memory copy. */
@@ -166,7 +168,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   };
   const history = priorHistory.slice(-(deps.historyMessages ?? 24));
   const messages: ChatMessage[] = [...history, { role: "user", content: input.text }];
-  const tier = selectTier({ intent, mode: input.mode, lenses: bible.lenses });
+  const tier = input.forceFast ? "fast" : selectTier({ intent, mode: input.mode, lenses: bible.lenses });
 
   const tLlm = Date.now();
   // Optional extra passes (retry, shorter version, rewrite) must never break a turn that already has an answer.

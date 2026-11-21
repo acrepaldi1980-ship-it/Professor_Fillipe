@@ -17,6 +17,7 @@ try {
   await sql(`insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change) values ('${id}','00000000-0000-0000-0000-000000000000','authenticated','authenticated','${email}', crypt('${password}', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{}', now(), now(), '', '', '', '')`);
   await sql(`insert into profiles (user_id, display_name, preferred_name, birth_date, is_minor, level, level_score) values ('${id}','Marcos','Marcos','1984-03-02',false,'intermediário',50)`);
   await sql(`insert into consent_records (user_id, kind, version, granted) values ('${id}','terms','t',true),('${id}','privacy','t',true),('${id}','sensitive_religious','t',false)`);
+  await sql(`insert into entitlements (user_id, entitlement, source) values ('${id}','plan:premium','admin')`); // sermons and PDF are plan features
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
   const { data } = await sb.auth.signInWithPassword({ email, password });
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, locale: "pt-BR" });
@@ -56,6 +57,7 @@ try {
   const lessonSid = new URL(p.url()).searchParams.get("s");
   await p.waitForSelector("aside[aria-label='Plano de aula']", { timeout: 20000 });
   say("lesson: the plan editor opens beside the conversation", true);
+  await p.waitForSelector("text=Falta o objetivo", { timeout: 15000 }).catch(() => {});
   say("lesson: gaps are listed", (await p.locator("text=Falta o objetivo").count()) > 0);
   await p.locator("section:has(h3:text('Quebra-gelo')) button:text('Editar')").click();
   await p.fill("aside textarea", "Quem já explicou a Bíblia a alguém?");
@@ -98,6 +100,7 @@ try {
   await p.fill("aside textarea", "Deus alcança quem o busca com sinceridade.");
   await p.click("aside button:text('Salvar')");
   await p.waitForSelector("text=Deus alcança quem o busca com sinceridade.");
+  await p.waitForSelector("text=Ainda não há divisões.", { timeout: 15000 }).catch(() => {});
   say("sermon: the final review points out the gaps", (await p.locator("text=A introdução (com gancho) ainda não está no esboço.").count()) > 0 && (await p.locator("text=Ainda não há divisões.").count()) > 0);
   const sp = await pdfOf(sermonSid);
   say("sermon: PDF is a valid file", sp.status === 200 && sp.head === "%PDF-" && sp.size > 1500);

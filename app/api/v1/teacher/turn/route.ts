@@ -9,6 +9,9 @@ import { createTurnDeps, teacherProvider } from "@/lib/teacher/deps";
 import { runTurn } from "@/lib/teacher/pipeline";
 import { INTENTS } from "@/lib/teacher/schema";
 import { findReferences } from "@/lib/knowledge/refs-parser";
+import { loadAccess, loadUsage } from "@/lib/entitlements/server";
+import { checkLimit, overFairUse } from "@/lib/entitlements";
+import { addUsage, costBrl } from "@/lib/entitlements/guard";
 import { applyModePayload, deepSources, loadSessionMode, sermonTypeDefinition } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
@@ -38,12 +41,18 @@ export async function POST(req: Request) {
   const { data: session } = await db.from("sessions").select("id").eq("id", parsed.data.sessionId).maybeSingle();
   if (!session) return errorResponse(new HttpError(404, "session_not_found"));
 
-  // Spending guard: a daily cap of teacher answers per student (TEACHER_DAILY_LIMIT, default 40).
-  const limit = Number(process.env.TEACHER_DAILY_LIMIT) || 40;
-  const dayStart = new Date();
-  dayStart.setUTCHours(0, 0, 0, 0);
-  const { count } = await db.from("messages").select("id", { count: "exact", head: true }).eq("role", "teacher").gte("created_at", dayStart.toISOString());
-  if ((count ?? 0) >= limit * 1) return Response.json({ error: "daily_limit" }, { status: 429 });
+  // Plan limits (spec 8.12): text messages per day by plan; paid plans have fair use (moved to the fast model far above normal use).
+  let fairUse = false;
+  try {
+    const [access, usage] = await Promise.all([loadAccess(db, user.id), loadUsage(db, user.id)]);
+    const safety = Number(process.env.TEACHER_DAILY_LIMIT) || 400; // absolute guard against runaway spending, whatever the plan
+    if (usage.text_messages_day >= safety) return Response.json({ error: "daily_limit" }, { status: 429 });
+    const lim = checkLimit(access, usage, "text_messages_day");
+    if (!lim.ok) return Response.json({ error: "limit", kind: "text_messages_day", limit: lim.limit, used: lim.used, plan: access.plan, upgrade: "plus" }, { status: 429 });
+    fairUse = overFairUse(access, usage.text_messages_day);
+  } catch {
+    /* if the plan cannot be read the turn goes on (Free limits are then enforced by the next call) */
+  }
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -64,7 +73,7 @@ export async function POST(req: Request) {
         const sm = await loadSessionMode(db, session.id);
         const mode = sm?.mode ?? "free";
         const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
-        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources }, createTurnDeps());
+        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources, forceFast: fairUse }, createTurnDeps());
 
         let messageId: string | undefined;
         if (response.pastoral_flag) {
@@ -79,10 +88,14 @@ export async function POST(req: Request) {
           if (sm) await applyModePayload(db, user.id, sm, response, parsed.data.text).catch(() => null);
         }
 
+        // Usage meter: one text message, a deep call when the tier was deep, and the estimated cost in BRL.
+        void addUsage(db, "text_messages", 1);
+        if (meta.tier === "deep") void addUsage(db, "deep_calls", 1);
+        void addUsage(db, "cost_brl", costBrl(meta.llm));
         // Never log the student's text (spec 13): only metrics.
         console.log(JSON.stringify({ evt: "turn", ...meta }));
         controller.enqueue(enc.encode(sse("structured", response)));
-        controller.enqueue(enc.encode(sse("done", { ...meta, messageId })));
+        controller.enqueue(enc.encode(sse("done", { ...meta, messageId, fairUse })));
       } catch (e) {
         console.error(JSON.stringify({ evt: "turn_error", code: (e as Error).message.slice(0, 80) }));
         controller.enqueue(enc.encode(sse("error", { code: "turn_failed", detail: (e as Error).message.slice(0, 160) })));

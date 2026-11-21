@@ -48,13 +48,19 @@ async function setEnv(project) {
     ["REFERENCE_DATABASE_URL", envFile.REFERENCE_DATABASE_URL, "sensitive"],
     ["GEMINI_API_KEY", envFile.GEMINI_API_KEY, "sensitive"],
     ["VOICE_PROVIDER", envFile.VOICE_PROVIDER ?? "gemini", "plain"],
+    // billing: the server secret that lets webhooks write access rights (only its SHA-256 is in the database)
+    ["BILLING_SERVER_SECRET", envFile.BILLING_SERVER_SECRET, "sensitive"],
+    ["PAYMENT_PROVIDER", envFile.PAYMENT_PROVIDER ?? "simulated", "plain"],
+    ["PAYMENT_WEBHOOK_TOKEN", envFile.PAYMENT_WEBHOOK_TOKEN, "sensitive"],
+    ["ASAAS_API_KEY", envFile.ASAAS_API_KEY, "sensitive"],
+    ["ASAAS_ENV", envFile.ASAAS_ENV, "plain"],
     // optional ElevenLabs key (male voice "George") as a second server voice; add VOICE_API_KEY=... to .env.local to enable it
     ["VOICE_API_KEY", envFile.VOICE_API_KEY, "sensitive"],
     ["TEACHER_LLM_PROVIDER", "groq", "plain"],
     ["TRANSFORMERS_CACHE_DIR", "/tmp/hf-cache", "plain"],
   ];
   if (!has("FIELD_ENCRYPTION_KEY")) vars.push(["FIELD_ENCRYPTION_KEY", randomBytes(32).toString("base64"), "sensitive"]);
-  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k === "VOICE_API_KEY")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
+  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k === "VOICE_API_KEY" || k === "BILLING_SERVER_SECRET" || k === "PAYMENT_PROVIDER" || k === "PAYMENT_WEBHOOK_TOKEN" || k === "ASAAS_API_KEY" || k === "ASAAS_ENV")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
   await post(`/v10/projects/${project.id}/env?upsert=true`, body);
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }
