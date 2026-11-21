@@ -11,6 +11,9 @@ import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 
+import archItems from "@/lib/archaeology/items.json";
+const HAS_ARCH = (archItems as { image?: string }[]).some((x) => x.image);
+
 type Visual = TeacherResponse["visuals"][number];
 
 export default function VisualsPage() {
@@ -34,7 +37,7 @@ export default function VisualsPage() {
     <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-24">
       <h1 className="text-3xl">{t("visuals.title")}</h1>
       <div className="grid grid-cols-2 gap-2">
-        <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("visuals.arch")}</strong><span className="block text-sm text-muted">{t("visuals.arch.open")}</span></Link>
+        {HAS_ARCH && <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("visuals.arch")}</strong><span className="block text-sm text-muted">{t("visuals.arch.open")}</span></Link>}
         <Link href="/curiosidades" className="rounded-control border border-line bg-surface p-3"><strong>{t("cur.title")}</strong><span className="block text-sm text-muted">{t("home.cur.help")}</span></Link>
       </div>
       <section><h2 className="mb-2 text-xl">{t("visuals.maps")}</h2>

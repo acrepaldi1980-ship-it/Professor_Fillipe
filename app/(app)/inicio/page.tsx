@@ -16,6 +16,9 @@ const weekTheme = () => THEMES[Math.floor(Date.now() / (7 * 86_400_000)) % THEME
 
 const ORDER = ["iniciante", "intermediário", "avançado"];
 
+import archItems from "@/lib/archaeology/items.json";
+const HAS_ARCH = (archItems as { image?: string }[]).some((x) => x.image);
+
 export default function HomePage() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [offer, setOffer] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export default function HomePage() {
       </section>
       <section aria-label={t("home.explore")} className="grid grid-cols-2 gap-2">
         <Link href="/curiosidades" className="rounded-control border border-line bg-surface p-3"><strong>{t("cur.title")}</strong><span className="block text-sm text-muted">{t("home.cur.help")}</span></Link>
-        <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("arch.title")}</strong><span className="block text-sm text-muted">{t("home.arch.help")}</span></Link>
+        {HAS_ARCH && <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("arch.title")}</strong><span className="block text-sm text-muted">{t("home.arch.help")}</span></Link>}
       </section>
       <Link href="/visuais" className="rounded-control border border-line bg-surface p-3"><strong>{t("home.visuals")}</strong><span className="block text-sm text-muted">{t("home.visuals.help")}</span></Link>
       {offer && (
