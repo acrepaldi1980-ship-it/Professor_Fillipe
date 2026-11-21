@@ -886,5 +886,10 @@
   "notify.denied": "O navegador não permitiu os avisos. Você pode liberar nas configurações do navegador.",
   "notify.unavailable": "Não consegui ligar os lembretes neste aparelho agora.",
   "notify.on": "Lembretes ligados.",
-  "notify.closing": "Quer um lembrete diário de revisão? Ative em Conta."
+  "notify.closing": "Quer um lembrete diário de revisão? Ative em Conta.",
+  "lang.title": "Idioma",
+  "lang.help": "O idioma da interface e das respostas do professor.",
+  "lang.pt-BR": "Português (Brasil)",
+  "lang.es": "Español",
+  "lang.note.es": "Em espanhol: a interface e o professor. As trilhas, os mapas e os modelos 3D continuam em português por enquanto."
 }

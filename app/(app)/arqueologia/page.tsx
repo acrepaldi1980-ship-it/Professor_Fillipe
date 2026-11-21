@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { getBibleVerses } from "@/lib/api-client";
 import items from "@/lib/archaeology/items.json";
-import { t } from "@/lib/i18n";
+import { defaultBibleVersion, t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
 type Item = { id: string; name: string; period: string; place: string; lat: number; lng: number; refs: string[]; text: string; wiki: string; note?: string; image?: string; credit?: { title: string; author: string; license: string; page: string } };
@@ -28,7 +28,7 @@ export default function ArchaeologyPage() {
   async function openRef(ref: string) {
     for (let a = 0; a < 2; a++) {
       try {
-        const r = await getBibleVerses("por_blivre_2018", ref);
+        const r = await getBibleVerses(defaultBibleVersion(), ref);
         if (r.verses.length) return setVerse({ title: formatRefPt(ref), lines: r.verses });
       } catch { /* retry once */ }
     }

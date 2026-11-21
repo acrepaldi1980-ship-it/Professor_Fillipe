@@ -5,7 +5,7 @@ import { createServer } from "node:http";
 
 const port = Number(process.argv[2] ?? 4010);
 const failRate = Number(process.env.MOCK_FAIL ?? 0.25);
-const stats = { calls: 0, failed: 0, models: {} };
+const stats = { calls: 0, failed: 0, models: {}, lastSystem: "" };
 
 function sectionContent(prompt) {
   const changed = prompt.includes("A PESSOA PEDIU ESTA MUDANÇA") ? " (versão ajustada)" : "";
@@ -54,6 +54,7 @@ createServer((req, res) => {
       return;
     }
     const prompt = (j.messages ?? []).map((m) => m.content).join("\n");
+    stats.lastSystem = (j.messages ?? []).filter((m) => m.role === "system").map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content))).join("\n").slice(0, 60000);
     const delay = 150 + Math.random() * 350;
     setTimeout(() => {
       res.writeHead(200, { "content-type": "application/json" });

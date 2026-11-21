@@ -9,7 +9,8 @@ import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, claimReferral, getReferral, getStreak, listPaths, setLevel, type ChurchLesson, type MeResponse, type PathSummary, type SessionRow, type StreakData } from "@/lib/api-client";
-import { t } from "@/lib/i18n";
+import { isLang, t } from "@/lib/i18n";
+import { applyLanguage, loadLanguage, saveLanguage } from "@/lib/i18n/lang";
 import { getPlatform } from "@/lib/platform";
 
 // Theme of the week: rotates through the year (no spending, just a gentle invitation).
@@ -33,7 +34,12 @@ export default function HomePage() {
   const [refNotice, setRefNotice] = useState(false);
   useEffect(() => {
     void getMyLessons().then((r) => setLessons(r.lessons)).catch(() => undefined); // the lesson of the week published by the student's church
-    void getMe().then(setMe);
+    void getMe().then(async (m) => {
+      setMe(m);
+      // a new device: the language saved on the profile applies here too (compared with the stored one, so there is no reload loop)
+      const loc = m.profile?.locale;
+      if (isLang(loc) && loc !== (await loadLanguage())) { await saveLanguage(loc); applyLanguage(loc); window.location.reload(); }
+    });
     void getStreak(true).then(setStreak).catch(() => undefined);
     void listPaths().then((r) => setPaths(r.paths)).catch(() => undefined);
     // arrived through a friend's link: record it once, then settle (both earn days after 2 study days)

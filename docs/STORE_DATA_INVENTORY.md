@@ -63,3 +63,11 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Ensaio do sermão (Prompt 2.4)
 - `rehearsals`: transcrição do ensaio (fala do próprio pregador), métricas (tempo, ritmo, pausas, vícios de linguagem, tempo por parte), retorno gerado por IA e, só se o pregador optar, o caminho da gravação no bucket privado `rehearsals` (pasta com o id do usuário). Por padrão **o áudio é descartado após a análise**. Consentimento específico `rehearsal_audio`. Uso do microfone por `lib/platform` (`Microphone.start({ bitsPerSecond })`). Incluído na exportação dos dados e apagado junto com a conta (cascade). Nas lojas: declarar "áudio" e "conteúdo do usuário" como dados coletados e vinculados ao usuário, finalidade "funcionalidade do app", sem rastreamento nem publicidade.
+
+## Trilhas, sequência, indicação, lembretes e idioma (Prompt 2.7)
+- `path_progress` (trilha, dias concluídos), `user_milestones` (marcos alcançados): uso do app, vinculados ao usuário. A "sequência" é calculada a partir dos dias em que o aluno enviou mensagem (só datas; o texto não é lido).
+- `referral_codes` e `referrals`: código do aluno e quem indicou quem (ids de usuário, estado e datas). Dá dias de Premium (`entitlements`, fonte `referral`). Declarar como "identificadores" e "conteúdo do usuário" nas lojas; não há rastreamento publicitário.
+- `notification_prefs` (ligado, hora, fuso, tipos, idioma, último envio) e `devices` (token de push do aparelho). O token só serve para avisos do app, nunca para publicidade; é apagado ao sair da conta e quando o serviço de push o recusa.
+- `profiles.locale`: idioma da interface e do professor.
+- Cartão para compartilhar: gerado no aparelho; nada é enviado ao servidor até o aluno escolher compartilhar.
+- Nas lojas: notificações push exigem a declaração do uso de permissão de notificações e, no iOS, as chaves APNs (2.5).

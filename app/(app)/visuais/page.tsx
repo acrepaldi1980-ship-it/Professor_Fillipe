@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui/Modal";
 import { VisualPanel } from "@/components/visuals/VisualPanel";
 import { ShareCardButton } from "@/components/share/ShareCardButton";
 import { getBibleVerses, listVisuals, type CatalogModel } from "@/lib/api-client";
-import { t } from "@/lib/i18n";
+import { defaultBibleVersion, t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 
@@ -32,7 +32,7 @@ export default function VisualsPage() {
   const shown = models.filter((m) => (!theme || m.theme === theme) && (!query.trim() || `${m.name} ${m.alt}`.toLowerCase().includes(query.trim().toLowerCase())));
   async function openRef(ref: string) {
     try {
-      const r = await getBibleVerses("por_blivre_2018", ref);
+      const r = await getBibleVerses(defaultBibleVersion(), ref);
       setVerse({ title: formatRefPt(ref), lines: r.verses });
     } catch {
       setVerse({ title: formatRefPt(ref), lines: [{ ref, text: "—" }] });

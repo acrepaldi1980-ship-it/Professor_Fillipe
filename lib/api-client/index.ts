@@ -1,5 +1,6 @@
 // The only path from app screens to data (spec 10.6.1). All routes live under /api/v1,
 // authenticated with a Bearer token (no cookies), and every call sends X-App-Version / X-Platform.
+import { getLanguage } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 
 export const API_BASE = "/api/v1";
@@ -91,6 +92,7 @@ export async function teacherTurn(
 export async function transcribeAudio(audio: Blob): Promise<{ text: string; confidence?: number }> {
   const form = new FormData();
   form.set("audio", audio, "audio.webm");
+  form.set("lang", getLanguage() === "es" ? "es" : "pt");
   const res = await apiFetch("/voice/transcribe", { method: "POST", body: form });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return res.json();
@@ -114,7 +116,7 @@ export async function getBibleVerses(version: string, ref: string) {
 // ---- Account, profile and sessions ----
 export interface MeResponse {
   user: { id: string; email?: string };
-  profile: { first_topic?: string | null; level?: string | null; level_score?: number | null; goals?: string[]; preferred_formats?: string[]; daily_minutes?: number | null; display_name: string | null; preferred_name: string | null; birth_date: string | null; is_minor: boolean; ui_prefs: Record<string, unknown>; role: string } | null;
+  profile: { locale?: string; first_topic?: string | null; level?: string | null; level_score?: number | null; goals?: string[]; preferred_formats?: string[]; daily_minutes?: number | null; display_name: string | null; preferred_name: string | null; birth_date: string | null; is_minor: boolean; ui_prefs: Record<string, unknown>; role: string } | null;
   consents: Record<string, { granted: boolean; version: string }>;
   termsVersion: string;
   onboarding: { needsConsent: boolean; needsReligiousChoice: boolean; needsInterview: boolean };

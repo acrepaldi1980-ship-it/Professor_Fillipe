@@ -843,6 +843,7 @@ Rota `/admin`, só para o papel `admin` (e `reviewer` nas telas de revisão).
 - Permissão pedida só depois da primeira sessão completa.
 - Tipos: revisão do dia, continuação de trilha, lição da semana (P1), lembrete de teste acabando.
 - Horário preferido configurável; máximo 1 notificação por dia; nunca entre 22h e 7h no fuso do usuário.
+- **Como foi feito (Fase 2):** preferências em `notification_prefs` (ligado, hora entre 7h e 21h, tipos, fuso, idioma); aparelhos em `devices`; Web Push com chaves VAPID; um emissor chamado de hora em hora (`.github/workflows/notify.yml` > `POST /api/v1/study/notify-tick`, protegido pelo segredo `CRON_SECRET`) que decide por aluno com as regras acima, só em torno da hora escolhida, e remove aparelhos que o serviço de push dá como inexistentes. Prioridade: lição da semana, fim do teste Premium, continuação de trilha, revisão do dia. A permissão só é pedida em Conta depois da primeira sessão concluída. Push nativo (APNs/FCM) fica para o empacotamento nas lojas.
 
 ### 8.16 M16 — Imersão 3D (P2)
 

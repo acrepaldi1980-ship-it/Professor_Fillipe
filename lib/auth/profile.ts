@@ -39,13 +39,14 @@ export interface ProfileInput {
   birth_date?: string;
   guardian_email?: string | null;
   timezone?: string;
+  locale?: "pt-BR" | "es";
   ui_prefs?: Record<string, unknown>;
 }
 
 /** Creates or updates the profile; enforces the age rules (RN-09, D-08). */
 export async function saveProfile(db: SupabaseClient, userId: string, input: ProfileInput, guardianAck: boolean) {
   const patch: Record<string, unknown> = { user_id: userId };
-  for (const k of ["display_name", "preferred_name", "guardian_email", "timezone", "ui_prefs"] as const) if (input[k] !== undefined) patch[k] = input[k];
+  for (const k of ["display_name", "preferred_name", "guardian_email", "timezone", "locale", "ui_prefs"] as const) if (input[k] !== undefined) patch[k] = input[k];
   if (input.birth_date !== undefined) {
     const status = ageStatus(input.birth_date);
     if (status === "invalid") throw new HttpError(400, "invalid_birth_date");
@@ -87,6 +88,7 @@ export async function studentForPrompt(db: SupabaseClient, userId: string): Prom
     ministry_role: role,
     preferred_formats: p?.preferred_formats ?? [],
     is_minor: !!p?.is_minor,
+    locale: p?.locale === "es" ? "es" : "pt-BR",
     last_summaries: (sums ?? []).map((x) => x.summary as string),
   };
 }

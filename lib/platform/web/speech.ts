@@ -29,8 +29,8 @@ import type { Speech, SpeechOptions } from "../types";
 // Quality depends on the device, so we always pick the best installed pt-BR voice.
 const GOOD = /natural|online|premium|enhanced|neural/i;
 // Names of male and female Portuguese voices found on current systems (Windows/Edge, iOS, Android, Chrome).
-const MALE = /antonio|ant[oô]nio|felipe|ricardo|daniel|thiago|jorge|luiz|fabio|donato|\bmale\b|masculin|\bmasc\b|[-_]ptd[-_]|\bptd\b/i;
-const FEMALE = /francisca|luciana|fernanda|maria|vitoria|vit[oó]ria|camila|helena|giovanna|brenda|leila|\bfemale\b|feminin|[-_]afs[-_]|\bafs\b/i;
+const MALE = /antonio|ant[oô]nio|felipe|ricardo|daniel|thiago|jorge|luiz|fabio|donato|diego|juan|carlos|pablo|enrique|raul|ra[uú]l|alvaro|[aá]lvaro|pedro|miguel|andr[eé]s|alonso|\bjavier\b|\bmale\b|masculin|\bmasc\b|[-_]ptd[-_]|\bptd\b/i;
+const FEMALE = /francisca|luciana|fernanda|maria|vitoria|vit[oó]ria|camila|helena|giovanna|brenda|leila|monica|m[oó]nica|paulina|laura|sabina|elvira|dalia|lucia|luc[ií]a|marisol|elena|valentina|\bfemale\b|feminin|[-_]afs[-_]|\bafs\b/i;
 
 /** The teacher is a man: every spoken line must come from a male voice (owner's rule, 21/11/2026). Names and ids that tell the gender are matched. */
 export const isMaleVoice = (v: { name: string; voiceURI?: string }) => {
@@ -38,9 +38,10 @@ export const isMaleVoice = (v: { name: string; voiceURI?: string }) => {
   return MALE.test(id) && !FEMALE.test(id);
 };
 
-function score(v: SpeechSynthesisVoice): number {
+function score(v: SpeechSynthesisVoice, lang: "pt" | "es" = "pt"): number {
   let s = 0;
-  if (/pt[-_]BR/i.test(v.lang)) s += 100;
+  if (lang === "es") { if (/es[-_](MX|US|419|AR|CO)/i.test(v.lang)) s += 100; else if (/^es/i.test(v.lang)) s += 80; else return -1; }
+  else if (/pt[-_]BR/i.test(v.lang)) s += 100;
   else if (/^pt/i.test(v.lang)) s += 40;
   else return -1;
   if (MALE.test(v.name)) s += 60; // the teacher is a mature man: a male voice fits the character
@@ -54,6 +55,13 @@ export class WebSpeech implements Speech {
   private voice: SpeechSynthesisVoice | null = null;
   private list: SpeechSynthesisVoice[] | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private lang: "pt" | "es" = "pt";
+
+  /** Language of the teacher's voice on this device (the student's interface language). */
+  setLanguage(lang: "pt" | "es") {
+    if (lang === this.lang) return;
+    this.lang = lang; this.list = null; this.voice = null;
+  }
 
   isSupported() {
     return typeof window !== "undefined" && "speechSynthesis" in window;
@@ -75,7 +83,7 @@ export class WebSpeech implements Speech {
         setTimeout(res, 1200);
       });
     }
-    this.list = synth.getVoices().map((v) => ({ v, s: score(v) })).filter((x) => x.s >= 0).sort((a, b) => b.s - a.s).map((x) => x.v);
+    this.list = synth.getVoices().map((v) => ({ v, s: score(v, this.lang) })).filter((x) => x.s >= 0).sort((a, b) => b.s - a.s).map((x) => x.v);
     return this.list;
   }
 
@@ -112,7 +120,7 @@ export class WebSpeech implements Speech {
     }
     return new Promise<void>((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = voice?.lang ?? "pt-BR";
+      u.lang = voice?.lang ?? (this.lang === "es" ? "es-MX" : "pt-BR");
       if (voice) u.voice = voice;
       // Calm, slightly lower voice: a mature teacher, not an announcer.
       u.rate = opts.rate ?? 0.93;

@@ -19,7 +19,7 @@ import { Toast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
-import { t } from "@/lib/i18n";
+import { defaultBibleVersion, t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
@@ -30,7 +30,6 @@ const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoug
 
 type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse; messageId?: string };
 
-const MAIN_VERSION = "por_blivre_2018";
 const SILENCE_MS = 1200;
 const SPEECH_LEVEL = 0.06;
 const MAX_RECORD_MS = 30_000;
@@ -252,7 +251,7 @@ export default function StudyPage() {
     // one automatic retry: a cold server or a brief network drop must not leave the student with an empty verse
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const r = await getBibleVerses(MAIN_VERSION, ref);
+        const r = await getBibleVerses(defaultBibleVersion(), ref);
         if (r.verses.length === 0 && attempt === 0) throw new Error("empty");
         setMarked(false);
         setVerse({ title: formatRefPt(ref), ref, lines: r.verses.length ? r.verses : [{ ref, text: t("study.verse.error") }] });
@@ -346,7 +345,7 @@ export default function StudyPage() {
             <p key={l.ref} className="mb-2 text-[17px]"><sup className="mr-1 text-muted">{l.ref.split(".").pop()}</sup>{l.text}</p>
           ))}
           <ShareCardButton text={verse.lines.map((l) => l.text).join(" ")} title={verse.title} credit={t("share.card.credit")} className="mt-2" />
-          {verse.ref && <Button type="button" variant="ghost" onClick={() => void addBookmark(verse.ref!, MAIN_VERSION).then(() => setMarked(true)).catch(() => undefined)} className="mt-2">{marked ? t("bookmark.done") : t("bookmark.add")}</Button>}
+          {verse.ref && <Button type="button" variant="ghost" onClick={() => void addBookmark(verse.ref!, defaultBibleVersion()).then(() => setMarked(true)).catch(() => undefined)} className="mt-2">{marked ? t("bookmark.done") : t("bookmark.add")}</Button>}
           <Button type="button" variant="ghost" onClick={() => setVerse(null)} className="mt-2">{t("study.verse.close")}</Button>
         </Modal>
       )}

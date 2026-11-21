@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { getBibleVerses, trackEvent } from "@/lib/api-client";
 import catalog from "@/lib/curiosities/catalog.json";
 import { audioUrl, posterUrl, videoUrl } from "@/lib/curiosities/media";
-import { t } from "@/lib/i18n";
+import { defaultBibleVersion, t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
 type Cur = { id: string; title: string; refs: string[]; sources: string[]; duration: number; sentences: { text: string; start: number; end: number }[]; images: { id: string; image: string; name: string; credit?: { title: string; author: string; license: string; page: string } }[]; hasVideo: boolean };
@@ -53,7 +53,7 @@ function Detail({ cur, onBack }: { cur: Cur; onBack: () => void }) {
   async function openRef(ref: string) {
     for (let a = 0; a < 2; a++) {
       try {
-        const r = await getBibleVerses("por_blivre_2018", ref);
+        const r = await getBibleVerses(defaultBibleVersion(), ref);
         if (r.verses.length) return setVerse({ title: formatRefPt(ref), lines: r.verses });
       } catch { /* retry once */ }
     }

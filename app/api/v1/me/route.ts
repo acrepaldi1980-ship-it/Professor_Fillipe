@@ -32,6 +32,7 @@ const putBody = z.object({
   guardian_ack: z.boolean().optional(),
   guardian_email: z.string().email().nullable().optional(),
   timezone: z.string().max(64).optional(),
+  locale: z.enum(["pt-BR", "es"]).optional(),
   ui_prefs: z.record(z.string(), z.unknown()).optional(),
 });
 

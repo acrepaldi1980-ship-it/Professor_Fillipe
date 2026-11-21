@@ -27,7 +27,10 @@ export async function loadBibleSettings(db: SupabaseClient, userId: string): Pro
     if (ch && !lenses.length && consents.sensitive_religious?.granted) lenses = ((ch.default_lenses as string[] | null) ?? []).filter((l) => (LENSES as readonly string[]).includes(l));
     if (ch?.default_version_id && !p?.main_version_id) churchVersion = ch.default_version_id as string;
   }
-  const ids = [p?.main_version_id ?? churchVersion ?? DEFAULT_BIBLE.main_version_id, ...(p?.compare_version_ids ?? [])];
+  // a Spanish-speaking student with no version of their own starts with the Reina-Valera 1909
+  const { data: prof } = await db.from("profiles").select("locale").eq("user_id", userId).maybeSingle();
+  const base = prof?.locale === "es" ? "spa_rv_1909" : DEFAULT_BIBLE.main_version_id;
+  const ids = [p?.main_version_id ?? churchVersion ?? base, ...(p?.compare_version_ids ?? [])];
   const { data: names } = await db.from("bible_versions").select("id,name").in("id", ids);
   const nameOf = (id: string) => names?.find((n) => n.id === id)?.name ?? id;
   const main = ids[0];

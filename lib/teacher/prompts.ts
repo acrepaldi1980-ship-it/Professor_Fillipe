@@ -26,6 +26,8 @@ export interface StudentProfile {
   ministry_role?: string | null;
   preferred_formats: string[];
   is_minor: boolean;
+  /** Interface language of the student ("pt-BR" by default). */
+  locale?: "pt-BR" | "es";
   last_summaries: string[];
 }
 
@@ -38,6 +40,17 @@ export const DEFAULT_STUDENT: StudentProfile = {
   is_minor: false,
   last_summaries: [],
 };
+
+/** Spanish layer (Prompt 2.7, RNF-10): the student studies in Spanish. Same character and the same rules, in another language. */
+export function layerLanguage(s: StudentProfile): string {
+  if (s.locale !== "es") return "";
+  return `IDIOMA: este aluno estuda em ESPANHOL.
+- Fale com ele SEMPRE em espanhol latino-americano neutro, tratando-o por "tú", tanto em "speech" quanto em "display_markdown", nas perguntas e nas opções (next_options). Seu nome é "Profesor Filipe".
+- Todas as regras acima continuam valendo, sem exceção: falas curtas, uma pergunta no fim, fonte antes de fala, nada de versículo ou citação inventada, a lente escolhida e o aviso quando as tradições divergem.
+- Os trechos recuperados podem estar em português ou inglês: explique o conteúdo em espanhol, sem acrescentar nada que não esteja neles, e cite cada obra pelo título como aparece na fonte.
+- Os versículos citados vêm da versão da Bíblia listada (por padrão Reina-Valera 1909); copie-os exatamente como estão, em espanhol. Nunca traduza um versículo por conta própria.
+- Termos originais (grego, hebraico) em transliteração, explicados em espanhol. Se perguntado, diga com naturalidade que é uma IA.`;
+}
 
 export function layerStudent(s: StudentProfile): string {
   return `ALUNO
@@ -148,7 +161,7 @@ Conduza ESTE passo da trilha: comece dizendo em uma frase por que o dia importa,
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), layerTrail(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLanguage(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), layerTrail(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

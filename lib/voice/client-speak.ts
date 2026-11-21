@@ -1,5 +1,6 @@
 // The teacher's voice for screens other than the conversation (closing summary, review): server voice first (Gemini, the same family as
 // the greeting), the device voice when it is unavailable. Not used for the main conversation, which has its own lip-sync player.
+import { getLanguage } from "@/lib/i18n";
 import { speakSentence } from "@/lib/api-client";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
@@ -24,7 +25,7 @@ export async function speakText(text: string, onLevel?: (level: number) => void)
     for (const sentence of splitSentences(text)) {
       if (my !== token) return spokeAny;
       let played = false;
-      if (server !== "down") {
+      if (server !== "down" && getLanguage() === "pt-BR") { // the server voice (Piper) speaks Portuguese; in Spanish the device voice is used
         try {
           const blob = await speakSentence(sentence);
           if (my !== token) return spokeAny;

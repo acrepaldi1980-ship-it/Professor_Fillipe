@@ -7,7 +7,7 @@ import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { getLenses, getMe, saveLensesApi, saveVersions, type BibleVersionInfo } from "@/lib/api-client";
-import { t } from "@/lib/i18n";
+import { getLanguage, t } from "@/lib/i18n";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function SetupPage() {
       setVersions(p.versions.filter((v) => v.language === "pt" || v.language === "por"));
       // RF-M04-02: Bíblia Livre for adults; Nova Bíblia Viva Open for beginners and minors.
       const beginner = me.profile?.level === "iniciante" || me.profile?.is_minor;
-      const pick = beginner && p.versions.some((v) => v.id === "por_nbv_open") ? "por_nbv_open" : "por_blivre_2018";
+      const pick = getLanguage() === "es" && p.versions.some((v) => v.id === "spa_rv_1909") ? "spa_rv_1909" : beginner && p.versions.some((v) => v.id === "por_nbv_open") ? "por_nbv_open" : "por_blivre_2018";
       setSuggested(pick);
       setMain(p.main_version_id && p.main_version_id !== "por_blivre_2018" ? p.main_version_id : pick);
     }).catch(() => setError(true));

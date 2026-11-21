@@ -11,7 +11,8 @@ export async function POST(req: Request) {
   if (!(audio instanceof Blob) || audio.size === 0) return Response.json({ error: "invalid_audio" }, { status: 400 });
   if (audio.size > MAX_BYTES) return Response.json({ error: "audio_too_large" }, { status: 413 });
   try {
-    const out = await stt().transcribe!(audio, { language: "pt", vocabulary: recognitionVocabulary() });
+    const language = form?.get("lang") === "es" ? "es" : "pt";
+    const out = await stt().transcribe!(audio, { language, vocabulary: language === "pt" ? recognitionVocabulary() : undefined });
     return Response.json(out);
   } catch {
     return Response.json({ error: "stt_unavailable" }, { status: 502 });
