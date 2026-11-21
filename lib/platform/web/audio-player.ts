@@ -59,6 +59,8 @@ export class WebAudioPlayer implements AudioPlayer {
     this.ctx ??= new AudioContext();
     const src = this.ctx.createMediaElementSource(el);
     this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 512; // ~11 ms window: the mouth follows the real audio without lag
+    this.analyser.smoothingTimeConstant = 0;
     src.connect(this.analyser);
     this.analyser.connect(this.ctx.destination);
     const buf = new Uint8Array(this.analyser.fftSize);

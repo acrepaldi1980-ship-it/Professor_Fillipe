@@ -1,5 +1,27 @@
 import { prepareForSpeech } from "@/lib/voice/speech-text";
+import { SpeechClock } from "@/lib/voice/clock";
 import { levelAt, planText, wordAt } from "@/lib/voice/visemes";
+
+// Measured pace of each voice (real ms per planned ms), kept in memory and in the device storage.
+const SPEED_CAL = new Map<string, number>();
+const CAL_KEY = "pf.speechcal.v1";
+function loadCal(key: string): number | undefined {
+  try {
+    const v = (JSON.parse(localStorage.getItem(CAL_KEY) ?? "{}") as Record<string, number>)[key];
+    return typeof v === "number" && v > 0.5 && v < 2.2 ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
+function saveCal(key: string, v: number) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CAL_KEY) ?? "{}") as Record<string, number>;
+    all[key] = Math.round(v * 1000) / 1000;
+    localStorage.setItem(CAL_KEY, JSON.stringify(all));
+  } catch {
+    /* no storage: the calibration just lives in memory */
+  }
+}
 import type { Speech, SpeechOptions } from "../types";
 
 // On-device text-to-speech (Web Speech API): free, works offline, and on current phones/browsers it has natural
@@ -75,30 +97,47 @@ export class WebSpeech implements Speech {
       // Calm, slightly lower voice: a mature teacher, not an announcer.
       u.rate = opts.rate ?? 0.93;
       u.pitch = opts.pitch ?? (voice && MALE.test(voice.name) ? 0.92 : 0.8);
-      // The Web Speech API exposes no audio, so the mouth is planned from the text (syllables and pauses) and re-aligned
-      // to the engine every time it reports a word boundary.
+      // The Web Speech API exposes no audio, so the mouth is planned from the text (syllables and pauses). The plan is played on a
+      // clock that follows the REAL speed of the voice: every word boundary reported by the engine re-anchors the clock and refines
+      // the speed (moving average), and the speed measured at the end of each utterance is remembered per voice, so devices that
+      // report no boundaries still start close to the right pace.
       const plan = planText(text, u.rate);
+      const calKey = `${voice?.name ?? "default"}@${u.rate}`;
+      const clock = new SpeechClock(SPEED_CAL.get(calKey) ?? loadCal(calKey) ?? 1);
       let t0 = 0;
-      let shift = 0; // ms: how far the engine is ahead (+) or behind (-) our estimate
+      let raf = 0;
       const stop = () => {
-        if (this.timer) clearInterval(this.timer);
+        cancelAnimationFrame(raf);
         this.timer = null;
         opts.onLevel?.(0);
+        if (plan.length && t0) {
+          // remember the pace of this voice for the next sentences (only a clean measurement: it ended and had boundaries or enough text)
+          const planned = plan[plan.length - 1].endMs;
+          const measured = (performance.now() - t0) / planned;
+          if (planned > 600 && measured > 0.5 && measured < 2.2) {
+            const prev = SPEED_CAL.get(calKey) ?? speed;
+            const next = clock.boundaries > 0 ? 0.5 * prev + 0.5 * clock.speed : 0.6 * prev + 0.4 * measured;
+            SPEED_CAL.set(calKey, next);
+            saveCal(calKey, next);
+          }
+        }
         resolve();
       };
       u.onboundary = (e) => {
         if (!plan.length) return;
         const w = plan[wordAt(plan, e.charIndex)];
-        shift = w.startMs - (performance.now() - t0);
+        clock.boundary(w.startMs, performance.now());
       };
       u.onend = stop;
       u.onerror = stop;
       u.onstart = () => {
         t0 = performance.now();
-        shift = 0;
-        this.timer = setInterval(() => {
-          opts.onLevel?.(levelAt(plan, performance.now() - t0 + shift));
-        }, 30);
+        clock.start(t0);
+        const loop = () => {
+          opts.onLevel?.(levelAt(plan, clock.planNow(performance.now())));
+          raf = requestAnimationFrame(loop);
+        };
+        raf = requestAnimationFrame(loop);
       };
       window.speechSynthesis.speak(u);
     });
@@ -107,7 +146,6 @@ export class WebSpeech implements Speech {
   cancel() {
     if (!this.isSupported()) return;
     window.speechSynthesis.cancel();
-    if (this.timer) clearInterval(this.timer);
     this.timer = null;
   }
 }

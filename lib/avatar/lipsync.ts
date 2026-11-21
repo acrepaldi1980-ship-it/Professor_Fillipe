@@ -58,7 +58,7 @@ export function drawFace(ctx: CanvasRenderingContext2D, img: CanvasImageSource, 
 /** Smoothing of the jaw (fast to open, slower to close) and of the head motion; returns the new values. */
 export function stepMotion(s: { drop: number; nod: number }, level: number, speaking: boolean, t: number) {
   const target = speaking ? Math.min(1, level * 3.4) : 0;
-  const drop = s.drop + (target - s.drop) * (target > s.drop ? 0.5 : 0.22);
+  const drop = s.drop + (target - s.drop) * (target > s.drop ? 0.65 : 0.3);
   // a very small nod and sway while speaking, never abrupt
   const nodTarget = speaking ? Math.sin(t / 620) * 0.35 + drop * 0.6 : 0;
   const nod = s.nod + (nodTarget - s.nod) * 0.08;
