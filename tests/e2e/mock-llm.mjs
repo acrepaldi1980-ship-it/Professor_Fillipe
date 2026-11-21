@@ -9,9 +9,10 @@ const stats = { calls: 0, failed: 0, models: {} };
 
 function sectionContent(prompt) {
   const changed = prompt.includes("A PESSOA PEDIU ESTA MUDANÇA") ? " (versão ajustada)" : "";
-  const sec = /(?:seção|divisão) "?(\w+)"?/.exec(prompt)?.[1] ?? "";
+  // the request is the last line of the user message: take the LAST "seção X" (the rules mention the word earlier)
+  const sec = [...prompt.matchAll(/(?:Proponha|Escreva|Reescreva) (?:a )?(?:seção|divisão) "?(\w+)"?/g)].pop()?.[1] ?? "";
   const ids = (re) => [...prompt.matchAll(re)].map((m) => m[1]);
-  if (/Proponha a divisão número/.test(prompt) || sec === "division") return { title: "Divisão do texto" + changed, texts: ["ACT.8.26"], explanation: "Explicação baseada no texto." + changed, illustration: "Uma ilustração simples.", application: "Aplicação prática." };
+  if (/Proponha a divisão número|Reescreva a divisão/.test(prompt) || sec === "division") return { title: "Divisão do texto" + changed, texts: ["ACT.8.26"], explanation: "Explicação baseada no texto." + changed, illustration: "Uma ilustração simples.", application: "Aplicação prática." };
   switch (sec) {
     case "objective": return ["Reconhecer a iniciativa de Deus" + changed, "Aplicar o exemplo de Filipe"];
     case "icebreaker": return "Quem já explicou algo difícil a alguém?" + changed;

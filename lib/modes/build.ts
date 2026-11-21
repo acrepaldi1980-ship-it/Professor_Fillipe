@@ -5,7 +5,7 @@ import { readLenses } from "../auth/preferences";
 import { addUsage } from "../entitlements/guard";
 import { getStore } from "../knowledge/db";
 import { DeepStudy, deepGaps, LessonPlan, lessonGapKeys, lessonGaps, SermonOutline, sermonGapKeys, sermonGaps } from "./schema";
-import { crossReferencesFor, gatherResearch } from "./research";
+import { crossReferencesFor, gatherResearch, sourcesFor } from "./research";
 import { sermonTypeDefinition, seedDocument, type SessionMode } from "./server";
 import { callJsonLlm, isValidSection, suggestSection } from "./suggest";
 
@@ -45,7 +45,7 @@ export async function buildSection(db: SupabaseClient, userId: string, sm: Sessi
     const typeDef = mode === "sermon" ? await sermonTypeDefinition(db, sm.context.sermon_type) : undefined;
     try {
       const attempt = () => suggestSection(
-        { mode, context: sm.context, doc, section, sermonTypeDefinition: typeDef, sources: research?.text ?? "", instruction, words: research?.words, excerpts: research?.excerpts },
+        { mode, context: sm.context, doc, section, sermonTypeDefinition: typeDef, sources: research ? sourcesFor(research, section) : "", instruction, words: research?.words, excerpts: research?.excerpts },
         callJsonLlm,
         async (verse) => (await getStore().bibleVerses("por_blivre_2018", [verse], [])).length > 0,
       );

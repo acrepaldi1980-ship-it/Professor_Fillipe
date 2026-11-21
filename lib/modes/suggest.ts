@@ -78,7 +78,7 @@ export function buildPrompt(i: SuggestInput): { system: string; user: string } {
     const current = i.mode === "deep" ? (i.doc as Record<string, unknown>)[base] : i.mode === "sermon" && base.startsWith("division") ? (i.doc as { divisions?: unknown[] }).divisions?.[idx] : (i.doc as Record<string, unknown>)[base];
     ask += `\nVersão atual desta seção: ${JSON.stringify(current ?? null).slice(0, 1800)}\nA PESSOA PEDIU ESTA MUDANÇA, atenda-a mantendo o resto: "${i.instruction.slice(0, 400)}"`;
   }
-  const src = i.sources ? `\nFONTES (a única base permitida):\n${i.sources.slice(0, 6000)}\n` : "";
+  const src = i.sources ? `\nFONTES (a única base permitida):\n${i.sources.slice(0, 9000)}\n` : "";
   return { system: rules, user: `${setup}${src}\nO que já está no documento (JSON): ${JSON.stringify(i.doc).slice(0, 3000)}\n\n${ask}` };
 }
 
