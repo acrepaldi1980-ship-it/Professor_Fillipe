@@ -8,6 +8,8 @@ export class WebAudioPlayer implements AudioPlayer {
   private ctx: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private wired = new WeakSet<HTMLAudioElement>();
+  /** Recent loudest peak (decays over ~1 s): the mouth opens relative to it, so any voice (loud or quiet) moves the same way. */
+  private ref = 0.25;
 
   async play(source: Blob | ArrayBuffer | string) {
     this.stop();
@@ -18,7 +20,10 @@ export class WebAudioPlayer implements AudioPlayer {
     const el = new Audio(url);
     el.playbackRate = this.rate;
     this.el = el;
+    this.ref = 0.25;
     this.attachAnalyser(el);
+    // a suspended AudioContext (autoplay rules) would route the audio into silence: wake it before playing
+    if (this.ctx?.state === "suspended") await this.ctx.resume().catch(() => undefined);
     await new Promise<void>((resolve, reject) => {
       el.onended = () => resolve();
       el.onerror = () => reject(new Error("audio_playback_failed"));
@@ -68,7 +73,10 @@ export class WebAudioPlayer implements AudioPlayer {
       this.analyser!.getByteTimeDomainData(buf);
       let peak = 0;
       for (const v of buf) peak = Math.max(peak, Math.abs(v - 128) / 128);
-      this.levelListeners.forEach((cb) => cb(peak));
+      this.ref = Math.max(0.12, this.ref * 0.985, peak);
+      // scaled to the range the avatar expects from every voice (the jaw multiplies it by ~3.4)
+      const level = peak < 0.03 ? 0 : Math.min(1, peak / this.ref) * 0.3;
+      this.levelListeners.forEach((cb) => cb(level));
       this.raf = requestAnimationFrame(tick);
     };
     tick();

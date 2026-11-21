@@ -107,7 +107,7 @@ export default function StudyPage() {
     const my = ++playId.current;
     const sentences = splitSentences(speech);
     const platform = getPlatform();
-    setState("speaking");
+    // stay in "thinking" until the first sound is really playing (the server voice can take a few seconds the first time)
     try {
       let next: Promise<Blob> | null = serverVoice.current !== "down" ? speakSentence(sentences[0]) : null;
       next?.catch(() => undefined);
@@ -121,6 +121,7 @@ export default function StudyPage() {
             serverVoice.current = "ok";
             next = i + 1 < sentences.length ? speakSentence(sentences[i + 1]) : null;
             next?.catch(() => undefined);
+            setState("speaking");
             await platform.audioPlayer.play(blob); // the mouth follows the real audio level
             played = true;
           } catch {
@@ -130,6 +131,7 @@ export default function StudyPage() {
         }
         if (!played && my === playId.current) {
           if (platform.speech.isSupported()) {
+            setState("speaking");
             const voiceName = (await loadPrefs()).voiceName;
             let missing = false;
             await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv), onUnavailable: () => { missing = true; } });
