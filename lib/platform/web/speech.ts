@@ -115,7 +115,7 @@ export class WebSpeech implements Speech {
           const planned = plan[plan.length - 1].endMs;
           const measured = (performance.now() - t0) / planned;
           if (planned > 600 && measured > 0.5 && measured < 2.2) {
-            const prev = SPEED_CAL.get(calKey) ?? speed;
+            const prev = SPEED_CAL.get(calKey) ?? clock.speed;
             const next = clock.boundaries > 0 ? 0.5 * prev + 0.5 * clock.speed : 0.6 * prev + 0.4 * measured;
             SPEED_CAL.set(calKey, next);
             saveCal(calKey, next);
