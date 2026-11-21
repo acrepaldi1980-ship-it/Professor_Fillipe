@@ -49,5 +49,5 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
-models/
+/models/
 backups/

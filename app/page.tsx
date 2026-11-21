@@ -47,7 +47,7 @@ export default function Landing() {
           <li>{t("landing.plans.plus")}</li>
           <li>{t("landing.plans.premium")}</li>
         </ul>
-        <Link href="/planos" className="underline">{t("landing.plans.see")}</Link>
+        <Link href="/login" className="underline">{t("landing.plans.see")}</Link>
       </section>
 
       <Link href="/instalar" className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-line px-6 font-semibold">{t("landing.install")}</Link>
