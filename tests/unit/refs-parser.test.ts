@@ -200,3 +200,16 @@ describe("expandRefs", () => {
     expect(expandRefs(["JHN.3.16-JHN.4.2"]).sort()).toEqual(["JHN.3", "JHN.3.16", "JHN.4", "JHN.4.2"]);
   });
 });
+
+describe("book numbers after a list separator", () => {
+  it("Mt 5:3-12 e 1 Coríntios 13:4 keeps both references", () => {
+    const r = findReferences("Mateus 5:3-12 e 1 Coríntios 13:4").flatMap((x) => x.refs);
+    expect(r).toEqual(["MAT.5.3-MAT.5.12", "1CO.13.4"]);
+  });
+  it("João 3:16 e 1 João 4:8", () => {
+    expect(findReferences("João 3:16 e 1 João 4:8").flatMap((x) => x.refs)).toEqual(["JHN.3.16", "1JN.4.8"]);
+  });
+  it("a plain verse list still works", () => {
+    expect(findReferences("João 3:16 e 17").flatMap((x) => x.refs)).toEqual(["JHN.3.16", "JHN.3.17"]);
+  });
+});

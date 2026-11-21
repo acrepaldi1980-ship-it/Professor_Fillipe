@@ -143,6 +143,8 @@ function parseTail(norm: string, book: string, chapter: number, pos: number): Se
         if (ahead) {
           const after = ahead.index + ahead[0].length;
           if (sticky(COLON, norm, after)) break; // "x, 4:2" -> let caller stop (rare)
+          // "João 3:16 e 1 João 4:8": a 1-3 followed by a word is the number of the next book, not a verse
+          if (Number(ahead[1]) <= 3 && /^\s+(?!(?:e|ou|com|como|do|da|de|no|na|nos|nas|mostram|dizem|falam|ensinam|tambem)\b)[a-z]{2,}/.test(norm.slice(after))) break;
         }
         p = ls.index + ls[0].length;
         continue;
