@@ -2,7 +2,9 @@
 import { getStore } from "../knowledge/db";
 import { getVerses, searchChunks } from "../knowledge/search";
 import { AnthropicTeacherLlm } from "./anthropic";
-import { GroqTeacherLlm, rewriteQueryToEnglish } from "./groq";
+import { RouterTeacherLlm } from "../llm/teacher";
+import { buildEndpoints } from "../llm/registry";
+import { rewriteQueryToEnglish } from "./groq";
 import type { TurnDeps } from "./pipeline";
 import { FallbackLlm } from "./fallback-llm";
 import { loadActiveLayers } from "./prompt-store";
@@ -19,9 +21,10 @@ export function createTurnDeps(): TurnDeps {
     contextTokens: Number(process.env.TEACHER_CONTEXT_TOKENS) || (teacherProvider() === "groq" ? 1800 : 3200),
     historyMessages: teacherProvider() === "groq" ? 6 : 8,
     // Claude first; when it is unavailable (no credit, overload) the free Groq model answers instead of an error.
-    llm: teacherProvider() === "anthropic" ? (process.env.GROQ_API_KEY ? new FallbackLlm(new AnthropicTeacherLlm(), new GroqTeacherLlm()) : new AnthropicTeacherLlm()) : new GroqTeacherLlm(),
+    // Claude first when there is a key; otherwise (or when Claude is unavailable) the pool of free endpoints, with automatic failover between them.
+    llm: teacherProvider() === "anthropic" ? (buildEndpoints().length ? new FallbackLlm(new AnthropicTeacherLlm(), new RouterTeacherLlm()) : new AnthropicTeacherLlm()) : new RouterTeacherLlm(),
     search: (q, opts) => searchChunks(q, opts),
-    rewriteQuery: process.env.GROQ_API_KEY || process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
+    rewriteQuery: buildEndpoints().length && process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
     getVerses: (versionId, refs) => getVerses(versionId, refs),
     loadLayers: loadActiveLayers,
     async existingVerses(versionId, refs) {

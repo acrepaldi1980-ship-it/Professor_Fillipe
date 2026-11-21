@@ -3,7 +3,7 @@
 // free fallback model, and it is cheap. Bible references in the answer are checked against the Bible text; unknown ones are dropped.
 import Anthropic from "@anthropic-ai/sdk";
 import { BOOKS } from "../knowledge/books";
-import { groqModels } from "../teacher/groq";
+import { completeJson } from "../llm/router";
 import { findReferences, formatRefPt } from "../knowledge/refs-parser";
 import { DeepStudy, LessonPlan, SermonOutline } from "./schema";
 import type { Excerpt, WordRef } from "./research";
@@ -190,37 +190,15 @@ function parseJson(text: string): unknown {
 }
 
 export async function callJsonLlm(system: string, user: string): Promise<unknown> {
+  // Claude first when there is credit; otherwise (or on any failure) the pool of free endpoints, which fails over between providers by itself.
   if (process.env.ANTHROPIC_API_KEY && process.env.TEACHER_LLM_PROVIDER !== "groq") {
     try {
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
       const res = await client.messages.create({ model: process.env.TEACHER_MODEL_FAST ?? "claude-sonnet-5-5", max_tokens: 1800, system, messages: [{ role: "user", content: user }], output_config: { effort: "low" }, thinking: { type: "between_tools" } as never });
-      const text = res.content.map((b) => (b.type === "text" ? b.text : "")).join("");
-      const j = parseJson(text);
+      const j = parseJson(res.content.map((b) => (b.type === "text" ? b.text : "")).join(""));
       if (j) return j;
-    } catch (e) {
-      if (!process.env.GROQ_API_KEY || !/credit|billing|\b(402|429|500|502|503|529)\b|overloaded|rate/i.test((e as Error).message ?? "")) throw e;
-    }
+    } catch { /* fall through to the free pool */ }
   }
-  const models = groqModels();
-  let last = 0;
-  for (let round = 0; round < 3; round++) {
-    let wait = 0;
-    let limited = false;
-    for (const model of models) {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        signal: AbortSignal.timeout(40000),
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY ?? "proxy-injected"}` },
-        body: JSON.stringify({ model, temperature: 0.5, response_format: { type: "json_object" }, ...(model.includes("gpt-oss") ? { reasoning_effort: "low" } : {}), messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
-      });
-      last = res.status;
-      if (res.status === 429) { limited = true; wait = Math.max(wait, Number(res.headers.get("retry-after")) || 0); }
-      if (!res.ok) continue;
-      const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-      const j = parseJson(json.choices?.[0]?.message?.content ?? "");
-      if (j) return j;
-    }
-    if (limited && round < 2) { last = 429; await new Promise((r) => setTimeout(r, Math.min(10, Math.max(4, wait)) * 1000)); } else break;
-  }
-  throw new Error(`suggest_failed_${last || "empty"}`);
+  const r = await completeJson(system, user, { task: "json", maxTokens: 1800, temperature: 0.5, timeoutMs: 45000, validate: (o) => !!o && typeof o === "object" && "content" in (o as object) });
+  return r.out;
 }

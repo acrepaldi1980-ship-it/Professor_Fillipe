@@ -1,5 +1,7 @@
 // Plain text completion for the notes generator (server only). Drafting uses a cheaper model than the teacher (NOTES_MODEL).
 import Anthropic from "@anthropic-ai/sdk";
+import { buildEndpoints } from "../llm/registry";
+import { completeText } from "../llm/router";
 
 export interface NotesLlm {
   complete(system: string, user: string, maxTokens?: number): Promise<string>;
@@ -28,17 +30,11 @@ export class AnthropicNotesLlm implements NotesLlm {
   }
 }
 
-/** Free fallback (Groq) for short text tasks when Claude is unavailable (no credit, overload). */
-export class GroqNotesLlm implements NotesLlm {
+/** Free fallback for short text tasks when Claude is unavailable: the router picks any free endpoint and fails over between them. */
+export class RouterNotesLlm implements NotesLlm {
   async complete(system: string, user: string, maxTokens = 1800): Promise<string> {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      signal: AbortSignal.timeout(25000),
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY ?? "proxy-injected"}` },
-      body: JSON.stringify({ model: process.env.NOTES_FALLBACK_MODEL ?? "openai/gpt-oss-20b", temperature: 0.2, max_completion_tokens: maxTokens, messages: [{ role: "system", content: system }, { role: "user", content: user }] }),
-    });
-    if (!res.ok) throw new Error(`groq_${res.status}`);
-    return ((await res.json()) as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content ?? "";
+    const r = await completeText(system, user, { maxTokens, temperature: 0.2 });
+    return String(r.out);
   }
 }
 
@@ -58,5 +54,5 @@ export class FallbackNotesLlm implements NotesLlm {
 /** The model for short study tasks (summaries, review cards, grading): Haiku with the free model as fallback. */
 export function shortTaskLlm(): NotesLlm {
   const primary = new AnthropicNotesLlm(undefined, process.env.SUMMARY_MODEL ?? "claude-haiku-5-5");
-  return process.env.GROQ_API_KEY ? new FallbackNotesLlm(primary, new GroqNotesLlm()) : primary;
+  return buildEndpoints().length ? new FallbackNotesLlm(primary, new RouterNotesLlm()) : primary;
 }

@@ -35,6 +35,14 @@ export default function MetricsAdmin() {
         <Stat label={t("admin.metrics.eval")} value={m.last_eval ? Object.entries(m.last_eval.summary).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(" · ") : t("admin.metrics.none")} />
       </div>
       <Card>
+        <h2 className="mb-1 text-lg">{t("admin.llm.title")}</h2>
+        <p className="mb-2 text-xs text-muted">{t("admin.llm.help")}</p>
+        {(m.llm?.endpoints ?? []).length === 0 ? <p className="text-sm text-muted">{t("admin.llm.none")}</p> : (
+          <ul className="text-sm">{(m.llm?.endpoints ?? []).map((e) => <li key={e.id} className="flex flex-wrap justify-between gap-x-3"><span className="font-mono text-xs">{e.id}</span><span>{e.ok}/{e.calls} ok · 429: {e.rate_limited + e.quota} · {e.avg_ms} ms</span></li>)}</ul>
+        )}
+        {(m.llm?.cooling ?? []).length > 0 && <p className="mt-2 text-sm"><strong>{t("admin.llm.cooling")}:</strong> {(m.llm?.cooling ?? []).map((c) => `${c.id} (${c.seconds}s, ${c.reason})`).join("; ")}</p>}
+      </Card>
+      <Card>
         <h2 className="mb-1 text-lg">{t("admin.metrics.errors")}</h2>
         {(m.errors_24h ?? []).length === 0 ? <p className="text-sm text-muted">{t("admin.metrics.errors.none")}</p> : <ul className="text-sm">{(m.errors_24h ?? []).map((e) => <li key={e.route + e.code} className="flex justify-between"><span>{e.route} · {e.code}</span><span>{e.n}</span></li>)}</ul>}
       </Card>

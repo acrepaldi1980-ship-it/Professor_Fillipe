@@ -59,8 +59,11 @@ async function setEnv(project) {
     ["TEACHER_LLM_PROVIDER", "groq", "plain"],
     ["TRANSFORMERS_CACHE_DIR", "/tmp/hf-cache", "plain"],
   ];
+  // free AI providers (LLM router): any key/model setting in .env.local goes to Vercel and is refreshed on every deploy
+  const LLM_RE = /^(GROQ|CEREBRAS|OPENROUTER|MISTRAL|SAMBANOVA|NVIDIA|GITHUB_MODELS|GEMINI_LLM)_(API_KEYS?|TOKENS?|MODELS)$|^LLM_(EXTRA|ONLY)$/;
+  for (const [k, val] of Object.entries(envFile)) if (LLM_RE.test(k) && k !== "GROQ_API_KEY") vars.push([k, val, /MODELS|ONLY/.test(k) ? "plain" : "sensitive"]);
   if (!has("FIELD_ENCRYPTION_KEY")) vars.push(["FIELD_ENCRYPTION_KEY", randomBytes(32).toString("base64"), "sensitive"]);
-  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k === "VOICE_API_KEY" || k === "BILLING_SERVER_SECRET" || k === "PAYMENT_PROVIDER" || k === "PAYMENT_WEBHOOK_TOKEN" || k === "ASAAS_API_KEY" || k === "ASAAS_ENV")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
+  const body = vars.filter(([k, val]) => val && (!has(k) || LLM_RE.test(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k === "VOICE_API_KEY" || k === "BILLING_SERVER_SECRET" || k === "PAYMENT_PROVIDER" || k === "PAYMENT_WEBHOOK_TOKEN" || k === "ASAAS_API_KEY" || k === "ASAAS_ENV")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
   await post(`/v10/projects/${project.id}/env?upsert=true`, body);
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }

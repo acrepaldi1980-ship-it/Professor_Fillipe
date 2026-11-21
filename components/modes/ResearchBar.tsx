@@ -18,6 +18,15 @@ const CHANGEABLE: Record<Mode, { key: string; label: string }[]> = {
 const STEP_LABEL: Record<string, string> = { objective: "objetivo", icebreaker: "quebra-gelo", context: "contexto", points: "pontos principais", dynamic: "dinâmica", questions: "perguntas", application: "aplicação", memory_verse: "versículo", central_idea: "ideia central", introduction: "introdução", division: "divisões do texto", conclusion: "conclusão", appeal: "apelo", overview: "resumo", structure: "estrutura", keywords: "palavras no original", traditions: "visões das tradições", crossrefs: "referências cruzadas", bibliography: "bibliografia" };
 const stepName = (k: string) => STEP_LABEL[k.split(":")[0]] ?? k;
 
+// Sections are written in stages; inside a stage they run AT THE SAME TIME (the server spreads them over the free AIs and merges the
+// results). Sections that depend on others come in a later stage, and two divisions of a sermon never run together.
+const STAGES: Record<Mode, string[][]> = {
+  lesson: [["context", "objective"], ["points", "icebreaker"], ["dynamic", "questions", "application", "memory_verse"]],
+  sermon: [["central_idea"], ["introduction", "division"], ["division", "conclusion"], ["division", "appeal"]],
+  deep: [["overview", "context", "keywords"], ["structure", "traditions", "crossrefs", "bibliography"], ["application"]],
+};
+
+
 export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; mode: Mode; onUpdate: (r: SuggestResult) => void }) {
   const [running, setRunning] = useState(false);
   const [step, setStep] = useState(0);
@@ -38,33 +47,36 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
     setRunning(true); setDone(false); setFailed([]); setBusy(false);
     const bad: string[] = [];
     try {
-      let keys = (await getSessionDocument(sessionId)).gapKeys ?? [];
-      const tried = new Set<string>();
-      let n = 0;
-      let streak = 0; // consecutive failures: the AI service is overloaded or out of quota, stop instead of waiting for every step
-      setTotal(keys.length + (mode === "sermon" ? 2 : 0));
-      for (let guard = 0; guard < 24; guard++) {
-        const next = keys.find((k) => !tried.has(k));
-        if (!next) break;
-        tried.add(next);
+      const first = await getSessionDocument(sessionId);
+      const missing = new Set(first.gapKeys ?? []);
+      const stages = STAGES[mode].map((st) => st.filter((k) => k === "division" || missing.has(k))).filter((st) => st.length);
+      const total = stages.reduce((n, st) => n + st.length, 0);
+      let n = 0, streak = 0;
+      for (const stage of stages) {
         if (!alive.current) return;
-        setCurrent(next); setStep(n);
-        try {
-          const out = await suggestDocumentSection(sessionId, next);
-          keys = out.gapKeys; onUpdate(out); streak = 0;
-        } catch {
-          bad.push(next);
-          if (++streak >= 2) { setBusy(true); break; }
-        }
-        n++;
+        setCurrent(stage.join(", ")); setStep(n);
+        const results = await Promise.allSettled(stage.map((k) => suggestDocumentSection(sessionId, k)));
+        results.forEach((r, i) => {
+          if (r.status === "fulfilled") { onUpdate(r.value); streak = 0; } else { bad.push(stage[i]); streak++; }
+        });
+        n += stage.length; setStep(n); setTotal(total);
+        // every section of a stage failed twice in a row: the AI service is out of quota or overloaded, stop instead of waiting for the rest
+        if (streak >= 2 && results.every((r) => r.status === "rejected")) { setBusy(true); break; }
       }
-      // a sermon outline has three divisions
-      if (mode === "sermon") {
-        for (let i = 0; i < 3; i++) {
-          const d = (await getSessionDocument(sessionId)).doc as { divisions?: unknown[] } | null;
-          if ((d?.divisions?.length ?? 0) >= 3) break;
-          setCurrent("division"); setStep(n++);
-          try { onUpdate(await suggestDocumentSection(sessionId, "division")); } catch { bad.push("division"); break; }
+      // anything that was left behind (a section that failed, or a sermon divisions beyond the first): one more careful pass, one by one
+      if (!bad.length || bad.length < 3) {
+        const now = await getSessionDocument(sessionId);
+        const left = now.gapKeys ?? [];
+        for (const k of left.slice(0, 8)) {
+          if (!alive.current) return;
+          try { onUpdate(await suggestDocumentSection(sessionId, k)); const i = bad.indexOf(k); if (i >= 0) bad.splice(i, 1); } catch { if (!bad.includes(k)) bad.push(k); }
+        }
+        if (mode === "sermon") {
+          for (let i = 0; i < 3; i++) {
+            const d = (await getSessionDocument(sessionId)).doc as { divisions?: unknown[] } | null;
+            if ((d?.divisions?.length ?? 0) >= 3) break;
+            try { onUpdate(await suggestDocumentSection(sessionId, "division")); } catch { bad.push("division"); break; }
+          }
         }
       }
     } finally {
@@ -91,7 +103,7 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
     <div className="flex flex-col gap-2" data-testid="research-bar">
       {running && (
         <div role="status" aria-live="polite" className="rounded-control border border-line bg-bg p-2 text-sm">
-          <p>{t("research.working").replace("{n}", String(Math.min(step + 1, Math.max(total, step + 1)))).replace("{total}", String(Math.max(total, step + 1))).replace("{what}", stepName(current))}</p>
+          <p>{t("research.working").replace("{n}", String(Math.min(step + 1, Math.max(total, step + 1)))).replace("{total}", String(Math.max(total, step + 1))).replace("{what}", current.split(", ").map(stepName).join(" + "))}</p>
           <div className="mt-1 h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuemin={0} aria-valuemax={Math.max(total, 1)} aria-valuenow={step}><div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (step / Math.max(total, 1)) * 100)}%` }} /></div>
         </div>
       )}

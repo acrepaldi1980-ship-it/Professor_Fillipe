@@ -57,8 +57,25 @@ export async function buildSection(db: SupabaseClient, userId: string, sm: Sessi
     }
   }
   if (!nextDoc) throw new BuildError(422, "suggestion_not_usable");
-  const { error } = await db.from(table).upsert({ ...(row ? { id: row.id } : {}), user_id: userId, session_id: sm.id, data: nextDoc }, { onConflict: "id" });
-  if (error) throw new BuildError(500, "save_failed");
+  // Several sections are written at the same time (in parallel on different AIs): only the keys this call changed are merged into the
+  // latest stored document, with an optimistic check so two writers never overwrite each other.
+  const changed = Object.fromEntries(Object.entries(nextDoc).filter(([k, v]) => JSON.stringify(v) !== JSON.stringify((doc as Record<string, unknown>)[k])));
+  let saved: Record<string, unknown> = nextDoc;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: cur } = await db.from(table).select("id, data, updated_at").eq("session_id", sm.id).maybeSingle();
+    if (!cur) {
+      const { error } = await db.from(table).insert({ user_id: userId, session_id: sm.id, data: nextDoc });
+      if (!error) break;
+      if (attempt === 4) throw new BuildError(500, "save_failed");
+      continue;
+    }
+    saved = { ...((cur.data as Record<string, unknown>) ?? {}), ...changed };
+    const { data: upd, error } = await db.from(table).update({ data: saved, updated_at: new Date().toISOString() }).eq("id", cur.id).eq("updated_at", cur.updated_at).select("id");
+    if (error) throw new BuildError(500, "save_failed");
+    if (upd && upd.length) break;
+    if (attempt === 4) throw new BuildError(409, "save_conflict");
+  }
+  nextDoc = saved;
   if (!deterministic) void addUsage(db, "text_messages", 1);
   return describeDoc(mode, nextDoc);
 }
