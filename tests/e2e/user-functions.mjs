@@ -95,7 +95,7 @@ try {
     await p.waitForSelector("[role=dialog]", { timeout: 15000 }).catch(() => {});
     say("study: tapping a verse opens the Bible text", (await p.locator("[role=dialog]").count()) > 0 && (await p.locator("[role=dialog] p").count()) > 0);
     await p.locator("[role=dialog] button:has-text('Marcar versículo')").first().click().catch(() => {});
-    await p.waitForTimeout(800);
+    await p.waitForSelector("text=Versículo marcado", { timeout: 20000 }).catch(() => {});
     const bm = await sql(`select count(*)::int n from bookmarks where user_id='${id}'`);
     say("study: a verse can be bookmarked", bm[0].n === 1);
     await p.locator("[role=dialog] button:has-text('Fechar')").first().click().catch(() => {});

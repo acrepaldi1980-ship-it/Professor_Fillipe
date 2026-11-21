@@ -235,13 +235,20 @@ export default function StudyPage() {
   }, [recording, stopRecordingAndSend, stopSpeaking]);
 
   const openRef = useCallback(async (ref: string) => {
-    try {
-      const r = await getBibleVerses(MAIN_VERSION, ref);
-      setMarked(false);
-      setVerse({ title: formatRefPt(ref), ref, lines: r.verses });
-    } catch {
-      setVerse({ title: formatRefPt(ref), lines: [{ ref, text: "—" }] });
+    // one automatic retry: a cold server or a brief network drop must not leave the student with an empty verse
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await getBibleVerses(MAIN_VERSION, ref);
+        if (r.verses.length === 0 && attempt === 0) throw new Error("empty");
+        setMarked(false);
+        setVerse({ title: formatRefPt(ref), ref, lines: r.verses.length ? r.verses : [{ ref, text: t("study.verse.error") }] });
+        return;
+      } catch {
+        if (attempt === 0) await new Promise((res) => setTimeout(res, 700));
+      }
     }
+    setMarked(false);
+    setVerse({ title: formatRefPt(ref), ref, lines: [{ ref, text: t("study.verse.error") }] });
   }, []);
 
   const docMode = mode === "lesson" || mode === "sermon";

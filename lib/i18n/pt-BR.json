@@ -21,6 +21,7 @@
   "study.teacher": "Professor Filipe",
   "study.sources": "Fontes",
   "study.flag": "Isso está errado?",
+  "study.verse.error": "Não consegui carregar este versículo agora. Feche e toque de novo.",
   "study.verse.close": "Fechar",
   "study.textonly": "Só texto",
   "feedback.title": "Como foi essa conversa com o Professor Filipe?",
