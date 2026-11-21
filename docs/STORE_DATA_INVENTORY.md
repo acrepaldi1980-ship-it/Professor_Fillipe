@@ -74,3 +74,4 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Ambientes imersivos (Prompts 3.1 a 3.4)
 - `environments` (pacote de ambiente e relatório de desempenho) e bucket público `environments` (modelos .glb): conteúdo do produto, sem dado pessoal. As perguntas ao professor dentro da cena seguem como mensagens da conversa (mesmas regras de privacidade); a posição do aluno na cena é enviada só junto com cada pergunta e não é guardada. O microfone da cena usa `lib/platform`. O som ambiente é sintetizado no aparelho.
+- Realidade virtual (3.5): nenhum dado novo. O WebXR usa os sensores de pose do óculos só na sessão e nada é enviado ou guardado; microfone e voz seguem as regras de cima. Nas lojas (Quest/visionOS), seria preciso declarar o uso de sensores de movimento.

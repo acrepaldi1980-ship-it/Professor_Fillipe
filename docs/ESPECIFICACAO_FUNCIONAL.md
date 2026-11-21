@@ -852,7 +852,7 @@ Rota `/admin`, só para o papel `admin` (e `reviewer` nas telas de revisão).
 - Professor-guia: modo passeio guiado (estações) e modo livre (pergunta a qualquer momento; o professor sabe onde o aluno está e o que está olhando).
 - Primeiro ambiente: Tabernáculo (Êxodo 25–40). Fila: Jerusalém e o Templo de Herodes (séc. I), Mar da Galileia e Cafarnaum, travessia do Mar Vermelho, Pentecostes, Atenas no tempo de Paulo.
 - Desempenho: ≥ 30 quadros por segundo em Android intermediário; carregamento por zonas.
-- Realidade virtual: teletransporte e rotação em passos para conforto.
+- Realidade virtual (prompt 3.5): **WebXR no mesmo PWA** (`@react-three/xr`), Quest Browser e Safari no Vision Pro (só `immersive-vr`); teletransporte (até 20 m, só chão livre) e rotação em passos de 30°, sem andar suave; painel flutuante com texto, versículos e botões; professor por voz dentro do óculos. App nativo fica como decisão futura do dono. Relatório e lista de teste em `docs/VR_RELATORIO.md` (medições em aparelho pendentes).
 - Tecnologia: **React Three Fiber, decidida em 21/11/2026 (D-11)**, no mesmo app do PWA e do Capacitor. Motor base e formato do pacote de ambiente: `lib/immersive` e `components/immersive` (o primeiro ambiente real, o Tabernáculo, vem no prompt 3.2).
 - **Linha de produção (Fase 3, prompt 3.4):** `/admin/ambientes` monta e publica ambientes (pacote + um .glb por zona) com validação de desempenho (5 MB, 150 mil triângulos, texturas de 2048 px) e publicação sem nova versão do app: o pacote vai para `environments` e os modelos para o bucket `environments`, baixados por zona sob demanda. Fichas de especificação: `docs/ambientes/`.
 - O guia é o **mesmo personagem do avatar** (8.17), em versão 3D com os mesmos traços, roupas e cores.

@@ -5,17 +5,21 @@
 // quality drop when the frame rate falls. Environments are data (lib/immersive/package.ts). Loaded on demand so the 3D engine never weighs on the rest of the app.
 import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useXR } from "@react-three/xr";
+import type { Group } from "three";
 import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { closeSessionFull, createSession, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { closeSessionFull, createSession, getBibleVerses, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { activeZones, collidersOf, detailFor, keysToStick, move, nearestHotspot, spawnIsFree, worldDirection, yawToward, type V2 } from "@/lib/immersive/movement";
 import type { EnvironmentPackage, Hotspot, Station } from "@/lib/immersive/package";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import { speakText, stopSpeaking } from "@/lib/voice/client-speak";
+import { panelModel } from "@/lib/immersive/vr";
 import { Joystick } from "./Joystick";
+import { VrLayer, XR, xrStore, type VrInput } from "./VrLayer";
 import { TEST_SCENES } from "./scenes-test";
 
 const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES };
@@ -28,13 +32,13 @@ function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
 }
 const LOOK_SPEED = 0.0035; // radians per pixel
 
-interface Input { keys: Set<string>; stick: V2; lookX: number; lookY: number; teleport: { at: V2; yaw: number } | null }
+interface Input { keys: Set<string>; stick: V2; lookX: number; lookY: number; teleport: { at: V2; yaw?: number } | null; turn: number }
 interface Snapshot { pos: V2; yaw: number; zones: string[]; hotspot: string | null; fps: number }
 
 /** Runs inside the Canvas: moves the camera, loads zones, finds the nearest hotspot, feeds the sound and measures the frame rate. */
-function Rig({ pkg, input, onSnapshot, onQuality }: { pkg: EnvironmentPackage; input: React.MutableRefObject<Input>; onSnapshot(s: Snapshot): void; onQuality(): void }) {
+function Rig({ pkg, input, pos, origin, onSnapshot, onQuality }: { pkg: EnvironmentPackage; input: React.MutableRefObject<Input>; pos: React.MutableRefObject<V2>; origin: React.RefObject<Group | null>; onSnapshot(s: Snapshot): void; onQuality(): void }) {
   const { camera } = useThree();
-  const pos = useRef<V2>([...pkg.spawn] as V2);
+  const inXr = useXR((s) => !!s.session);
   const yaw = useRef(pkg.spawnYaw);
   const pitch = useRef(0);
   const zones = useRef<Set<string>>(activeZones(pkg.zones, pkg.spawn as V2, new Set()));
@@ -46,7 +50,8 @@ function Rig({ pkg, input, onSnapshot, onQuality }: { pkg: EnvironmentPackage; i
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.1);
     const i = input.current;
-    if (i.teleport) { pos.current = [...i.teleport.at] as V2; yaw.current = i.teleport.yaw; pitch.current = 0; i.teleport = null; }
+    if (i.teleport) { pos.current = [...i.teleport.at] as V2; if (i.teleport.yaw !== undefined) yaw.current = i.teleport.yaw; pitch.current = 0; i.teleport = null; }
+    if (i.turn) { yaw.current += i.turn; i.turn = 0; }
     yaw.current -= i.lookX * LOOK_SPEED; pitch.current = Math.max(-1.2, Math.min(1.2, pitch.current - i.lookY * LOOK_SPEED));
     i.lookX = 0; i.lookY = 0;
     const kb = keysToStick(i.keys);
@@ -54,8 +59,13 @@ function Rig({ pkg, input, onSnapshot, onQuality }: { pkg: EnvironmentPackage; i
     const dir = worldDirection(stick, yaw.current);
     const colliders = collidersOf(pkg.zones, zones.current);
     pos.current = move(pos.current, [dir[0] * pkg.speed * dt, dir[1] * pkg.speed * dt], pkg.radius, colliders, pkg.bounds as { min: V2; max: V2 });
-    camera.position.set(pos.current[0], pkg.eye, pos.current[1]);
-    camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
+    if (inXr && origin.current) { // in the headset the head belongs to the visitor: we only move the origin (the floor under their feet)
+      origin.current.position.set(pos.current[0], 0, pos.current[1]);
+      origin.current.rotation.set(0, yaw.current, 0);
+    } else {
+      camera.position.set(pos.current[0], pkg.eye, pos.current[1]);
+      camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
+    }
 
     // every 0.2 s: zones, nearest hotspot, sound, frame rate
     const a = acc.current;
@@ -93,7 +103,15 @@ function Rig({ pkg, input, onSnapshot, onQuality }: { pkg: EnvironmentPackage; i
 }
 
 export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: EnvironmentPackage; onOpenRef?(ref: string): void; /** Authoring: lets the admin take the visitor's position and where they look, to place a hotspot or a station. */ onAuthorPick?(p: { x: number; z: number; yaw: number }): void }) {
-  const input = useRef<Input>({ keys: new Set(), stick: [0, 0], lookX: 0, lookY: 0, teleport: null });
+  const input = useRef<Input>({ keys: new Set(), stick: [0, 0], lookX: 0, lookY: 0, teleport: null, turn: 0 });
+  const pos = useRef<V2>([...pkg.spawn] as V2);
+  const origin = useRef<Group>(null);
+  const [vrOk, setVrOk] = useState(false);
+  const [inVr, setInVr] = useState(false);
+  const [vrClosed, setVrClosed] = useState<string | null>(null);
+  const [vrError, setVrError] = useState(false);
+  const [vrSheet, setVrSheet] = useState(false);
+  const [vrVerses, setVrVerses] = useState<{ ref: string; text: string }[]>([]);
   const [snap, setSnap] = useState<Snapshot>({ pos: pkg.spawn as V2, yaw: pkg.spawnYaw, zones: [], hotspot: null, fps: 0 });
   const [started, setStarted] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -199,12 +217,46 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
   const st = station >= 0 ? pkg.stations[station] : null;
   const blocked = !spawnIsFree(pkg);
 
+  // virtual reality (Prompt 3.5): the button only appears where the browser says it can do immersive-vr (Quest Browser, Safari on Vision Pro)
+  useEffect(() => {
+    let alive = true;
+    void navigator.xr?.isSessionSupported?.("immersive-vr").then((ok) => { if (alive) setVrOk(!!ok); }).catch(() => undefined);
+    const off = xrStore?.subscribe((st) => setInVr(!!st.session));
+    return () => { alive = false; off?.(); };
+  }, []);
+  async function enterVr() { setVrError(false); try { await start(); await xrStore?.enterVR(); } catch { setVrError(true); } }
+  const vrHot = inVr && hot && hot.id !== vrClosed ? hot : null;
+  useEffect(() => {
+    if (!vrHot) { setVrVerses([]); return; }
+    let alive = true;
+    void Promise.all(vrHot.refs.slice(0, 2).map((r) => getBibleVerses(defaultBibleVersion(), r).then((v) => v.verses.slice(0, 2)).catch(() => []))).then((all) => { if (alive) setVrVerses(all.flat()); });
+    return () => { alive = false; };
+  }, [vrHot]);
+  const lastAnswer = [...thread].reverse().find((m) => m.who === "teacher");
+  const labels = { ask: t("imm.ask"), stop: t("study.mic.stop"), thinking: t("study.status.thinking"), close: t("study.verse.close"), prev: t("imm.prev"), next: t("imm.next"), start: t("imm.tour.start"), listen: t("imm.listen"), sheet: t("imm.sheet") };
+  const panel = vrSheet
+    ? { title: t("imm.sheet"), body: `${pkg.sheet.summary} ${t("imm.sources")}: ${pkg.sheet.sources.join("; ")}`, verses: [], buttons: [{ id: "close" as const, label: labels.close }] }
+    : panelModel({ hotspot: vrHot ? { label: vrHot.label, text: vrHot.text, verses: vrVerses } : null, answer: lastAnswer && station < 0 ? { text: lastAnswer.text } : null, station: st ? { title: st.title, script: st.script, index: station, total: pkg.stations.length } : null, recording, busy, hasTour: pkg.stations.length > 0 }, labels);
+  function onVrButton(id: string) {
+    if (id === "close") { if (vrSheet) setVrSheet(false); else if (vrHot) setVrClosed(vrHot.id); }
+    else if (id === "next") goTo(Math.min(pkg.stations.length - 1, station + 1));
+    else if (id === "prev") goTo(Math.max(0, station - 1));
+    else if (id === "listen") void say(st ? st.script : lastAnswer?.text ?? "");
+    else if (id === "ask") void toggleMic();
+    else if (id === "sheet") setVrSheet(true);
+  }
+
   return (
     <div ref={wrap} className="relative h-full w-full overflow-hidden bg-[#f1dfb9]" data-testid="immersive" role="application" aria-label={`${pkg.title}. ${t("imm.keys")}`}>
       <div className="absolute inset-0 touch-none" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
         onClick={(e) => { if (!touch && started && e.target instanceof HTMLCanvasElement) void e.target.requestPointerLock?.(); }}>
         <Canvas dpr={[1, dpr]} camera={{ fov: 70, near: 0.1, far: 120, position: [pkg.spawn[0], pkg.eye, pkg.spawn[1]] }} gl={{ antialias: dpr > 1.2, powerPreference: "high-performance" }} aria-hidden>
-          <Rig pkg={pkg} input={input} onSnapshot={setSnap} onQuality={() => setDpr((d) => (d > 1 ? 1 : d))} />
+          {xrStore ? (
+            <XR store={xrStore}>
+              <Rig pkg={pkg} input={input} pos={pos} origin={origin} onSnapshot={setSnap} onQuality={() => setDpr((d) => (d > 1 ? 1 : d))} />
+              <VrLayer pkg={pkg} origin={origin} pos={pos} input={input as React.MutableRefObject<VrInput>} model={panel} onButton={onVrButton} />
+            </XR>
+          ) : null}
         </Canvas>
       </div>
 
@@ -222,6 +274,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
           <div className="pointer-events-none absolute left-2 right-2 top-2 flex items-start justify-between gap-2">
             <div className="pointer-events-auto rounded-control bg-black/45 px-3 py-1 text-sm text-white">{pkg.title}</div>
             <div className="pointer-events-auto flex gap-2">
+              {vrOk && <button type="button" data-testid="imm-vr" onClick={() => void enterVr()} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{t("imm.vr")}</button>}
               {!projection && <button type="button" data-testid="imm-ask" onClick={() => setAsk((a) => !a)} className="min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("imm.ask")}</button>}
               <button type="button" onClick={() => setSheet(true)} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{t("imm.sheet")}</button>
               <button type="button" data-testid="imm-finish" onClick={() => void finish()} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{t("imm.finish")}</button>
@@ -229,6 +282,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
             </div>
           </div>
           {onAuthorPick && <button type="button" data-testid="imm-pick" onClick={() => onAuthorPick({ x: +snap.pos[0].toFixed(2), z: +snap.pos[1].toFixed(2), yaw: +snap.yaw.toFixed(3) })} className="absolute right-2 top-14 min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("env.pick")}</button>}
+          {vrError && <p role="alert" className="absolute left-2 right-2 top-24 rounded-control bg-black/70 p-2 text-sm text-white">{t("imm.vr.error")}</p>}
           {showFps && <div className="absolute left-2 top-12 rounded bg-black/55 px-2 text-xs text-white" data-testid="imm-fps">{Math.round(snap.fps)} fps · dpr {dpr}</div>}
           <span className="sr-only" data-testid="imm-pos" aria-live="off">{snap.pos[0].toFixed(2)},{snap.pos[1].toFixed(2)},{snap.yaw.toFixed(2)},{snap.zones.join("+")}</span>
 

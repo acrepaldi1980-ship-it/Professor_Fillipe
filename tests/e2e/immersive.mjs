@@ -35,6 +35,7 @@ try {
   await p.getByRole("button", { name: "Entrar no ambiente" }).click();
   await p.waitForSelector("[data-testid=imm-pos]", { state: "attached", timeout: 20000 });
   await p.waitForTimeout(1500);
+  say("no WebXR in this browser: the VR button stays hidden", (await p.locator("[data-testid=imm-vr]").count()) === 0);
   let s = await pos(p);
   say("start: at the spawn point with only the near zone built", Math.abs(s.x) < 0.1 && Math.abs(s.z - 9) < 0.2 && s.zones.join() === "patio", JSON.stringify(s));
   // walking

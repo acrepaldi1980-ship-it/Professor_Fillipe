@@ -962,5 +962,7 @@
   "env.problem.not_glb": "no es un .glb",
   "env.problem.bad_container": "archivo dañado",
   "env.problem.bad_json": "archivo dañado",
-  "env.problem.external_files": "depende de otros archivos (usa un .glb único)"
+  "env.problem.external_files": "depende de otros archivos (usa un .glb único)",
+  "imm.vr": "Entrar en RV (gafas)",
+  "imm.vr.error": "No pude iniciar el modo RV en este dispositivo. Puedes seguir explorando en la pantalla."
 }

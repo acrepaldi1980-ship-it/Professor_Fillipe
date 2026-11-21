@@ -962,5 +962,7 @@
   "env.problem.not_glb": "não é um .glb",
   "env.problem.bad_container": "arquivo corrompido",
   "env.problem.bad_json": "arquivo corrompido",
-  "env.problem.external_files": "depende de outros arquivos (use um .glb único)"
+  "env.problem.external_files": "depende de outros arquivos (use um .glb único)",
+  "imm.vr": "Entrar em VR (óculos)",
+  "imm.vr.error": "Não consegui iniciar o modo VR neste aparelho. Você pode continuar explorando na tela."
 }
