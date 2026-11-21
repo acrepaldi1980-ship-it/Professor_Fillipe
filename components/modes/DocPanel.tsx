@@ -4,7 +4,7 @@
 // editable by hand, with the list of gaps and the PDF download (spec 8.7.2/8.7.3).
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { downloadSessionPdf, getSessionDocument, saveSessionDocument } from "@/lib/api-client";
+import { downloadSessionPdf, getSessionDocument, saveSessionDocument, suggestDocumentSection } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
@@ -25,9 +25,12 @@ const FIELDS: Field[] = [
 const label = (k: string) => t(`doc.field.${k}` as "doc.field.title");
 const showRef = (r: string) => (/^[0-9A-Z]{3}\.\d+/.test(r) ? formatRefPt(r) : r);
 
-export function DocPanel({ sessionId, mode, refreshKey, onAsk }: { sessionId: string; mode: "lesson" | "sermon"; refreshKey: number; onAsk?: (text: string) => void }) {
+export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; mode: "lesson" | "sermon"; refreshKey: number }) {
   const [doc, setDoc] = useState<Doc>({});
   const [gaps, setGaps] = useState<string[]>([]);
+  const [gapKeys, setGapKeys] = useState<string[]>([]);
+  const [suggesting, setSuggesting] = useState<string | null>(null);
+  const [suggestError, setSuggestError] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
@@ -37,10 +40,26 @@ export function DocPanel({ sessionId, mode, refreshKey, onAsk }: { sessionId: st
   useEffect(() => {
     const mine = ++seq.current;
     // an older, slower answer must never replace a newer one
-    void getSessionDocument(sessionId).then((r) => { if (mine === seq.current) { setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); } }).catch(() => undefined);
+    void getSessionDocument(sessionId).then((r) => { if (mine === seq.current) { setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); setGapKeys(r.gapKeys ?? []); } }).catch(() => undefined);
   }, [sessionId, refreshKey]);
 
   const fields = FIELDS.filter((f) => f.mode === mode);
+
+  // the teacher proposes one section and it goes into the document; the person edits it afterwards
+  async function suggest(key: string) {
+    setSuggesting(key);
+    setSuggestError(false);
+    try {
+      const r = await suggestDocumentSection(sessionId, key);
+      ++seq.current;
+      setDoc((r.doc ?? {}) as Doc);
+      setGaps(r.gaps);
+      setGapKeys(r.gapKeys);
+    } catch {
+      setSuggestError(true);
+    }
+    setSuggesting(null);
+  }
 
   async function save(key: string, value: unknown) {
     setError(false);
@@ -48,7 +67,7 @@ export function DocPanel({ sessionId, mode, refreshKey, onAsk }: { sessionId: st
       await saveSessionDocument(sessionId, { [key]: value });
       const mine = ++seq.current;
       const r = await getSessionDocument(sessionId);
-      if (mine === seq.current) { setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); }
+      if (mine === seq.current) { setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); setGapKeys(r.gapKeys ?? []); }
       setEditing(null);
     } catch {
       setError(true);
@@ -119,7 +138,8 @@ export function DocPanel({ sessionId, mode, refreshKey, onAsk }: { sessionId: st
       })}
       <section className="border-t border-line pt-2">
         <h3 className="text-sm font-semibold">{t("doc.gaps")}</h3>
-        {gaps.length ? <ul className="list-disc pl-5 text-sm text-muted">{gaps.map((g) => <li key={g}>{g}{onAsk && <> <button type="button" className="underline text-primary" onClick={() => onAsk(t("doc.gap.ask").replace("{gap}", g.replace(/\.$/, "")))}>{t("doc.gap.suggest")}</button></>}</li>)}</ul> : <p className="text-sm text-muted">{t("doc.complete")}</p>}
+        {suggestError && <p role="alert" className="text-sm text-muted">{t("doc.gap.error")}</p>}
+        {gaps.length ? <ul className="list-disc pl-5 text-sm text-muted">{gaps.map((g, i) => <li key={g}>{g}{gapKeys[i] && <> <button type="button" className="text-primary underline disabled:opacity-50" disabled={suggesting !== null} onClick={() => void suggest(gapKeys[i])}>{suggesting === gapKeys[i] ? t("doc.gap.working") : t("doc.gap.suggest")}</button></>}</li>)}</ul> : <p className="text-sm text-muted">{t("doc.complete")}</p>}
       </section>
       {error && <p role="alert" className="text-sm text-danger-ink">{t("consent.error")}</p>}
     </aside>

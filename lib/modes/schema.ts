@@ -79,7 +79,8 @@ export function applyLessonPayload(plan: LessonPlan, raw: unknown): LessonPlan |
 export function isApproval(text: string): boolean {
   const t = text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
   if (/\b(nao|negativo|ainda nao|espera|melhor nao|prefiro outra|outra opcao)\b/.test(t)) return false;
-  return /\b(sim|pode|pode colocar|coloca|aprovado|aprovo|combinado|fechado|gostei|ok|perfeito|isso mesmo|concordo|vamos com essa|pode ser)\b/.test(t);
+  // an explicit request to write it into the document is an approval too ("coloque no esboço", "preencha", "escreva a introdução")
+  return /\b(sim|pode|pode colocar|coloca|coloque|colocar no|preencha|preencher|escreva|escrever|adicione|inclua|ponha|aprovado|aprovo|combinado|fechado|gostei|ok|perfeito|isso mesmo|concordo|vamos com essa|pode ser)\b/.test(t);
 }
 
 export function applySermonPayload(outline: SermonOutline, raw: unknown, userText: string): SermonOutline | null {
@@ -125,4 +126,32 @@ export function lessonGaps(p: LessonPlan): string[] {
   if (!p.application) gaps.push("Falta a aplicação.");
   if (!p.memory_verse) gaps.push("Falta o versículo para memorizar.");
   return gaps;
+}
+
+/** The section each gap refers to, in the same order as `lessonGaps` / `sermonGaps`, so the screen can ask for a suggestion for that gap. */
+export function lessonGapKeys(p: LessonPlan): string[] {
+  const k: string[] = [];
+  if (!p.objective?.length) k.push("objective");
+  if (!p.icebreaker) k.push("icebreaker");
+  if (!p.context) k.push("context");
+  if ((p.points?.length ?? 0) < 3) k.push("points");
+  if (!p.dynamic) k.push("dynamic");
+  if ((p.questions?.length ?? 0) < 4) k.push("questions");
+  if (!p.application) k.push("application");
+  if (!p.memory_verse) k.push("memory_verse");
+  return k;
+}
+
+export function sermonGapKeys(o: SermonOutline): string[] {
+  const k: string[] = [];
+  if (!o.central_idea) k.push("central_idea");
+  if (!o.introduction) k.push("introduction");
+  (o.divisions ?? []).forEach((d, i) => {
+    if (!d.application) k.push(`division_application:${i}`);
+    if (!d.texts?.length) k.push(`division_texts:${i}`);
+  });
+  if (!(o.divisions ?? []).length) k.push("division");
+  if (!o.conclusion) k.push("conclusion");
+  if (!o.appeal) k.push("appeal");
+  return k;
 }

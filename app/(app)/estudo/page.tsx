@@ -331,7 +331,7 @@ export default function StudyPage() {
       )}
       </div>
       {docMode && sessionReady && (
-        <div className={`pt-2 ${tab === "chat" ? "hidden md:block" : ""}`}><DocPanel sessionId={sessionId.current} mode={mode as "lesson" | "sermon"} refreshKey={docKey} onAsk={(text) => void send(text)} /></div>
+        <div className={`pt-2 ${tab === "chat" ? "hidden md:block" : ""}`}><DocPanel sessionId={sessionId.current} mode={mode as "lesson" | "sermon"} refreshKey={docKey} /></div>
       )}
     </main>
   );

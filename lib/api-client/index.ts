@@ -200,8 +200,13 @@ export const getLevel = () => apiJson<{ level: string; suggestion: string | null
 export const setLevel = (level: string) => apiJson<{ ok: boolean }>("/me/level", { method: "POST", body: JSON.stringify({ level }) });
 
 // ---- Guided modes: live document and PDF (Prompt 1.8) ----
-export interface SessionDocument { mode: "free" | "lesson" | "sermon" | "deep" | string; context: Record<string, unknown>; doc: Record<string, unknown> | null; gaps: string[] }
+export interface SessionDocument { mode: "free" | "lesson" | "sermon" | "deep" | string; context: Record<string, unknown>; doc: Record<string, unknown> | null; gaps: string[]; gapKeys?: string[] }
 export const getSessionDocument = (sessionId: string) => apiJson<SessionDocument>(`/sessions/${sessionId}/document`);
+export async function suggestDocumentSection(sessionId: string, section: string): Promise<{ doc: Record<string, unknown>; gaps: string[]; gapKeys: string[] }> {
+  const res = await apiFetch(`/sessions/${sessionId}/document/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section }) });
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return res.json();
+}
 export const saveSessionDocument = (sessionId: string, patch: Record<string, unknown>) => apiJson<{ ok: boolean }>(`/sessions/${sessionId}/document`, { method: "PUT", body: JSON.stringify({ patch }) });
 export const getSermonTypes = () => apiJson<{ types: { name: string; definition: string }[] }>("/sermon-types");
 export async function downloadSessionPdf(sessionId: string): Promise<void> {

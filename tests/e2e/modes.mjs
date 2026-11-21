@@ -59,6 +59,13 @@ try {
   say("lesson: the plan editor opens beside the conversation", true);
   await p.waitForSelector("text=Falta o objetivo", { timeout: 15000 }).catch(() => {});
   say("lesson: gaps are listed", (await p.locator("text=Falta o objetivo").count()) > 0);
+  // the teacher proposes one section and it lands in the document (real model call)
+  const gapsBefore = await p.locator("li:has(button:text('Pedir sugestão'))").count();
+  await p.locator("li:has-text('Falta o objetivo') button:text('Pedir sugestão')").click();
+  await p.waitForFunction(() => !document.body.innerText.includes("Falta o objetivo"), null, { timeout: 90000 }).catch(() => {});
+  say("lesson: 'Pedir sugestão' writes the objective into the plan", (await p.locator("text=Falta o objetivo").count()) === 0 && gapsBefore >= 5);
+  const saved = await sql(`select data->'objective' as o from lesson_plans where user_id='${id}' order by created_at desc limit 1`);
+  say("lesson: the suggestion is saved in lesson_plans (up to 3 objectives)", Array.isArray(saved[0]?.o) && saved[0].o.length >= 1 && saved[0].o.length <= 3);
   await p.locator("section:has(h3:text('Quebra-gelo')) button:text('Editar')").click();
   await p.fill("aside textarea", "Quem já explicou a Bíblia a alguém?");
   await p.click("aside button:text('Salvar')");
