@@ -12,10 +12,10 @@ export class WebMicrophone implements Microphone {
     return typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   }
 
-  async start() {
+  async start(opts: { bitsPerSecond?: number } = {}) {
     this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.chunks = [];
-    this.recorder = new MediaRecorder(this.stream);
+    this.recorder = new MediaRecorder(this.stream, opts.bitsPerSecond ? { audioBitsPerSecond: opts.bitsPerSecond } : undefined);
     this.recorder.ondataavailable = (e) => e.data.size && this.chunks.push(e.data);
     this.recorder.start();
     this.ctx = new AudioContext();

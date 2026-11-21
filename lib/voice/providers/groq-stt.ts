@@ -19,8 +19,8 @@ export class GroqSttProvider implements VoiceProvider {
       body: form,
     });
     if (!res.ok) throw new Error(`stt_failed_${res.status}`);
-    const json = (await res.json()) as { text: string; segments?: { avg_logprob: number }[] };
+    const json = (await res.json()) as { text: string; duration?: number; segments?: { avg_logprob: number; start: number; end: number; text: string }[] };
     const lp = json.segments?.length ? json.segments.reduce((s, x) => s + x.avg_logprob, 0) / json.segments.length : undefined;
-    return { text: json.text.trim(), confidence: lp === undefined ? undefined : Math.max(0, Math.min(1, Math.exp(lp))) };
+    return { text: json.text.trim(), duration: json.duration, segments: json.segments?.map((s) => ({ start: s.start, end: s.end, text: s.text.trim() })), confidence: lp === undefined ? undefined : Math.max(0, Math.min(1, Math.exp(lp))) };
   }
 }

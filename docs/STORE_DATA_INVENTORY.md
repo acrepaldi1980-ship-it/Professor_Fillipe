@@ -60,3 +60,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Plano Igreja (Prompt 2.2)
 - `churches` (nome, CNPJ opcional, responsável, plano, lente e versão padrão), `church_members` (quem é responsável, professor ou aluno), `classes` (nome, faixa etária, código de convite), `class_members`, `church_lessons` (tema, texto, data e orientação do professor). O professor e a igreja **não têm acesso** a mensagens, sessões, resumos, cadernos ou perfis dos alunos (RLS). O painel devolve só números e temas agregados com no mínimo 5 alunos. O vínculo `sessions.church_lesson_id` liga uma sessão à lição só para contar participação.
+
+## Ensaio do sermão (Prompt 2.4)
+- `rehearsals`: transcrição do ensaio (fala do próprio pregador), métricas (tempo, ritmo, pausas, vícios de linguagem, tempo por parte), retorno gerado por IA e, só se o pregador optar, o caminho da gravação no bucket privado `rehearsals` (pasta com o id do usuário). Por padrão **o áudio é descartado após a análise**. Consentimento específico `rehearsal_audio`. Uso do microfone por `lib/platform` (`Microphone.start({ bitsPerSecond })`). Incluído na exportação dos dados e apagado junto com a conta (cascade). Nas lojas: declarar "áudio" e "conteúdo do usuário" como dados coletados e vinculados ao usuário, finalidade "funcionalidade do app", sem rastreamento nem publicidade.

@@ -7,6 +7,7 @@ import { HttpError } from "../auth/server";
 export const LIMITS = {
   turn: { limit: 20, windowSeconds: 60 }, // teacher messages per user per minute
   voice: { limit: 40, windowSeconds: 60 }, // sentences of speech per user per minute
+  rehearsal: { limit: 6, windowSeconds: 600 }, // rehearsal analyses per user per 10 minutes
   illustration: { limit: 6, windowSeconds: 60 },
   events: { limit: 120, windowSeconds: 60 },
   public: { limit: 60, windowSeconds: 60 }, // per IP, routes without login

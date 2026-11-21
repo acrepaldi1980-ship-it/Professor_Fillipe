@@ -7,6 +7,7 @@ import type { AvatarState } from "@/components/teacher/Avatar";
 import { AvatarArt } from "@/components/teacher/AvatarArt";
 import { DeepPanel } from "@/components/modes/DeepPanel";
 import { DocPanel } from "@/components/modes/DocPanel";
+import { SermonPanel } from "@/components/modes/SermonPanel";
 import { VisualPanel } from "@/components/visuals/VisualPanel";
 import { Bubble } from "@/components/ui/Bubble";
 import { Button } from "@/components/ui/Button";
@@ -334,7 +335,7 @@ export default function StudyPage() {
       )}
       </div>
       {docMode && sessionReady && (
-        <div className={`pt-2 ${tab === "chat" ? "hidden md:block" : ""}`}>{mode === "deep" ? <DeepPanel sessionId={sessionId.current} refreshKey={docKey} onOpenRef={(r) => void openRef(r)} /> : <DocPanel sessionId={sessionId.current} mode={mode as "lesson" | "sermon"} refreshKey={docKey} />}</div>
+        <div className={`pt-2 ${tab === "chat" ? "hidden md:block" : ""}`}>{mode === "deep" ? <DeepPanel sessionId={sessionId.current} refreshKey={docKey} onOpenRef={(r) => void openRef(r)} /> : mode === "sermon" ? <SermonPanel sessionId={sessionId.current} refreshKey={docKey} /> : <DocPanel sessionId={sessionId.current} mode="lesson" refreshKey={docKey} />}</div>
       )}
     </main>
   );

@@ -7,7 +7,7 @@ export type PlatformName = "web" | "ios" | "android";
 export interface Microphone {
   isSupported(): boolean;
   /** Requests permission and starts capturing. Resolves once recording has started. */
-  start(): Promise<void>;
+  start(opts?: { bitsPerSecond?: number }): Promise<void>;
   /** Stops capturing and returns the recorded audio. */
   stop(): Promise<Blob>;
   /** Called with an audio level between 0 and 1 while recording (used for end-of-speech detection). */

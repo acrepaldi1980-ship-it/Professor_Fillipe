@@ -2,6 +2,9 @@
 export interface TranscribeResult {
   text: string;
   confidence?: number;
+  /** Timed segments of the speech (seconds), when the provider gives them. */
+  segments?: { start: number; end: number; text: string }[];
+  duration?: number;
 }
 
 export interface VoiceProvider {

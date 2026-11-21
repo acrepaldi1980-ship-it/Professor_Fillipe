@@ -332,3 +332,32 @@ export const getWordStudy = (strong: string, versions?: string[]) => apiJson<Wor
 export interface CompareData { ref: string; versions: string[]; verses: { ref: string; base: { version: string; text: string }; others: { version: string; text: string | null; segments: { text: string; changed: boolean }[] | null }[] }[] }
 export const compareVersions = (ref: string, versions: string[]) => apiJson<CompareData>(`/bible/study/compare?ref=${encodeURIComponent(ref)}&versions=${versions.join(",")}`);
 export const explainVersions = (ref: string, versions: string[]) => apiJson<{ summary: string; points: { difference: string; reason: string }[]; source: string }>("/bible/study/compare/explain", { method: "POST", body: JSON.stringify({ ref, versions }) });
+
+// ---- Ensaio do sermão (spec 8.7.5) ----
+export interface RehearsalPartTime { key: string; label: string; seconds: number | null; words: number | null; found: boolean }
+export interface RehearsalMetrics {
+  total_seconds: number; speaking_seconds: number; words: number; wpm: number; wpm_overall: number;
+  pauses: { count: number; longest_seconds: number; total_seconds: number };
+  crutches: { word: string; count: number; per_100_words: number; flagged: boolean }[];
+  parts?: RehearsalPartTime[]; planned_minutes?: number | null;
+}
+export interface RehearsalFeedback {
+  central_idea?: { stated_early: boolean; clarity: number; comment: string };
+  transitions?: { score: number; comment: string };
+  illustrations?: { used: string[]; comment: string };
+  fidelity?: { score: number; comment: string; issues: string[] };
+  strengths?: string[]; improvements?: { what: string; how: string }[];
+}
+export interface Rehearsal { id: string; created_at: string; duration_s: number; metrics: RehearsalMetrics; feedback: RehearsalFeedback; has_audio?: boolean; feedback_ok?: boolean; transcript?: string; analysis_ms?: number; audio_link?: string | null }
+export const listRehearsals = (sessionId: string) => apiJson<{ items: Rehearsal[] }>(`/rehearsals?session_id=${encodeURIComponent(sessionId)}`);
+export const getRehearsal = (id: string) => apiJson<Rehearsal>(`/rehearsals?id=${encodeURIComponent(id)}`);
+export const deleteRehearsal = (id: string) => apiJson<{ ok: true }>(`/rehearsals?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+export async function analyzeRehearsal(sessionId: string, audio: Blob, keep: boolean): Promise<Rehearsal> {
+  const form = new FormData();
+  form.set("audio", audio, `rehearsal.${audio.type.includes("mp4") ? "m4a" : "webm"}`);
+  form.set("session_id", sessionId);
+  if (keep) form.set("keep", "1");
+  const res = await apiFetch("/rehearsals", { method: "POST", body: form });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+  return res.json();
+}

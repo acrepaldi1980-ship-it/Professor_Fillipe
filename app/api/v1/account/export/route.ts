@@ -6,7 +6,7 @@ import { enforceRate } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
-const TABLES = ["consent_records", "preferences", "sessions", "session_summaries", "session_closings", "notebook_items", "review_cards", "review_logs", "bookmarks", "lesson_plans", "sermon_outlines", "own_note_comments", "answer_flags", "subscriptions", "entitlements", "usage_counters"] as const;
+const TABLES = ["consent_records", "preferences", "sessions", "session_summaries", "session_closings", "notebook_items", "review_cards", "review_logs", "bookmarks", "lesson_plans", "sermon_outlines", "rehearsals", "own_note_comments", "answer_flags", "subscriptions", "entitlements", "usage_counters"] as const;
 
 const dec = (v: unknown) => {
   if (!isEncrypted(v as string)) return v ?? null;

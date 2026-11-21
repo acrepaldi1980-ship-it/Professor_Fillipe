@@ -637,6 +637,10 @@ Todos os modos usam o mesmo motor (M05). O que muda é a camada de modo no promp
 - Retorno: tempo total e por parte, clareza da ideia central, transições, ilustrações, fidelidade ao texto, ritmo (palavras por minuto), vícios de linguagem.
 - Estrutura do retorno: 3 pontos fortes, depois até 3 melhorias concretas.
 - Comparação entre ensaios do mesmo esboço.
+- **Como foi feito (Fase 2):** o pregador grava no app (até 20 minutos, áudio de fala a 24 kbps, para caber no limite de 4,5 MB de uma requisição); o servidor transcreve com tempo por trecho (Whisper), **calcula os números sem IA** (tempo total, palavras por minuto de fala e no total, pausas longas a partir de 2,5 s, vícios de linguagem) e pede ao modelo só o que exige leitura (ideia central, transições, ilustrações, fidelidade ao texto bíblico base, 3 pontos fortes, até 3 melhorias e onde cada parte do esboço começa e termina na transcrição, de onde sai o tempo por parte). Se a IA estiver indisponível, os números são entregues e o retorno escrito pode ser pedido de novo.
+- A faixa de 100 a 150 palavras por minuto é uma referência editorial para pregação, não uma regra. A transcrição costuma omitir hesitações como "éé", então os vícios de linguagem são um mínimo.
+- **Privacidade (RF-M02-03):** consentimento específico (`rehearsal_audio`) antes da primeira gravação; o áudio só existe na memória da requisição e é descartado após a análise; ficam a transcrição, as métricas e o retorno, visíveis só ao dono (RLS). A opção "guardar a gravação" envia o áudio a um bucket privado (`rehearsals`, pasta do usuário) e dá um link de 1 hora para ouvir. Apagar o ensaio apaga o áudio.
+- Meta: ensaio de 10 minutos analisado em menos de 1 minuto (medido: cerca de 3 s para 1 minuto de áudio, transcrição incluída).
 
 ### 8.8 M08 — Multimídia (P0 com expansão P1)
 
@@ -949,7 +953,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | `lesson_plans` | id, user_id, session_id, data (jsonb na estrutura de 8.7.2), status |
 | `sermon_outlines` | id, user_id, session_id, sermon_type_id, data (jsonb na estrutura de 8.7.3), status |
 | `sermon_types` | id, name, definition, enabled, order |
-| `rehearsals` (P1) | id, outline_id, transcript, metrics (jsonb), feedback (jsonb), audio_url |
+| `rehearsals` (P1) | id, user_id, session_id, outline_id, transcript, metrics (jsonb, inclui tempo por parte), feedback (jsonb), audio_url (só se o pregador optar por guardar), duration_s, analysis_ms, created_at |
 | `answer_flags` | id, message_id, user_id, reason, status, reviewer_id, reviewer_note |
 | `pastoral_events` | id, user_id, occurred_at (sem texto) |
 

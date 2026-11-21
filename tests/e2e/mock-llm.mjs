@@ -57,6 +57,15 @@ createServer((req, res) => {
     const delay = 150 + Math.random() * 350;
     setTimeout(() => {
       res.writeHead(200, { "content-type": "application/json" });
+      if (prompt.includes("analisa o ensaio de um sermão")) {
+        // rehearsal analysis: place the outline parts one after another over the transcript segments
+        const n = (prompt.match(/^\[\d+\|/gm) ?? []).length;
+        const keys = [...prompt.matchAll(/"((?:introduction|division-\d+|conclusion|appeal))" =/g)].map((m) => m[1]);
+        const per = Math.max(1, Math.floor(n / Math.max(1, keys.length)));
+        const parts = keys.map((part, i) => ({ part, from: Math.min(n - 1, i * per), to: Math.min(n - 1, i === keys.length - 1 ? n - 1 : (i + 1) * per - 1) }));
+        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ feedback: { central_idea: { stated_early: true, clarity: 4, comment: "A ideia central aparece logo no começo e volta na conclusão." }, transitions: { score: 3, comment: "Você avisa a passagem entre os pontos, mas pode usar uma frase-ponte." }, illustrations: { used: ["O guia que espera no caminho"], comment: "A ilustração ajuda o primeiro ponto; falta uma para o segundo." }, fidelity: { score: 5, comment: "O que você disse confere com o texto de Atos 8.", issues: [] }, strengths: ["Ideia central clara.", "Boa fidelidade ao texto.", "Conclusão com aplicação."], improvements: [{ what: "Menos hesitações.", how: "Troque o 'né' por uma pausa curta." }, { what: "Mais uma ilustração.", how: "Dê um exemplo do dia a dia no segundo ponto." }] }, parts }) } }] }));
+        return;
+      }
       if (j.tools) res.end(JSON.stringify({ choices: [{ message: { tool_calls: [{ function: { arguments: JSON.stringify(teacher) } }] } }] }));
       else res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ content: sectionContent(prompt) }) } }] }));
     }, delay);
