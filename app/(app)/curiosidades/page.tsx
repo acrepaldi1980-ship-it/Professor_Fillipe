@@ -28,7 +28,10 @@ export default function CuriositiesPage() {
         {ALL.map((c) => (
           <li key={c.id}>
             <button type="button" onClick={() => { setOpenId(c.id); history.replaceState(null, "", `/curiosidades?c=${c.id}`); trackEvent("visual_opened", { kind: "curiosity" }); }} className="flex h-full w-full flex-col overflow-hidden rounded-control border border-line bg-surface text-left">
-              {c.images[0] && /* eslint-disable-next-line @next/next/no-img-element */ <img src={c.images[0].image} alt="" loading="lazy" className="aspect-video w-full object-cover" />}
+              {c.images[0] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={c.images[0].image} alt="" loading="lazy" className="aspect-video w-full object-cover" />
+              )}
               <span className="flex flex-col gap-0.5 p-3"><strong>{c.title}</strong><span className="text-sm text-muted">{c.hasVideo ? t("cur.film") : t("cur.audio")} · {fmt(c.duration)}</span></span>
             </button>
           </li>
@@ -69,7 +72,10 @@ function Detail({ cur, onBack }: { cur: Cur; onBack: () => void }) {
         <video key={cur.id} ref={mediaRef} src={videoUrl(cur.id)} poster={posterUrl(cur.id)} controls playsInline preload="metadata" onTimeUpdate={(e) => setNow(e.currentTarget.currentTime)} onError={() => setFailed(true)} className="aspect-video w-full rounded-control bg-black" />
       ) : (
         <div className="flex flex-col gap-2">
-          {slide && /* eslint-disable-next-line @next/next/no-img-element */ <img src={slide.image} alt={slide.name} className="aspect-video w-full rounded-control object-cover" />}
+          {slide && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={slide.image} alt={slide.name} className="aspect-video w-full rounded-control object-cover" />
+          )}
           <audio key={cur.id} ref={mediaRef} src={audioUrl(cur.id)} controls preload="metadata" onTimeUpdate={(e) => setNow(e.currentTarget.currentTime)} onError={() => setFailed(true)} className="w-full" />
         </div>
       )}

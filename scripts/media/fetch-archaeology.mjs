@@ -62,6 +62,6 @@ for (const it of ITEMS) {
   await sleep(15000); // be polite: Wikimedia rate-limits fast downloads
   out.push({ ...pickText(it), image: `/arqueologia/${it.id}.jpg`, credit: { title: c.title.replace(/^File:/, ""), author: c.author, license: c.license, page: c.page } });
 }
-function pickText(it) { const { q, pick, ...rest } = it; return rest; }
+function pickText(it) { const rest = { ...it }; delete rest.q; delete rest.pick; return rest; }
 writeFileSync(OUT, JSON.stringify(out, null, 1));
 console.log(`${out.filter((x) => x.image).length}/${ITEMS.length} pieces with image -> ${OUT}`);

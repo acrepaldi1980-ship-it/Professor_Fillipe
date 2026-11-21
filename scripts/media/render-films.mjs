@@ -2,7 +2,7 @@
 // timed by the narration timeline, the title card and the credit line. Output: media-out/curiosidades/<id>.mp4 and <id>.jpg (poster).
 // Usage: node scripts/media/render-films.mjs [id ...]   (needs render-narration.mjs and fetch-archaeology.mjs first)
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { CURIOSITIES } from "./curiosities-data.mjs";
 
 const W = 960, H = 540, FPS = 24, FADE = 0.8;
