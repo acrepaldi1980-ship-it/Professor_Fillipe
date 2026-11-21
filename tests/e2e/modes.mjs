@@ -21,6 +21,7 @@ try {
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
   const { data } = await sb.auth.signInWithPassword({ email, password });
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, locale: "pt-BR" });
+  await ctx.addInitScript(() => { try { localStorage.setItem("pf-no-research", "1"); } catch {} });
   const p = await ctx.newPage();
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));
@@ -122,7 +123,7 @@ try {
   const deepSid = new URL(p.url()).searchParams.get("s");
   const sess = await sql(`select mode, context from sessions where id='${deepSid}'`);
   say("deep: the session keeps the passage", sess[0]?.mode === "deep" && sess[0].context?.ref === "João 1:1-5");
-  say("deep: no document panel", (await p.locator("aside[aria-label]").count()) === 0);
+  say("deep: the study document panel is there", (await p.locator("aside[aria-label=\"Estudo aprofundado\"]").count()) === 1);
   say("no page errors", errors.length === 0 || (console.log(errors), false));
   await ctx.close();
 } catch (e) {

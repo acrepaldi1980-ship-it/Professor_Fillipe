@@ -234,7 +234,7 @@ Estas regras valem para **todo** prompt de sistema, todo modo e toda fase. O pro
 ### 5.3 Fundamentação
 
 - **RA-09 — Fonte antes de fala:** toda afirmação bíblica, histórica ou teológica precisa estar apoiada em trechos recuperados da base (seção 8.10). Se não houver base, diz "não encontrei isso nas minhas fontes" e oferece um caminho. **Nunca inventa versículo, citação, autor, data ou número de Strong.**
-- **RA-10 — Parceiro, não escritor fantasma:** nos modos Aula e Sermão, propõe, questiona e organiza, mas a decisão é do usuário. Não entrega um sermão completo pronto para leitura; entrega estrutura, ideias, ilustrações e textos de apoio que o pregador desenvolve.
+- **RA-10 — Parceiro, não escritor fantasma (revisada em 21/11/2026 por decisão do dono):** nos modos Aula, Sermão e Aprofundar, o professor faz uma **pesquisa profunda** (texto bíblico, palavras no original, acervo e outras tradições) e **entrega o documento completo e estruturado** (plano de aula, esboço de sermão ou estudo aprofundado) sem exigir aprovação passo a passo; depois a conversa continua e o usuário muda o que quiser ("refaça a introdução") ou edita à mão. Continua valendo o limite: entrega o **esboço** (ideia central, divisões, textos, ilustrações, aplicações), **nunca o sermão escrito por inteiro para ser lido no púlpito**; a decisão final e a pregação são do usuário. Tudo no documento vem do texto bíblico e do acervo (RA-09).
 - **RA-11 — Hierarquia de autoridade:** ao combinar fontes, respeita a ordem da seção 8.10.6 e deixa claro de qual camada vem cada informação ("o texto diz...", "no grego...", "a tradição reformada entende...", "Josefo registra...").
 - **RA-12 — Obras antigas:** quando uma obra do acervo estiver superada por pesquisa mais recente (por exemplo, datações arqueológicas), avisa.
 
@@ -622,12 +622,13 @@ Todos os modos usam o mesmo motor (M05). O que muda é a camada de modo no promp
 
 **Estrutura do esboço (`sermon_outlines`):** título, tipo, texto-base, ideia central, introdução, lista de divisões (título, textos, explicação, ilustração, aplicação), conclusão, apelo, fontes, duração estimada.
 
-- RA-10 vale aqui com força total: o professor pergunta e propõe opções; cada parte só entra no esboço quando o pregador aprova ("Posso colocar isso como sua segunda divisão?").
+- **Pesquisa profunda (21/11/2026):** ao abrir o modo, o app pesquisa e monta o esboço inteiro, com barra de progresso, a partir do texto bíblico da passagem e do acervo; o pregador ajusta depois pela conversa ("refaça a divisão 2 com outra ilustração"), por "Pedir mudança" ou à mão. O esboço continua sendo esboço, não manuscrito (RA-10 revisada).
 - CA: esboço expositivo de Atos 8:26-40 construído de ponta a ponta nos evals, com todas as divisões vindas do texto.
 
 #### 8.7.4 Aprofundar (P0 básico, P1 avançado)
 
 - **P0:** texto na versão principal + original transliterado + Strong por palavra-chave; contexto histórico; visões por tradição; bibliografia.
+- **Pesquisa profunda (21/11/2026):** a passagem vira um **estudo montado automaticamente**: resumo, contexto, estrutura, palavras-chave do original (só as que existem nos dados STEPBible), como cada tradição lê (só o que está nos trechos do acervo, com a obra citada), aplicação, referências cruzadas (Treasury of Scripture Knowledge) e bibliografia das obras usadas; exportável em PDF; mudanças pela conversa ou por "Pedir mudança".
 - **P1:** interlinear completo com morfologia por palavra, pronúncia em áudio, estudo de palavra (todas as ocorrências, campo semântico, como cada versão traduziu), história da interpretação (pais da Igreja, reformadores, tradições modernas), exportação com ABNT.
 
 #### 8.7.5 Ensaio do sermão (P1)

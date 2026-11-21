@@ -13,6 +13,8 @@ import { findReferences } from "@/lib/knowledge/refs-parser";
 import { track } from "@/lib/analytics/track";
 import { loadAccess, loadUsage } from "@/lib/entitlements/server";
 import { checkLimit, overFairUse } from "@/lib/entitlements";
+import { buildSection } from "@/lib/modes/build";
+import { appendNote, detectEdit } from "@/lib/modes/edit-intent";
 import { addUsage, costBrl } from "@/lib/entitlements/guard";
 import { applyModePayload, deepSources, loadSessionMode, sermonTypeDefinition } from "@/lib/modes/server";
 
@@ -77,7 +79,27 @@ export async function POST(req: Request) {
         const sm = await loadSessionMode(db, session.id);
         const mode = sm?.mode ?? "free";
         const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
-        const { response, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources, forceFast: fairUse }, createTurnDeps());
+        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources, forceFast: fairUse }, createTurnDeps());
+
+        // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.
+        let response = baseResponse;
+        if (sm && (sm.mode === "lesson" || sm.mode === "sermon" || sm.mode === "deep") && !response.pastoral_flag) {
+          const divisions = sm.mode === "sermon" ? (((await db.from("sermon_outlines").select("data").eq("session_id", sm.id).maybeSingle()).data?.data as { divisions?: unknown[] } | undefined)?.divisions?.length ?? 0) : 0;
+          const intent = detectEdit(parsed.data.text, sm.mode, divisions);
+          if (intent) {
+            let note: string;
+            try {
+              await buildSection(db, user.id, sm, intent.section, intent.instruction);
+              note = ` Já atualizei ${intent.label} no documento.`;
+            } catch {
+              note = " Não consegui atualizar o documento agora; tente de novo ou edite você mesmo.";
+            }
+            // if the chat answer itself failed (model limit) but the document was changed, say only what is true
+            response = meta.degraded && note.startsWith(" Já")
+              ? { ...response, speech: `${student.preferred_name}, ajustei ${intent.label} no documento. Ficou como você queria?`, next_options: [{ label: "Ficou bom", intent: "next" }, { label: "Quero mudar mais", intent: "ask" }] }
+              : { ...response, speech: appendNote(response.speech, note) };
+          }
+        }
 
         let messageId: string | undefined;
         if (response.pastoral_flag) {

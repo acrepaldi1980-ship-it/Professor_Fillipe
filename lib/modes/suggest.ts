@@ -5,9 +5,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { BOOKS } from "../knowledge/books";
 import { groqModels } from "../teacher/groq";
 import { findReferences, formatRefPt } from "../knowledge/refs-parser";
-import { LessonPlan, SermonOutline } from "./schema";
+import { DeepStudy, LessonPlan, SermonOutline } from "./schema";
+import type { Excerpt, WordRef } from "./research";
 
-export type SuggestMode = "lesson" | "sermon";
+export type SuggestMode = "lesson" | "sermon" | "deep";
 export interface SuggestInput {
   mode: SuggestMode;
   context: Record<string, unknown>;
@@ -17,6 +18,11 @@ export interface SuggestInput {
   sermonTypeDefinition?: string;
   /** Real text the answer must rest on (the Bible passage, or retrieved excerpts). */
   sources?: string;
+  /** What the person asked to change (the conversation after the document was delivered). */
+  instruction?: string;
+  /** Aprofundar: the original words and library excerpts the answer may refer to by id. */
+  words?: WordRef[];
+  excerpts?: Excerpt[];
 }
 export type JsonLlm = (system: string, user: string) => Promise<unknown>;
 
@@ -38,24 +44,40 @@ const SERMON_FORMAT: Record<string, string> = {
   appeal: '{"content": "apelo final, 2 a 3 frases"}',
 };
 
+const DEEP_FORMAT: Record<string, string> = {
+  overview: '{"content": "resumo do texto em 4 a 6 frases, só com o que o texto diz"}',
+  context: '{"content": "contexto histórico e literário, 5 a 8 frases"}',
+  structure: '{"content": [{"title": "...", "refs": ["ACT.8.26-ACT.8.29"], "summary": "..."}]} (3 a 6 partes, na ordem do texto)',
+  keywords: '{"content": [{"id": "w3", "note": "o que essa palavra do original acrescenta, em 1 ou 2 frases"}]} (4 a 8 palavras, SOMENTE ids da lista de palavras)',
+  traditions: '{"content": [{"tradition": "nome da tradição", "reading": "como essa tradição lê o texto, em 3 a 5 frases", "excerpt": "e2"}]} (use os trechos que tenham relação com o texto ou com o tema, ainda que parcial, sem declarar uma tradição vencedora; 1 a 4 itens; "excerpt" é o id do trecho usado e o "reading" só pode dizer o que esse trecho diz; devolva {"content": []} apenas se NENHUM trecho tiver relação)',
+  application: '{"content": "aplicação para a vida, 3 a 5 frases"}',
+};
+
 export function isValidSection(mode: SuggestMode, section: string): boolean {
+  if (mode === "deep") return section in DEEP_FORMAT;
   if (mode === "lesson") return section in LESSON_FORMAT;
   const base = section.split(":")[0];
-  return base in SERMON_FORMAT || base === "division_application" || base === "division_texts";
+  return base in SERMON_FORMAT || base === "division_application" || base === "division_texts" || base === "division_replace";
 }
 
 export function buildPrompt(i: SuggestInput): { system: string; user: string } {
   const c = i.context;
-  const rules = `Você é o Professor Filipe, parceiro de quem prepara ${i.mode === "lesson" ? "uma aula de EBD" : "um sermão"}. Escreva em português do Brasil, simples e direto, como um amigo que ajuda. Regras: use só o que está na Bíblia; NÃO invente versículos, citações, autores, datas nem números; não copie versículos por extenso (cite a referência); não escreva a peça inteira, só a seção pedida; referências bíblicas sempre no formato LIVRO.CAP.VERSO, por exemplo ACT.8.30 ou ACT.8.26-ACT.8.40. Nos textos corridos escreva as referências por extenso ("Atos 8:26-40"), NUNCA códigos como ACT.8.26; só nas listas de versículos use o código. Baseie-se APENAS nas FONTES abaixo; se algo não estiver nas fontes, não afirme. Responda SOMENTE com um objeto JSON, sem texto fora dele.`;
-  const setup = i.mode === "lesson"
+  const rules = `Você é o Professor Filipe, parceiro de quem prepara ${i.mode === "lesson" ? "uma aula de EBD" : i.mode === "sermon" ? "um sermão" : "um estudo bíblico aprofundado"}. Escreva em português do Brasil, simples e direto, como um amigo que ajuda. Regras: use só o que está na Bíblia; NÃO invente versículos, citações, autores, datas nem números; não copie versículos por extenso (cite a referência); não escreva a peça inteira, só a seção pedida; referências bíblicas sempre no formato LIVRO.CAP.VERSO, por exemplo ACT.8.30 ou ACT.8.26-ACT.8.40. Nos textos corridos escreva as referências por extenso ("Atos 8:26-40"), NUNCA códigos como ACT.8.26; só nas listas de versículos use o código. Baseie-se APENAS nas FONTES abaixo; se algo não estiver nas fontes, não afirme. Responda SOMENTE com um objeto JSON, sem texto fora dele.`;
+  const setup = i.mode === "deep" ? `Estudo aprofundado da passagem "${c.ref ?? ""}".` : i.mode === "lesson"
     ? `Aula: tema "${c.topic ?? ""}", texto-base "${c.ref ?? "escolha o mais adequado ao tema"}", turma "${c.age_group ?? "mista"}", ${c.minutes ?? 45} minutos${c.magazine ? `, revista "${c.magazine}"` : ""}.`
     : `Sermão ${c.sermon_type ?? "temático"}${i.sermonTypeDefinition ? ` (${i.sermonTypeDefinition})` : ""}; texto ou tema: "${c.ref_or_theme ?? ""}".`;
   const base = i.section.split(":")[0];
   const idx = Number(i.section.split(":")[1] ?? NaN);
   let ask: string;
-  if (i.mode === "lesson") ask = `Proponha a seção "${i.section}". Formato: ${LESSON_FORMAT[i.section]}`;
+  if (i.mode === "deep") ask = `Escreva a seção "${i.section}". Formato: ${DEEP_FORMAT[i.section]}`;
+  else if (i.mode === "lesson") ask = `Proponha a seção "${i.section}". Formato: ${LESSON_FORMAT[i.section]}`;
+  else if (base === "division_replace") ask = `Reescreva a divisão ${idx + 1} do esboço. Formato: ${SERMON_FORMAT.division}`;
   else if (base === "division_application" || base === "division_texts") ask = `Para a divisão ${idx + 1} do esboço, proponha ${base === "division_application" ? "a aplicação" : "os textos bíblicos (lista de referências)"}. Formato: {"content": ${base === "division_application" ? '"texto da aplicação"' : '["ACT.8.26"]'}}`;
   else ask = `Proponha ${base === "division" ? `a divisão número ${(Array.isArray((i.doc as { divisions?: unknown[] }).divisions) ? (i.doc as { divisions: unknown[] }).divisions.length : 0) + 1}` : `a seção "${base}"`}. Formato: ${SERMON_FORMAT[base]}`;
+  if (i.instruction) {
+    const current = i.mode === "deep" ? (i.doc as Record<string, unknown>)[base] : i.mode === "sermon" && base.startsWith("division") ? (i.doc as { divisions?: unknown[] }).divisions?.[idx] : (i.doc as Record<string, unknown>)[base];
+    ask += `\nVersão atual desta seção: ${JSON.stringify(current ?? null).slice(0, 1800)}\nA PESSOA PEDIU ESTA MUDANÇA, atenda-a mantendo o resto: "${i.instruction.slice(0, 400)}"`;
+  }
   const src = i.sources ? `\nFONTES (a única base permitida):\n${i.sources.slice(0, 6000)}\n` : "";
   return { system: rules, user: `${setup}${src}\nO que já está no documento (JSON): ${JSON.stringify(i.doc).slice(0, 3000)}\n\n${ask}` };
 }
@@ -92,13 +114,14 @@ function cleanText(v: unknown): unknown {
 /** Returns the new document and what was written, or null when the answer did not fit the section. */
 export async function suggestSection(i: SuggestInput, llm: JsonLlm, exists: (verse: string) => Promise<boolean>): Promise<{ doc: Record<string, unknown>; content: unknown } | null> {
   if (!isValidSection(i.mode, i.section)) return null;
+  if (i.mode === "deep") return suggestDeep(i, llm, exists);
   const { system, user } = buildPrompt(i);
   const raw = (await llm(system, user)) as { content?: unknown } | null;
   let content = raw && typeof raw === "object" ? raw.content : undefined;
   if (content === undefined || content === null || content === "") return null;
   const base = i.section.split(":")[0];
   const idx = Number(i.section.split(":")[1] ?? NaN);
-  if (i.section !== "memory_verse" && i.section !== "points" && base !== "division" && base !== "division_texts") content = cleanText(content);
+  if (i.section !== "memory_verse" && i.section !== "points" && base !== "division" && base !== "division_texts" && base !== "division_replace") content = cleanText(content);
 
   if (i.mode === "lesson") {
     if (i.section === "points" && Array.isArray(content)) {
@@ -110,6 +133,13 @@ export async function suggestSection(i: SuggestInput, llm: JsonLlm, exists: (ver
   }
 
   const divisions = [...(((i.doc as { divisions?: Record<string, unknown>[] }).divisions) ?? [])];
+  if (base === "division_replace") {
+    if (!divisions[idx]) return null;
+    const d = (content ?? {}) as { title?: string; texts?: unknown; explanation?: string; illustration?: string; application?: string };
+    divisions[idx] = { title: String(d.title ?? "").slice(0, 200), texts: await cleanRefs(d.texts, exists), explanation: humanizeRefs(String(d.explanation ?? "")).slice(0, 1500), ...(d.illustration ? { illustration: humanizeRefs(String(d.illustration)).slice(0, 1000) } : {}), ...(d.application ? { application: humanizeRefs(String(d.application)).slice(0, 1000) } : {}) };
+    const next = SermonOutline.safeParse({ ...i.doc, divisions });
+    return next.success ? { doc: next.data, content: divisions[idx] } : null;
+  }
   if (base === "division") {
     const d = (content ?? {}) as { title?: string; texts?: unknown; explanation?: string; illustration?: string; application?: string };
     divisions.push({ title: String(d.title ?? "").slice(0, 200), texts: await cleanRefs(d.texts, exists), explanation: humanizeRefs(String(d.explanation ?? "")).slice(0, 1500), ...(d.illustration ? { illustration: humanizeRefs(String(d.illustration)).slice(0, 1000) } : {}), ...(d.application ? { application: humanizeRefs(String(d.application)).slice(0, 1000) } : {}) });
@@ -123,6 +153,32 @@ export async function suggestSection(i: SuggestInput, llm: JsonLlm, exists: (ver
     return next.success ? { doc: next.data, content: divisions[idx] } : null;
   }
   const next = SermonOutline.safeParse({ ...i.doc, [base]: content });
+  return next.success ? { doc: next.data, content } : null;
+}
+
+async function suggestDeep(i: SuggestInput, llm: JsonLlm, exists: (verse: string) => Promise<boolean>): Promise<{ doc: Record<string, unknown>; content: unknown } | null> {
+  const { system, user } = buildPrompt(i);
+  const raw = (await llm(system, user)) as { content?: unknown } | null;
+  let content = raw && typeof raw === "object" ? raw.content : undefined;
+  if (content === undefined || content === null || content === "") return null;
+  const s = i.section;
+  if (s === "keywords") {
+    if (!Array.isArray(content)) return null;
+    const byId = new Map((i.words ?? []).map((w) => [w.id, w]));
+    const list = content.map((k: { id?: string; note?: string }) => { const w = byId.get(String(k.id)); return w ? { surface: w.surface, translit: w.translit, lemma: w.lemma, strong: w.strong, gloss: w.gloss, note: humanizeRefs(String(k.note ?? "")).slice(0, 600) } : null; }).filter(Boolean);
+    if (!list.length) return null;
+    content = list;
+  } else if (s === "traditions") {
+    if (!Array.isArray(content)) return null;
+    const byId = new Map((i.excerpts ?? []).map((e) => [e.id, e]));
+    const list = content.map((t: { tradition?: string; reading?: string; excerpt?: string }) => { const e = byId.get(String(t.excerpt)); return e && t.reading ? { tradition: String(t.tradition || e.tradition).slice(0, 60), reading: humanizeRefs(String(t.reading)).slice(0, 1200), work: `${e.work}${e.author ? `, ${e.author}` : ""}` } : null; }).filter(Boolean);
+    if (!list.length) { console.log(JSON.stringify({ evt: "suggest_traditions_empty", excerpts: (i.excerpts ?? []).map((e) => `${e.tradition}|${e.work}|${e.title}`.slice(0, 90)), answered: content.length })); return null; }
+    content = list;
+  } else if (s === "structure") {
+    if (!Array.isArray(content)) return null;
+    content = await Promise.all(content.slice(0, 6).map(async (p: { title?: string; refs?: unknown; summary?: string }) => ({ title: String(p.title ?? "").slice(0, 200), refs: await cleanRefs(p.refs, exists), summary: humanizeRefs(String(p.summary ?? "")).slice(0, 800) })));
+  } else content = cleanText(content);
+  const next = DeepStudy.safeParse({ ...i.doc, [s]: content });
   return next.success ? { doc: next.data, content } : null;
 }
 

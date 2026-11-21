@@ -2,9 +2,10 @@
 
 // Live document beside the conversation (lesson plan or sermon outline): filled by the teacher through mode_payload,
 // editable by hand, with the list of gaps and the PDF download (spec 8.7.2/8.7.3).
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { downloadSessionPdf, getSessionDocument, saveSessionDocument, suggestDocumentSection } from "@/lib/api-client";
+import { downloadSessionPdf, getSessionDocument, saveSessionDocument, suggestDocumentSection, type SuggestResult } from "@/lib/api-client";
+import { ResearchBar } from "./ResearchBar";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
@@ -44,6 +45,8 @@ export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; m
   }, [sessionId, refreshKey]);
 
   const fields = FIELDS.filter((f) => f.mode === mode);
+
+  const onResearch = useCallback((r: SuggestResult) => { ++seq.current; setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); setGapKeys(r.gapKeys); }, []);
 
   // the teacher proposes one section and it goes into the document; the person edits it afterwards
   async function suggest(key: string) {
@@ -95,6 +98,7 @@ export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; m
         <h2 className="text-lg">{t(mode === "lesson" ? "doc.lesson" : "doc.sermon")}</h2>
         <Button type="button" variant="ghost" className="text-sm" onClick={() => void downloadSessionPdf(sessionId).catch(() => setError(true))}>{t("doc.pdf")}</Button>
       </div>
+      <ResearchBar sessionId={sessionId} mode={mode} onUpdate={onResearch} />
       {empty && <p className="text-sm text-muted">{t("doc.empty")}</p>}
       {fields.map((f) => {
         const v = doc[f.key];

@@ -1,7 +1,7 @@
 // GET -> the session's mode and its live document (lesson plan or sermon outline) with the gaps to fill.
 // PUT {data} -> the student edits the document by hand (validated against the mode's schema).
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
-import { LessonPlan, lessonGapKeys, lessonGaps, SermonOutline, sermonGapKeys, sermonGaps } from "@/lib/modes/schema";
+import { DeepStudy, deepGaps, LessonPlan, lessonGapKeys, lessonGaps, SermonOutline, sermonGapKeys, sermonGaps } from "@/lib/modes/schema";
 import { loadSessionMode, seedDocument } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
@@ -21,6 +21,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       const { data } = await db.from("sermon_outlines").select("data").eq("session_id", id).maybeSingle();
       const doc = SermonOutline.parse({ ...seedDocument("sermon", sm.context), ...(data?.data ?? {}) });
       return Response.json({ mode: sm.mode, context: sm.context, doc, gaps: sermonGaps(doc), gapKeys: sermonGapKeys(doc) });
+    }
+    if (sm.mode === "deep") {
+      const { data } = await db.from("deep_studies").select("data").eq("session_id", id).maybeSingle();
+      const doc = DeepStudy.parse({ ...seedDocument("deep", sm.context), ...(data?.data ?? {}) });
+      const g = deepGaps(doc);
+      return Response.json({ mode: sm.mode, context: sm.context, doc, gaps: g.map((x) => x.text), gapKeys: g.map((x) => x.key) });
     }
     return Response.json({ mode: sm.mode, context: sm.context, doc: null, gaps: [] });
   } catch (e) {

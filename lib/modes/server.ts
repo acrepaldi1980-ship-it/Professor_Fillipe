@@ -57,6 +57,7 @@ export function seedDocument(mode: string, ctx: Record<string, unknown>): Record
     const isRef = !!rt && findReferences(rt).some((r) => r.refs.length > 0);
     return { ...(str(ctx.sermon_type) ? { type: str(ctx.sermon_type) } : {}), ...(rt ? (isRef ? { base_text: rt } : { title: rt }) : {}) };
   }
+  if (mode === "deep") { const ref = str(ctx.ref); return ref ? { passage: ref, title: `Estudo de ${ref}` } : {}; }
   return {};
 }
 

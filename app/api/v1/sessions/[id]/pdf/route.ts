@@ -2,8 +2,8 @@
 import { track } from "@/lib/analytics/track";
 import { requireFeature } from "@/lib/entitlements/guard";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
-import { lessonPdf, sermonPdf } from "@/lib/pdf/render";
-import { LessonPlan, SermonOutline } from "@/lib/modes/schema";
+import { deepPdf, lessonPdf, sermonPdf } from "@/lib/pdf/render";
+import { DeepStudy, LessonPlan, SermonOutline } from "@/lib/modes/schema";
 import { loadSessionMode } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
@@ -26,6 +26,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       const { data } = await db.from("sermon_outlines").select("data").eq("session_id", id).maybeSingle();
       pdf = await sermonPdf(SermonOutline.parse(data?.data ?? {}));
       name = "esboco-de-sermao.pdf";
+    } else if (sm.mode === "deep") {
+      const { data } = await db.from("deep_studies").select("data").eq("session_id", id).maybeSingle();
+      pdf = await deepPdf(DeepStudy.parse(data?.data ?? {}));
+      name = "estudo-aprofundado.pdf";
     } else {
       throw new HttpError(400, "mode_has_no_document");
     }

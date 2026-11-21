@@ -1,7 +1,7 @@
 // PDF of the lesson plan and the sermon outline (spec 8.7.2/8.7.3): A4, simple cover, sections and sources. Server only.
 import PDFDocument from "pdfkit";
 import { formatRefPt } from "../knowledge/refs-parser";
-import type { LessonPlan, SermonOutline } from "../modes/schema";
+import type { DeepStudy, LessonPlan, SermonOutline } from "../modes/schema";
 
 const AGE: Record<string, string> = { kids: "Crianças", teens: "Pré-adolescentes", youth: "Jovens", adults: "Adultos", mixed: "Turma mista" };
 const ref = (r: string) => (/^[0-9A-Z]{3}\.\d+/.test(r) ? formatRefPt(r) : r);
@@ -102,5 +102,20 @@ export function notebookPdf(title: string, items: NotebookPdfItem[]): Promise<Bu
         if (it.mindMap.edges.length) { doc.moveDown(0.4).fillColor("#6B645A"); it.mindMap.edges.forEach((e) => doc.text(`${label(e.from)} → ${label(e.to)}${e.label ? ` (${e.label})` : ""}`)); doc.fillColor("#2E2A24"); }
       }
     });
+  });
+}
+
+/** PDF of the deep study (Aprofundar). */
+export function deepPdf(d: DeepStudy): Promise<Buffer> {
+  return build(d.title ?? "Estudo aprofundado", d.passage ? `Passagem: ${d.passage}` : "Estudo bíblico aprofundado", (doc) => {
+    const text = (h: string, v?: string) => { if (!v) return; heading(doc, h); doc.text(v); };
+    text("Resumo do texto", d.overview);
+    text("Contexto histórico e literário", d.context);
+    if (d.structure?.length) { heading(doc, "Estrutura do texto"); d.structure.forEach((s, i) => { doc.font("Helvetica-Bold").text(`${i + 1}. ${s.title}`).font("Helvetica"); if (s.summary) doc.text(s.summary); if (s.refs?.length) doc.fillColor("#6B645A").text(s.refs.map(ref).join("; ")).fillColor("#2E2A24"); doc.moveDown(0.3); }); }
+    if (d.keywords?.length) { heading(doc, "Palavras-chave no original"); d.keywords.forEach((k) => { doc.font("Helvetica-Bold").text(`${k.translit || k.surface}${k.strong ? ` (Strong ${k.strong})` : ""}`).font("Helvetica"); if (k.gloss) doc.fillColor("#6B645A").text(k.gloss).fillColor("#2E2A24"); if (k.note) doc.text(k.note); doc.moveDown(0.3); }); }
+    if (d.traditions?.length) { heading(doc, "Como as tradições leem"); d.traditions.forEach((t) => { doc.font("Helvetica-Bold").text(t.tradition).font("Helvetica").text(t.reading); if (t.work) doc.fillColor("#6B645A").text(`Fonte: ${t.work}`).fillColor("#2E2A24"); doc.moveDown(0.3); }); }
+    text("Aplicação", d.application);
+    if (d.crossrefs?.length) { heading(doc, "Referências cruzadas"); doc.text(d.crossrefs.map(ref).join("; ")); doc.fillColor("#6B645A").fontSize(9).text("Fonte: Treasury of Scripture Knowledge (CC BY 4.0).").fontSize(11.5).fillColor("#2E2A24"); }
+    if (d.bibliography?.length) { heading(doc, "Bibliografia (obras do acervo usadas)"); d.bibliography.forEach((b) => doc.text(`• ${b.work}${b.tradition ? ` (${b.tradition})` : ""}`)); }
   });
 }

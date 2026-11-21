@@ -202,8 +202,9 @@ export const setLevel = (level: string) => apiJson<{ ok: boolean }>("/me/level",
 // ---- Guided modes: live document and PDF (Prompt 1.8) ----
 export interface SessionDocument { mode: "free" | "lesson" | "sermon" | "deep" | string; context: Record<string, unknown>; doc: Record<string, unknown> | null; gaps: string[]; gapKeys?: string[] }
 export const getSessionDocument = (sessionId: string) => apiJson<SessionDocument>(`/sessions/${sessionId}/document`);
-export async function suggestDocumentSection(sessionId: string, section: string): Promise<{ doc: Record<string, unknown>; gaps: string[]; gapKeys: string[] }> {
-  const res = await apiFetch(`/sessions/${sessionId}/document/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section }) });
+export interface SuggestResult { doc: Record<string, unknown>; gaps: string[]; gapKeys: string[] }
+export async function suggestDocumentSection(sessionId: string, section: string, instruction?: string): Promise<SuggestResult> {
+  const res = await apiFetch(`/sessions/${sessionId}/document/suggest`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section, instruction }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return res.json();
 }
