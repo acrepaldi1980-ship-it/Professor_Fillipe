@@ -3,7 +3,7 @@
 //  - the data the student needs without internet: the main Bible text (/api/v1/bible/...), the notebook and the cards of the day
 //    (/api/v1/notebook, /api/v1/review/due) and the visual catalog: network first, falling back to the last answer saved.
 // Private data is dropped when the student signs out (message "clear"). Nothing else under /api is cached.
-const SHELL = "pf-shell-v2";
+const SHELL = "pf-shell-v3"; // v3: pages are fetched from the network first, so a new deploy never meets an old cached page
 const DATA = "pf-data-v2";
 const DATA_PATHS = [/^\/api\/v1\/me$/, /^\/api\/v1\/preferences$/, /^\/api\/v1\/bible\//, /^\/api\/v1\/notebook(\?|$)/, /^\/api\/v1\/review\/due/, /^\/api\/v1\/visuals\//, /^\/api\/v1\/sessions\?/];
 
@@ -31,6 +31,18 @@ async function networkFirst(req) {
   }
 }
 
+// Pages (navigation): network first, the saved copy only when offline. An old page would point at script files that no longer exist after a deploy.
+async function networkFirstPage(req) {
+  const cache = await caches.open(SHELL);
+  try {
+    const res = await fetch(req);
+    if (res.ok && res.type === "basic") cache.put(req, res.clone());
+    return res;
+  } catch {
+    return (await cache.match(req)) || new Response("Sem internet.", { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  }
+}
+
 async function staleWhileRevalidate(req) {
   const cache = await caches.open(SHELL);
   const hit = await cache.match(req);
@@ -45,7 +57,8 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
   if (DATA_PATHS.some((re) => re.test(url.pathname + url.search))) return e.respondWith(networkFirst(req));
   if (url.pathname.startsWith("/api/")) return; // everything else in the API is never cached
-  if (req.mode === "navigate" || /^\/(_next\/static|avatar|icons|maps)\//.test(url.pathname) || /\.(webmanifest|css|js|woff2?)$/.test(url.pathname)) return e.respondWith(staleWhileRevalidate(req));
+  if (req.mode === "navigate") return e.respondWith(networkFirstPage(req));
+  if (/^\/(_next\/static|avatar|icons|maps)\//.test(url.pathname) || /\.(webmanifest|css|js|woff2?)$/.test(url.pathname)) return e.respondWith(staleWhileRevalidate(req));
 });
 
 // ---- Notifications (spec 8.15): a short reminder that opens the right screen ----
