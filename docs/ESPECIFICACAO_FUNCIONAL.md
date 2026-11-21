@@ -905,6 +905,17 @@ Gerado no prompt 1.6b como `docs/PERSONAGEM_FILIPE.md`, com aprovação do Ander
 
 ---
 
+### 8.18 M18 — Multimídia bíblica: arqueologia, curiosidades, mapas detalhados e mais modelos 3D (P0, pedido do dono em 21/11/2026)
+
+Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos com imagens livres, movimento suave, legendas e narração masculina gravada com a voz Piper); volume da primeira entrega = **média** (20 curiosidades, 30 peças arqueológicas, 12 modelos 3D novos, mapas detalhados).
+
+- **RF-M18-01 Arqueologia.** Galeria `/arqueologia` com peças e sítios ligados à Bíblia (estelas, inscrições, manuscritos, muralhas, tanques, teatros, moedas). Cada peça: foto livre, nome, época, local (com ponto no mapa), textos bíblicos relacionados, explicação curta, fonte e crédito da imagem. Só entram imagens em domínio público, CC0 ou CC BY (CC BY-SA apenas na galeria, sem alteração e com crédito); nunca NC ou ND. Peça que a pesquisa recente contradiz leva aviso (RA-12).
+- **RF-M18-02 Curiosidades.** Seção `/curiosidades` com cartões. Cada curiosidade: texto de 150 a 220 palavras com fonte, narração masculina já gravada (áudio), **mini-filme** (vídeo), textos bíblicos, imagens com crédito e botão "Estudar isso com o professor". Roteiros passam pela regra RA-09 (só o que tem fonte) e pela revisão do conselho teológico antes do beta público. Nunca mostram o rosto de Jesus nem representam Deus Pai (RA-20).
+- **RF-M18-03 Mapas detalhados.** Camadas ligáveis sobre o mapa: relevo sombreado, mares, rios e montes com nome, regiões e tribos, províncias romanas e impérios por época, estradas antigas, tipos de lugar (cidade, monte, porto, sítio arqueológico), cartão do lugar com foto, versículos e peças arqueológicas ligadas.
+- **RF-M18-04 Modelos 3D.** Passa de 3 para 15 cenas (cada uma com pontos de toque, texto e versículos, descrição alternativa e dados de licença).
+- **RF-M18-05 Produção e armazenamento.** Imagens leves ficam no app; áudios e vídeos ficam no Supabase Storage (bucket público `media`) para não pesar no deploy; tudo gerado por scripts reproduzíveis em `scripts/media/` com ficha de fonte e licença em `docs/LICENSES.md`.
+- **Fora desta versão:** vídeo por IA generativa (custo por vídeo e risco de RA-20), narração por voz humana.
+
 ## 9. Modelo de dados
 
 Postgres (Supabase), com Row Level Security em **todas** as tabelas de usuário. Tipos simplificados; o Claude Code escreve as migrations completas com índices, chaves estrangeiras e `created_at` e `updated_at`.

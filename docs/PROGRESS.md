@@ -53,6 +53,7 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 | --- | --- | --- |
 | D-01 | **Preços confirmados** (21/11): Grátis R$ 0; Plus R$ 29,90/mês ou R$ 287/ano; Premium R$ 49,90/mês ou R$ 479/ano, com teste grátis de 7 dias; limites da tabela 8.12, editáveis na tabela `plans` | 2026-11-21 |
 | D-12 | **Encarregado de dados: o próprio dono**; nome e e-mail de contato a publicar na Política de Privacidade antes de abrir ao público (item do BETA_CHECKLIST) | 2026-11-21 |
+| D-23 | **Multimídia bíblica (21/11):** filme = mini-filme animado MP4 (imagens livres + narração Piper gravada); entrega média: 20 curiosidades, 30 peças arqueológicas, 12 modelos 3D novos e mapas detalhados. Especificação 8.18 | 2026-11-21 |
 | D-14 | **Manter "Professor Filipe" por enquanto**; consulta de marca no INPI é item obrigatório do BETA_CHECKLIST antes da abertura pública | 2026-11-21 |
 | D-22 | Cobrança construída com **fornecedor simulado** (Pix/cartão de teste, sem dinheiro) até existir a conta Asaas; o adaptador Asaas está escrito mas não foi exercitado em sandbox | 2026-11-21 |
 | D-21 | **Toda fala do professor é masculina** (regra do Anderson, 21/11): voz do servidor masculina (Gemini "Charon" ou ElevenLabs "George"); no aparelho só entram vozes masculinas em português; sem voz masculina o professor não fala (só escreve) e a tela Conta explica como instalar uma | 2026-11-21 |
