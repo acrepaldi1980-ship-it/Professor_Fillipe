@@ -2,13 +2,19 @@
 // separated, to multiply the free quota) and it joins the pool. Anything OpenAI-compatible can also be added through LLM_EXTRA (JSON).
 import type { Endpoint, Kind } from "./types";
 
+export interface ModelDef { name: string; tier: number; tools?: boolean; weight?: number; extra?: Record<string, unknown> }
+
+/** Models found at run time (see discovery.ts); they replace the defaults of that provider. */
+const discovered = new Map<string, ModelDef[]>();
+export function setDiscovered(provider: string, models: ModelDef[]) { discovered.set(provider, models); }
+
 interface ProviderDef {
   id: string;
   kind: Kind;
   baseUrl: string;
   keyEnv: string;
   /** Default models (override with <ID>_MODELS = comma separated list). */
-  models: { name: string; tier: number; tools?: boolean; weight?: number; extra?: Record<string, unknown> }[];
+  models: ModelDef[];
   concurrency?: number;
 }
 
@@ -67,7 +73,7 @@ export function buildEndpoints(env: Record<string, string | undefined> = process
     if (!uniqueKeys.length) continue;
     const idKey = d.id.toUpperCase();
     const override = split(env[`${idKey}_MODELS`]);
-    const models = override.length ? override.map((name) => d.models.find((m) => m.name === name) ?? { name, tier: 1, tools: false }) : d.models;
+    const models = override.length ? override.map((name) => d.models.find((m) => m.name === name) ?? { name, tier: 1, tools: false }) : discovered.get(d.id) ?? d.models;
     uniqueKeys.forEach((key, keyIndex) => {
       for (const m of models) {
         out.push({ id: `${d.id}/${m.name}#${keyIndex}`, provider: d.id, model: m.name, kind: d.kind, baseUrl: d.baseUrl, key, keyIndex, tools: m.tools ?? false, tier: m.tier, weight: m.weight ?? 1, extra: m.extra, concurrency: d.concurrency ?? 4 });

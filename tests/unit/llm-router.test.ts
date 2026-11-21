@@ -147,3 +147,14 @@ describe("wire formats", () => {
     expect(r.out).toEqual({ content: "ok" });
   });
 });
+
+import { pickOpenRouterFree } from "@/lib/llm/discovery";
+describe("free model discovery", () => {
+  const m = (id: string, ctx: number, params: string[], free = true, out: string[] = ["text"]) => ({ id, context_length: ctx, pricing: { prompt: free ? "0" : "0.000001", completion: free ? "0" : "0.000002" }, supported_parameters: params, architecture: { output_modalities: out } });
+  it("keeps only free text models that can answer structured output, biggest context first", () => {
+    const out = pickOpenRouterFree([m("a/big:free", 128000, ["tools", "response_format"]), m("b/paid", 200000, ["tools"], false), m("c/small:free", 32000, ["response_format"]), m("d/vision-vl:free", 100000, ["tools"]), m("e/notools:free", 64000, []), m("f/image:free", 90000, ["tools"], true, ["image"])]);
+    expect(out.map((x) => x.name)).toEqual(["a/big:free", "c/small:free"]);
+    expect(out[0].tools).toBe(true);
+    expect(out[1].tools).toBe(false);
+  });
+});

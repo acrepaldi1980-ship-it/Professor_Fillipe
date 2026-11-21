@@ -6,7 +6,7 @@ import type { Failure } from "./types";
 export interface HealthStore {
   /** endpoint id -> ms epoch until which it is cooling down. */
   cooldowns(): Promise<Map<string, number>>;
-  setCooldown(id: string, seconds: number, reason: Failure): Promise<void>;
+  setCooldown(id: string, seconds: number, reason: string): Promise<void>;
   record(id: string, ok: boolean, kind: Failure | null, ms: number): void;
 }
 
@@ -20,7 +20,7 @@ export class MemoryStore implements HealthStore {
   private cd = new Map<string, number>();
   constructor(private clock: () => number = Date.now) {}
   async cooldowns() { const now = this.clock(); for (const [k, v] of this.cd) if (v <= now) this.cd.delete(k); return new Map(this.cd); }
-  async setCooldown(id: string, seconds: number, reason?: Failure) { void reason; this.cd.set(id, this.clock() + seconds * 1000); }
+  async setCooldown(id: string, seconds: number, reason?: string) { void reason; this.cd.set(id, this.clock() + seconds * 1000); }
   record() { /* no metrics in memory-only mode */ }
 }
 
@@ -46,7 +46,7 @@ export class SharedStore implements HealthStore {
     return local;
   }
 
-  async setCooldown(id: string, seconds: number, reason: Failure) {
+  async setCooldown(id: string, seconds: number, reason: string) {
     await this.mem.setCooldown(id, seconds);
     const c = db();
     if (c && secret()) void Promise.resolve(c.rpc("api_llm_set_cooldown", { p_secret: secret(), p_id: id, p_seconds: Math.round(seconds), p_reason: reason })).then(() => undefined, () => undefined);

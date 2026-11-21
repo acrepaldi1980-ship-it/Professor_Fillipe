@@ -36,6 +36,10 @@ Trocar os modelos de um provedor sem mexer no código: `CEREBRAS_MODELS=modelo-1
 [{"id":"meuprovedor","baseUrl":"https://api.exemplo.com/v1","keyEnv":"MEUPROVEDOR_API_KEY","models":[{"name":"modelo-x","tier":1,"tools":false}]}]
 ```
 
+**Modelos gratuitos do OpenRouter são descobertos sozinhos:** os nomes `:free` mudam toda hora, então a cada 6 horas o servidor consulta a lista atual do OpenRouter e usa os gratuitos que aceitam resposta estruturada (os de maior contexto primeiro). Se você definir `OPENROUTER_MODELS=...`, essa descoberta é desligada e vale a sua lista.
+
+**Diagnóstico:** em *Admin > Métricas > IAs gratuitas em uso*, a linha "Em pausa agora" mostra o motivo exato (por exemplo `quota: ... prepayment credits are depleted` quando a chave do Gemini está em projeto pré-pago).
+
 ## Como colocar as chaves em produção
 
 1. Crie a conta e a chave no provedor (links acima).

@@ -2,6 +2,7 @@
 // Designed for many parallel users: load is spread across tiers and keys (weighted random), cooling endpoints are skipped by every instance
 // (shared state), bursts are capped per key, and when everything is busy it waits a little for the earliest endpoint instead of failing.
 import { callGemini, callOpenAI, type RawResult } from "./clients";
+import { ensureDiscovery } from "./discovery";
 import { buildEndpoints } from "./registry";
 import { SharedStore, type HealthStore } from "./state";
 import { LlmError, type Endpoint, type Failure, type LlmRequest, type LlmResult } from "./types";
@@ -47,6 +48,7 @@ export function order(list: Endpoint[], req: LlmRequest, random: () => number): 
 }
 
 export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<LlmResult> {
+  if (!deps.endpoints) await ensureDiscovery(); // free model names are refreshed every few hours (best effort)
   const endpoints = (deps.endpoints ?? buildEndpoints)();
   const store = deps.store ?? (defaultStore ??= new SharedStore());
   const call = deps.call ?? realCall;
@@ -84,7 +86,7 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
       last = err;
       store.record(pick.id, false, err.kind, now() - t0);
       const cd = cooldownFor(err.kind, err.retryAfter);
-      if (cd > 0) await store.setCooldown(pick.id, cd + Math.round(random() * 3), err.kind); // a little jitter so instances do not return together
+      if (cd > 0) await store.setCooldown(pick.id, cd + Math.round(random() * 3), `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150)); // a little jitter so instances do not return together
       if (err.kind === "bad_output" && ++bad >= 3) throw err;
     } finally {
       inflight.set(pick.id, Math.max(0, (inflight.get(pick.id) ?? 1) - 1));
