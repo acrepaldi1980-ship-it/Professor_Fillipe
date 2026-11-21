@@ -47,3 +47,19 @@ self.addEventListener("fetch", (e) => {
   if (url.pathname.startsWith("/api/")) return; // everything else in the API is never cached
   if (req.mode === "navigate" || /^\/(_next\/static|avatar|icons|maps)\//.test(url.pathname) || /\.(webmanifest|css|js|woff2?)$/.test(url.pathname)) return e.respondWith(staleWhileRevalidate(req));
 });
+
+// ---- Notifications (spec 8.15): a short reminder that opens the right screen ----
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { /* plain text push */ }
+  e.waitUntil(self.registration.showNotification(data.title || "Professor Filipe", { body: data.body || "", tag: data.tag || "pf", icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", data: { url: data.url || "/inicio" } }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/inicio";
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) { if ("focus" in c) { await c.focus(); if ("navigate" in c) await c.navigate(url).catch(() => undefined); return; } }
+    await self.clients.openWindow(url);
+  })());
+});

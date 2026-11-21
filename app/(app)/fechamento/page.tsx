@@ -55,6 +55,7 @@ export default function ClosingPage() {
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("closing.summary")}</h2>
         <p className="whitespace-pre-line">{data.summary}</p>
+        <Link href="/conta" className="mt-1 block text-sm underline">{t("notify.closing")}</Link>
         <ShareCardButton text={data.summary} title={t("share.card.learned")} className="mt-2" />
         {noVoice && <p role="alert" className="text-sm text-muted">{t("study.error.malevoice")}</p>}
         <div><Button type="button" onClick={() => (speaking ? (stopSpeaking(), setSpeaking(false)) : void listen())}>{speaking ? t("closing.stop") : t("closing.listen")}</Button></div>

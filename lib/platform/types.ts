@@ -32,6 +32,8 @@ export interface PushNotifications {
   requestPermission(): Promise<PermissionState>;
   /** Web Push subscription (JSON string) or native token; null when unavailable. */
   getToken(): Promise<string | null>;
+  /** Web: subscribes this browser to Web Push with the app's public key and returns the subscription as JSON; native: not used (the token comes from the store SDK). */
+  subscribe?(applicationServerKey: string): Promise<string | null>;
 }
 
 export interface LocalStore {

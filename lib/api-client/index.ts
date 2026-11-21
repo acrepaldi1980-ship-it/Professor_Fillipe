@@ -391,3 +391,9 @@ export const getStreak = (ack = false) => apiJson<StreakData>(`/study/streak?tz=
 export interface ReferralStatus { code: string; pending: number; rewarded: number; days_earned: number; max_rewards: number; referred_by_pending: boolean; settled: { settled?: boolean; friend_days?: number; referrer_days?: number; days_needed?: number } }
 export const getReferral = () => apiJson<ReferralStatus>("/study/referral");
 export const claimReferral = (code: string) => apiJson<{ result: string }>("/study/referral/claim", { method: "POST", body: JSON.stringify({ code }) });
+
+// ---- Notifications (spec 8.15) ----
+export interface NotificationPrefs { enabled: boolean; hour: number; tz: string; lang: string; kinds: { review: boolean; path: boolean; lesson: boolean; trial: boolean }; devices: number; vapid_public_key: string | null }
+export const getNotificationPrefs = () => apiJson<NotificationPrefs>("/study/notifications");
+export const saveNotificationPrefs = (p: Partial<Pick<NotificationPrefs, "enabled" | "hour" | "tz" | "lang" | "kinds">>) => apiJson<{ ok: true }>("/study/notifications", { method: "PUT", body: JSON.stringify(p) });
+export const registerPushDevice = (subscription: unknown, platform: "web" | "ios" | "android" = "web") => apiJson<{ ok: true }>("/study/notifications/subscribe", { method: "POST", body: JSON.stringify({ subscription, platform }) });

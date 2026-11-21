@@ -56,6 +56,10 @@ async function setEnv(project) {
     ["ASAAS_ENV", envFile.ASAAS_ENV, "plain"],
     // optional ElevenLabs key (male voice "George") as a second server voice; add VOICE_API_KEY=... to .env.local to enable it
     ["VOICE_API_KEY", envFile.VOICE_API_KEY, "sensitive"],
+    // reminders (spec 8.15): Web Push keys and the secret the hourly sender must present (set once; kept in Vercel)
+    ["VAPID_PUBLIC_KEY", envFile.VAPID_PUBLIC_KEY, "plain"],
+    ["VAPID_PRIVATE_KEY", envFile.VAPID_PRIVATE_KEY, "sensitive"],
+    ["CRON_SECRET", envFile.CRON_SECRET, "sensitive"],
     ["TEACHER_LLM_PROVIDER", "groq", "plain"],
     ["TRANSFORMERS_CACHE_DIR", "/tmp/hf-cache", "plain"],
   ];

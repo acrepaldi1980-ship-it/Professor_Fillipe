@@ -9,12 +9,57 @@ import { Card } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
-import { deleteAccount, exportMyData, getLenses, getMe, getReferral, saveConsent, saveLensesApi, type MeResponse, type ReferralStatus } from "@/lib/api-client";
+import { deleteAccount, exportMyData, getLenses, getMe, getNotificationPrefs, getRecentSessions, getReferral, registerPushDevice, saveConsent, saveLensesApi, saveNotificationPrefs, type MeResponse, type NotificationPrefs, type ReferralStatus } from "@/lib/api-client";
 import Link from "next/link";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 import { applyPrefs, DEFAULT_PREFS, loadPrefs, savePrefs, type Prefs, type Theme } from "@/lib/prefs";
+
+function RemindersCard() {
+  const [p, setP] = useState<NotificationPrefs | null>(null);
+  const [eligible, setEligible] = useState(false); // spec 8.15: the permission is asked only after the first completed session
+  const [msg, setMsg] = useState<string | null>(null);
+  const push = getPlatform().push;
+  useEffect(() => {
+    void getNotificationPrefs().then(setP).catch(() => undefined);
+    void getRecentSessions(20).then((r) => setEligible(r.sessions.some((x) => !!x.ended_at))).catch(() => undefined);
+  }, []);
+  if (!p || !push.isSupported()) return null;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+  async function toggle(on: boolean) {
+    setMsg(null);
+    if (!on) { await saveNotificationPrefs({ enabled: false }); setP({ ...p!, enabled: false }); return; }
+    const perm = await push.requestPermission();
+    if (perm !== "granted") { setMsg(t("notify.denied")); return; }
+    const key = p!.vapid_public_key;
+    const sub = key ? await push.subscribe?.(key) : null;
+    if (!sub) { setMsg(t("notify.unavailable")); return; }
+    try { await registerPushDevice(JSON.parse(sub)); await saveNotificationPrefs({ enabled: true, tz }); setP({ ...p!, enabled: true, tz, devices: Math.max(1, p!.devices) }); setMsg(t("notify.on")); } catch { setMsg(t("notify.unavailable")); }
+  }
+  async function change(patch: Partial<NotificationPrefs>) { setP({ ...p!, ...patch }); await saveNotificationPrefs({ ...patch, tz }).catch(() => undefined); }
+  const kinds = ["review", "path", "lesson", "trial"] as const;
+  return (
+    <Card className="flex flex-col gap-2" data-testid="reminders-card">
+      <h2 className="text-lg">{t("notify.title")}</h2>
+      <p className="text-sm text-muted">{t("notify.help")}</p>
+      {!eligible && !p.enabled ? <p className="text-sm">{t("notify.after")}</p> : (
+        <>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={p.enabled} onChange={(e) => void toggle(e.target.checked)} />{t("notify.enable")}</label>
+          {p.enabled && (
+            <>
+              <label className="flex items-center gap-2 text-sm">{t("notify.hour")}
+                <select value={p.hour} onChange={(e) => void change({ hour: Number(e.target.value) })} className="min-h-9 rounded-control border border-line bg-bg px-2">{Array.from({ length: 15 }, (_, i) => 7 + i).map((h) => <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>)}</select></label>
+              <div role="group" aria-label={t("notify.kinds")} className="flex flex-col gap-1 text-sm">{kinds.map((k) => <label key={k} className="flex items-center gap-2"><input type="checkbox" checked={p.kinds[k]} onChange={(e) => void change({ kinds: { ...p.kinds, [k]: e.target.checked } })} />{t(`notify.kind.${k}` as "notify.kind.review")}</label>)}</div>
+              <p className="text-xs text-muted">{t("notify.rules")}</p>
+            </>
+          )}
+        </>
+      )}
+      {msg && <p role="status" className="text-sm">{msg}</p>}
+    </Card>
+  );
+}
 
 function ReferralCard() {
   const [r, setR] = useState<ReferralStatus | null>(null);
@@ -182,6 +227,7 @@ export default function AccountPage() {
         </Button>
       </Card>
 
+      <RemindersCard />
       <ReferralCard />
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("church.title")}</h2>

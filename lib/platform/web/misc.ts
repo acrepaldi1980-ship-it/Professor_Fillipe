@@ -12,7 +12,18 @@ export class WebPush implements PushNotifications {
     if (!this.isSupported() || Notification.permission !== "granted") return null;
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
-    return sub ? JSON.stringify(sub) : null; // subscribing (VAPID key) comes with Prompt 1.x notifications
+    return sub ? JSON.stringify(sub) : null;
+  }
+  async subscribe(applicationServerKey: string) {
+    if (!this.isSupported() || Notification.permission !== "granted") return null;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const pad = "=".repeat((4 - (applicationServerKey.length % 4)) % 4);
+      const raw = atob((applicationServerKey + pad).replace(/-/g, "+").replace(/_/g, "/"));
+      const key = Uint8Array.from(raw, (c) => c.charCodeAt(0));
+      const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }));
+      return JSON.stringify(sub);
+    } catch { return null; }
   }
 }
 

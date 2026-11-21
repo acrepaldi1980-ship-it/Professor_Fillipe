@@ -871,5 +871,20 @@
   "referral.message": "Estou estudando a Bíblia com o Professor Filipe, um professor de teologia por voz. Entre pelo meu link e estude com ele:",
   "referral.copied": "Link copiado.",
   "referral.status": "Amigos que já ganharam: {rewarded} · aguardando estudar: {pending} · dias ganhos: {days}",
-  "referral.settled": "Você e quem lhe indicou ganharam 7 dias de Premium. Bons estudos!"
+  "referral.settled": "Você e quem lhe indicou ganharam 7 dias de Premium. Bons estudos!",
+  "notify.title": "Lembretes",
+  "notify.help": "Um lembrete curto por dia, no horário que você escolher. Você decide quais quer receber e pode desligar quando quiser.",
+  "notify.after": "Os lembretes ficam disponíveis depois da sua primeira sessão concluída.",
+  "notify.enable": "Receber lembretes neste aparelho",
+  "notify.hour": "Horário preferido",
+  "notify.kinds": "Quais lembretes",
+  "notify.kind.review": "Revisão do dia",
+  "notify.kind.path": "Continuação da trilha",
+  "notify.kind.lesson": "Lição da semana da minha igreja",
+  "notify.kind.trial": "Teste do Premium acabando",
+  "notify.rules": "No máximo 1 por dia, nunca entre 22h e 7h.",
+  "notify.denied": "O navegador não permitiu os avisos. Você pode liberar nas configurações do navegador.",
+  "notify.unavailable": "Não consegui ligar os lembretes neste aparelho agora.",
+  "notify.on": "Lembretes ligados.",
+  "notify.closing": "Quer um lembrete diário de revisão? Ative em Conta."
 }
