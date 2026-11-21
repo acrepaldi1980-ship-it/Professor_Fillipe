@@ -10,7 +10,7 @@ import { Modal } from "@/components/ui/Modal";
 import { getBibleVerses, getEnvironment, listEnvironments, type EnvListItem } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { EnvironmentPackage } from "@/lib/immersive/package";
-import { getPackage } from "@/lib/immersive/registry";
+import { getPackage, PACKAGES } from "@/lib/immersive/registry";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
 const ImmersiveView = dynamic(() => import("@/components/immersive/ImmersiveView"), { ssr: false });
@@ -28,7 +28,7 @@ export default function ImmersivePage() {
   }, []);
   useEffect(() => {
     if (id === undefined) return;
-    if (!id) { void listEnvironments().then(setList).catch(() => setError(t("imm.notfound"))); return; }
+    if (!id) { void listEnvironments().then((l) => setList([...l, ...Object.values(PACKAGES).filter((c) => !l.some((e) => e.id === c.id)).map((c) => ({ id: c.id, title: c.title, era: c.era, size_bytes: 0, source: "code" as const }))])).catch(() => setError(t("imm.notfound"))); return; }
     const local = getPackage(id);
     if (local) { setPkg(local); return; }
     void getEnvironment(id).then((r) => { const p = EnvironmentPackage.safeParse(r.package); if (p.success) setPkg(p.data); else setError(t("imm.notfound")); }).catch(() => setError(t("imm.notfound")));

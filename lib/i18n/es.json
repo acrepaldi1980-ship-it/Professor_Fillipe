@@ -964,5 +964,8 @@
   "env.problem.bad_json": "archivo dañado",
   "env.problem.external_files": "depende de otros archivos (usa un .glb único)",
   "imm.vr": "Entrar en RV (gafas)",
-  "imm.vr.error": "No pude iniciar el modo RV en este dispositivo. Puedes seguir explorando en la pantalla."
+  "imm.vr.error": "No pude iniciar el modo RV en este dispositivo. Puedes seguir explorando en la pantalla.",
+  "home.imm": "Inmersión 3D",
+  "home.imm.desc": "Camina por lugares de la Biblia con el profesor, en la pantalla o con gafas de realidad virtual.",
+  "home.imm.go": "Entrar en la inmersión"
 }

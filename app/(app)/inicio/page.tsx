@@ -140,6 +140,11 @@ export default function HomePage() {
         {(() => { const cur = paths.find((x) => x.started && !x.completed); const p = cur ?? paths.find((x) => !x.started); return p ? (<><p className="text-muted">{p.title}{p.next_day && p.started ? ` · ${t("paths.day").replace("{n}", String(p.next_day.day))}: ${p.next_day.title}` : ""}</p><Link className="mt-1 inline-block underline" href={p.started && p.next_day ? `/estudo?trilha=${p.id}&dia=${p.next_day.day}` : `/trilhas?id=${p.id}`}>{p.started ? t("paths.continue") : t("paths.begin")}</Link>{" · "}<Link className="underline" href="/trilhas">{t("paths.all")}</Link></>) : <Link className="underline" href="/trilhas">{t("paths.all")}</Link>; })()}
       </Card>
       <Card>
+        <h2 className="text-lg">{t("home.imm")}</h2>
+        <p className="text-muted">{t("home.imm.desc")}</p>
+        <Link className="mt-1 inline-block underline" href="/imersao">{t("home.imm.go")}</Link>
+      </Card>
+      <Card>
         <h2 className="text-lg">{t("home.track")}</h2>
         <p className="text-muted">{p?.goals?.includes("academic") ? t("track.academic") : p?.goals?.some((g) => g === "teach" || g === "preach") ? t("track.teach") : p?.level === "iniciante" ? t("track.starting") : t("track.default")}</p>
       </Card>

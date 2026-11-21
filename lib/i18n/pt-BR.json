@@ -964,5 +964,8 @@
   "env.problem.bad_json": "arquivo corrompido",
   "env.problem.external_files": "depende de outros arquivos (use um .glb único)",
   "imm.vr": "Entrar em VR (óculos)",
-  "imm.vr.error": "Não consegui iniciar o modo VR neste aparelho. Você pode continuar explorando na tela."
+  "imm.vr.error": "Não consegui iniciar o modo VR neste aparelho. Você pode continuar explorando na tela.",
+  "home.imm": "Imersão 3D",
+  "home.imm.desc": "Caminhe por lugares da Bíblia com o professor, na tela ou com óculos de realidade virtual.",
+  "home.imm.go": "Entrar na imersão"
 }
