@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
 import { getMySubscription, getPlans, startCheckout, type MySubscription, type PlanInfo } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
+import { getPlatform } from "@/lib/platform";
 
 const brl = (n: number | string) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -43,7 +44,8 @@ export default function PlansPage() {
     setBusy(plan); setError(null);
     try {
       const r = await startCheckout(plan, cycle, method);
-      if (r.checkoutUrl.startsWith("/")) router.push(r.checkoutUrl); else window.location.href = r.checkoutUrl;
+      // the test checkout is a screen of the app; a real provider's page opens through the platform layer (web checkout now, store purchase later)
+      if (r.checkoutUrl.startsWith("/")) router.push(r.checkoutUrl); else await getPlatform().purchases.openCheckout(r.checkoutUrl);
     } catch (e) {
       const m = (e as Error).message;
       setError(m === "api_error_403" ? t("plans.minor") : t("consent.error"));
