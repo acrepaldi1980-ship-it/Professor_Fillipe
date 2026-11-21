@@ -326,9 +326,9 @@ export const startChurchCheckout = (churchId: string, cycle: "month" | "year", m
 // ---- Aprofundar avançado (Prompt 2.3) ----
 export interface MorphPt { pos: string; detail: string; text: string }
 export interface IlWord { ref: string; position: number; surface: string; lemma: string | null; strong: string | null; translit: string | null; gloss: string | null; morph: string | null; morphPt: MorphPt | null; lang: "grc" | "heb" }
-export const getInterlinear = (ref: string) => apiJson<{ ref: string; source: string; verses: { ref: string; words: IlWord[] }[] }>(`/bible/interlinear/${encodeURIComponent(ref)}`);
+export const getInterlinear = (ref: string) => apiJson<{ ref: string; source: string; verses: { ref: string; words: IlWord[] }[] }>(`/bible/study/interlinear/${encodeURIComponent(ref)}`);
 export interface WordStudyData { strong: string; lemma: string | null; lang: "grc" | "heb"; occurrences: number; senses: { gloss: string; n: number }[]; entries: { source: string; definition: string }[]; sample: { ref: string; surface: string; gloss: string | null }[]; versions: string[]; renderings: { ref: string; texts: Record<string, string | null> }[]; source: string }
-export const getWordStudy = (strong: string, versions?: string[]) => apiJson<WordStudyData>(`/bible/word/${encodeURIComponent(strong)}${versions?.length ? `?versions=${versions.join(",")}` : ""}`);
+export const getWordStudy = (strong: string, versions?: string[]) => apiJson<WordStudyData>(`/bible/study/word/${encodeURIComponent(strong)}${versions?.length ? `?versions=${versions.join(",")}` : ""}`);
 export interface CompareData { ref: string; versions: string[]; verses: { ref: string; base: { version: string; text: string }; others: { version: string; text: string | null; segments: { text: string; changed: boolean }[] | null }[] }[] }
-export const compareVersions = (ref: string, versions: string[]) => apiJson<CompareData>(`/bible/compare?ref=${encodeURIComponent(ref)}&versions=${versions.join(",")}`);
-export const explainVersions = (ref: string, versions: string[]) => apiJson<{ summary: string; points: { difference: string; reason: string }[]; source: string }>("/bible/compare/explain", { method: "POST", body: JSON.stringify({ ref, versions }) });
+export const compareVersions = (ref: string, versions: string[]) => apiJson<CompareData>(`/bible/study/compare?ref=${encodeURIComponent(ref)}&versions=${versions.join(",")}`);
+export const explainVersions = (ref: string, versions: string[]) => apiJson<{ summary: string; points: { difference: string; reason: string }[]; source: string }>("/bible/study/compare/explain", { method: "POST", body: JSON.stringify({ ref, versions }) });

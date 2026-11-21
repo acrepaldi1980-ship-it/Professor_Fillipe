@@ -3,7 +3,6 @@
 import { getVerses } from "@/lib/knowledge/search";
 import { getWordStudy } from "@/lib/knowledge/word-study";
 
-export const runtime = "nodejs";
 const DEFAULT_VERSIONS = ["por_blivre_2018", "eng_kjv", "eng_bsb"];
 
 export async function GET(req: Request, ctx: { params: Promise<{ strong: string }> }) {

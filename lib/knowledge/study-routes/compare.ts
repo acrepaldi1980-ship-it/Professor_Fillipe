@@ -2,7 +2,6 @@
 import { diffWords } from "@/lib/knowledge/diff";
 import { getVerses } from "@/lib/knowledge/search";
 
-export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   const u = new URL(req.url);

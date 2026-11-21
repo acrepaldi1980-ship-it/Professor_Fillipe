@@ -7,8 +7,6 @@ import { getInterlinear } from "@/lib/knowledge/word-study";
 import { getVerses } from "@/lib/knowledge/search";
 import { enforceRate, LIMITS } from "@/lib/security/rate-limit";
 
-export const runtime = "nodejs";
-export const maxDuration = 60;
 const body = z.object({ ref: z.string().regex(/^[A-Z0-9]{3}\.\d+\.\d+$/), versions: z.array(z.string().regex(/^[a-z]{3}_[a-z0-9_]+$/)).min(2).max(4) });
 const cache = new Map<string, unknown>();
 

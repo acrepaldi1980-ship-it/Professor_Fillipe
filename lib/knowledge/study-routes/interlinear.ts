@@ -1,7 +1,6 @@
-// GET /api/v1/bible/interlinear/:ref -> original words of the verse(s) with morphology in Portuguese, grouped by verse (spec 8.7.4 P1).
+// GET /api/v1/bible/study/interlinear/:ref -> original words of the verse(s) with morphology in Portuguese, grouped by verse (spec 8.7.4 P1).
 import { getInterlinear } from "@/lib/knowledge/word-study";
 
-export const runtime = "nodejs";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ ref: string }> }) {
   const { ref } = await ctx.params;
