@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
-import { getMySubscription, getPlans, startCheckout, type MySubscription, type PlanInfo } from "@/lib/api-client";
+import { getMe, getMySubscription, getPlans, startCheckout, type MySubscription, type PlanInfo } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 
@@ -34,10 +34,12 @@ export default function PlansPage() {
   const [method, setMethod] = useState<"pix" | "card" | "boleto">("pix");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [minor, setMinor] = useState(false);
 
   useEffect(() => {
     void getPlans().then((r) => setPlans(r.plans)).catch(() => undefined);
     void getMySubscription().then(setMine).catch(() => undefined);
+    void getMe().then((m) => setMinor(!!m.profile?.is_minor)).catch(() => undefined);
   }, []);
 
   async function choose(plan: "plus" | "premium") {
@@ -57,6 +59,7 @@ export default function PlansPage() {
     <main className="mx-auto flex max-w-3xl flex-col gap-4 p-4 pb-24">
       <h1 className="text-3xl">{t("plans.title")}</h1>
       <p className="text-muted">{t("plans.help")}</p>
+      {minor && <p role="note" data-testid="minor-note" className="rounded-control border border-line p-3">{t("plans.minor")}</p>}
       <div role="radiogroup" aria-label={t("plans.cycle.month")} className="flex gap-2">
         {(["month", "year"] as const).map((c) => <button key={c} type="button" role="radio" aria-checked={cycle === c} className={`min-h-11 flex-1 rounded-control border px-3 ${cycle === c ? "border-primary bg-primary text-primary-ink" : "border-line"}`} onClick={() => setCycle(c)}>{t(`plans.cycle.${c}`)}</button>)}
       </div>
@@ -74,7 +77,7 @@ export default function PlansPage() {
               <p className="text-2xl font-semibold">{p.id === "free" ? t("plans.free") : cycle === "year" && p.price_year ? t("plans.price.year").replace("{p}", brl(p.price_year)) : t("plans.price.month").replace("{p}", brl(p.price_month))}</p>
               {trial && <p className="rounded-control bg-surface px-2 py-1 text-sm">{t("plans.trial")}</p>}
               <ul className="flex flex-col gap-1 text-sm">{features(p).map((x) => <li key={x}>✓ {x}</li>)}</ul>
-              {current ? <p className="mt-auto text-sm text-muted">{t("plans.current")}</p> : p.id !== "free" && <Button type="button" className="mt-auto" disabled={busy !== null} onClick={() => void choose(p.id as "plus" | "premium")}>{trial ? t("plans.trial") : t("plans.choose")}</Button>}
+              {current ? <p className="mt-auto text-sm text-muted">{t("plans.current")}</p> : p.id !== "free" && <Button type="button" className="mt-auto" disabled={busy !== null || minor} onClick={() => void choose(p.id as "plus" | "premium")}>{trial ? t("plans.trial") : t("plans.choose")}</Button>}
               {trial && !current && <p className="text-xs text-muted">{t("plans.trial.note").replace("{p}", brl(p.price_month))}</p>}
             </Card>
           );

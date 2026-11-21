@@ -62,6 +62,12 @@ try {
   for (let i = 0; i < 7; i++) codes.push((await call("POST", "/feedback", { rating: 5 }, null)).status);
   say("rate limit: feedback by IP gets 429 after 5", codes.filter((s) => s === 429).length >= 1);
 
+  // minors cannot subscribe without a guardian (D-08)
+  await sql(`update profiles set is_minor = true where user_id='${uid}'`);
+  const mc = await call("POST", "/billing/checkout", { plan: "plus", cycle: "month", method: "pix" });
+  say("minor: checkout is refused with minor_needs_guardian", mc.status === 403 && mc.text.includes("minor_needs_guardian"));
+  await sql(`update profiles set is_minor = false where user_id='${uid}'`);
+
   // delete account: all personal rows go away
   const del = await call("DELETE", "/account", { confirm: "EXCLUIR" });
   const left = await sql(`select (select count(*) from profiles where user_id='${uid}')::int p, (select count(*) from sessions where user_id='${uid}')::int s, (select count(*) from consent_records where user_id='${uid}')::int c`);
