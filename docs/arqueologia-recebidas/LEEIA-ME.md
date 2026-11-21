@@ -18,3 +18,5 @@ Só a **12ª (Tel Dan, EXIF "Oren Rozen")** foi publicada: bate com a foto escol
 | 12 | Teatro romano visto do alto, com palco de madeira (Canon EOS 60D, 2014; sítio não identificado com certeza) | Boa resolução (2000 px); falta saber o sítio, o autor e a licença |
 | 13 | Bete-Seã (Citópolis) com o tell ao fundo (678 px) | Pequena e sem autor |
 | 14 | Cavernas de Qumran (1072x1620) | **É a peça que faltava**; boa resolução; falta o autor e a licença |
+| 15 | Ruínas do assentamento de Qumran (516 px) | Pequena e sem autor |
+| 16 | Ruínas de Qumran com o mar Morto ao fundo (900 px, aparenta ser de site de viagens) | Sem autor nem licença; provável direito reservado |
