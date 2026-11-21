@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MindMapView } from "@/components/review/MindMapView";
+import { ShareCardButton } from "@/components/share/ShareCardButton";
 import { Avatar } from "@/components/teacher/Avatar";
 import { SessionFeedback } from "@/components/teacher/SessionFeedback";
 import { Button } from "@/components/ui/Button";
@@ -54,6 +55,7 @@ export default function ClosingPage() {
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("closing.summary")}</h2>
         <p className="whitespace-pre-line">{data.summary}</p>
+        <ShareCardButton text={data.summary} title={t("share.card.learned")} className="mt-2" />
         {noVoice && <p role="alert" className="text-sm text-muted">{t("study.error.malevoice")}</p>}
         <div><Button type="button" onClick={() => (speaking ? (stopSpeaking(), setSpeaking(false)) : void listen())}>{speaking ? t("closing.stop") : t("closing.listen")}</Button></div>
       </Card>

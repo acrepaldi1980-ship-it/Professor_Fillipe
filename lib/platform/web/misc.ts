@@ -64,11 +64,17 @@ export class WebShare implements Share {
   canShare() {
     return typeof navigator !== "undefined" && (!!navigator.share || !!navigator.clipboard);
   }
-  async share(data: { title?: string; text?: string; url?: string }) {
+  canShareFiles() {
+    if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare) return false;
+    try { return navigator.canShare({ files: [new File([""], "x.png", { type: "image/png" })] }); } catch { return false; }
+  }
+  async share(data: { title?: string; text?: string; url?: string; file?: { name: string; blob: Blob } }) {
     if (typeof navigator === "undefined") return "unavailable" as const;
     if (navigator.share) {
       try {
-        await navigator.share(data);
+        const { file, ...rest } = data;
+        const files = file && this.canShareFiles() ? [new File([file.blob], file.name, { type: file.blob.type || "image/png" })] : undefined;
+        await navigator.share(files ? { ...rest, files } : rest);
         return "shared" as const;
       } catch {
         return "unavailable" as const;

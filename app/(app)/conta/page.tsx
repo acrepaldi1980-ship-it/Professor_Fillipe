@@ -9,12 +9,34 @@ import { Card } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
-import { deleteAccount, exportMyData, getLenses, getMe, saveConsent, saveLensesApi, type MeResponse } from "@/lib/api-client";
+import { deleteAccount, exportMyData, getLenses, getMe, getReferral, saveConsent, saveLensesApi, type MeResponse, type ReferralStatus } from "@/lib/api-client";
 import Link from "next/link";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 import { applyPrefs, DEFAULT_PREFS, loadPrefs, savePrefs, type Prefs, type Theme } from "@/lib/prefs";
+
+function ReferralCard() {
+  const [r, setR] = useState<ReferralStatus | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => { void getReferral().then(setR).catch(() => undefined); }, []);
+  if (!r) return null;
+  const link = `${window.location.origin}/?ind=${r.code}`;
+  async function share() {
+    const out = await getPlatform().share.share({ title: t("app.name"), text: t("referral.message"), url: link });
+    setMsg(out === "copied" ? t("referral.copied") : null);
+  }
+  return (
+    <Card className="flex flex-col gap-2" data-testid="referral-card">
+      <h2 className="text-lg">{t("referral.title")}</h2>
+      <p className="text-sm text-muted">{t("referral.help")}</p>
+      <p className="text-sm">{t("referral.code")}: <strong data-testid="referral-code">{r.code}</strong></p>
+      <div><Button type="button" onClick={() => void share()}>{t("referral.share")}</Button></div>
+      <p className="text-xs text-muted">{t("referral.status").replace("{rewarded}", String(r.rewarded)).replace("{pending}", String(r.pending)).replace("{days}", String(r.days_earned))}</p>
+      {msg && <p role="status" className="text-sm">{msg}</p>}
+    </Card>
+  );
+}
 
 export default function AccountPage() {
   const router = useRouter();
@@ -160,6 +182,7 @@ export default function AccountPage() {
         </Button>
       </Card>
 
+      <ReferralCard />
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("church.title")}</h2>
         <Link href="/igreja" className="rounded-control border border-line p-3"><strong>{t("church.title")}</strong><span className="block text-sm text-muted">{t("church.help")}</span></Link>

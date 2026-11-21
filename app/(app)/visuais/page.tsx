@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { VisualPanel } from "@/components/visuals/VisualPanel";
+import { ShareCardButton } from "@/components/share/ShareCardButton";
 import { getBibleVerses, listVisuals, type CatalogModel } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
@@ -61,6 +62,7 @@ export default function VisualsPage() {
       {verse && (
         <Modal title={verse.title} onClose={() => setVerse(null)}>
           {verse.lines.map((l) => <p key={l.ref} className="mb-2 text-[17px]"><sup className="mr-1 text-muted">{l.ref.split(".").pop()}</sup>{l.text}</p>)}
+          <ShareCardButton text={verse.lines.map((l) => l.text).join(" ")} title={verse.title} credit={t("share.card.credit")} />
           <Button type="button" variant="ghost" onClick={() => setVerse(null)}>{t("study.verse.close")}</Button>
         </Modal>
       )}

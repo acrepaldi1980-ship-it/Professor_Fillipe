@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Nunito } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ReferralCapture } from "@/components/ReferralCapture";
 import { t } from "@/lib/i18n";
 
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", display: "swap" });
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR" className={`${nunito.variable} ${fraunces.variable}`}>
       <body className="antialiased">
+        <ReferralCapture />
         <Providers>{children}</Providers>
       </body>
     </html>

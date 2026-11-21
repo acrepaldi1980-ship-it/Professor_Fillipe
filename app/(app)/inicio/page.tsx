@@ -4,11 +4,13 @@
 // and the blocks that will fill in with later modules (continue, review), which invite the student while empty.
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { REFERRAL_KEY } from "@/components/ReferralCapture";
 import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, getStreak, listPaths, setLevel, type ChurchLesson, type MeResponse, type PathSummary, type SessionRow, type StreakData } from "@/lib/api-client";
+import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, claimReferral, getReferral, getStreak, listPaths, setLevel, type ChurchLesson, type MeResponse, type PathSummary, type SessionRow, type StreakData } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
+import { getPlatform } from "@/lib/platform";
 
 // Theme of the week: rotates through the year (no spending, just a gentle invitation).
 const THEMES = ["O Sermão do Monte", "A oração do Pai Nosso", "Os Salmos de louvor", "A vida de José", "O livro de Rute", "As parábolas do Reino", "A carta de Tiago", "Os milagres de Jesus", "A história de Daniel", "O fruto do Espírito", "A igreja em Atos", "Os profetas e a esperança"];
@@ -28,11 +30,22 @@ export default function HomePage() {
   const [lessons, setLessons] = useState<ChurchLesson[]>([]);
   const [streak, setStreak] = useState<StreakData | null>(null);
   const [paths, setPaths] = useState<PathSummary[]>([]);
+  const [refNotice, setRefNotice] = useState(false);
   useEffect(() => {
     void getMyLessons().then((r) => setLessons(r.lessons)).catch(() => undefined); // the lesson of the week published by the student's church
     void getMe().then(setMe);
     void getStreak(true).then(setStreak).catch(() => undefined);
     void listPaths().then((r) => setPaths(r.paths)).catch(() => undefined);
+    // arrived through a friend's link: record it once, then settle (both earn days after 2 study days)
+    void (async () => {
+      try {
+        const store = getPlatform().store;
+        const code = await store.get<string>(REFERRAL_KEY);
+        if (code) { await claimReferral(code).catch(() => undefined); await store.remove(REFERRAL_KEY); }
+        const r = await getReferral();
+        if (r.settled?.settled) setRefNotice(true);
+      } catch { /* the home works without it */ }
+    })();
     void getDueCards(1).then((r) => setDue(r.total)).catch(() => undefined);
     void getRecentSessions(1).then((r) => setLast(r.sessions[0] ?? null)).catch(() => undefined);
     void getLevel().then((l) => {
@@ -53,6 +66,7 @@ export default function HomePage() {
       {streak && streak.current >= 2 && (
         <p className="text-sm text-muted" data-testid="streak">{t(streak.studied_today ? "streak.today" : "streak.alive").replace("{n}", String(streak.current))}{streak.new_milestones.length > 0 ? ` ${t("streak.milestone").replace("{n}", streak.new_milestones.find((m) => m.startsWith("streak_"))?.slice(7) ?? "")}` : ""}</p>
       )}
+      {refNotice && <p role="status" className="rounded-control border border-primary bg-surface p-3 text-sm">{t("referral.settled")}</p>}
       <Link href="/estudo" className="inline-flex min-h-14 items-center justify-center rounded-control bg-primary px-6 text-lg font-semibold text-primary-ink">
         {t("home.start")}
       </Link>

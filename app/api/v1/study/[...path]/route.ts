@@ -8,6 +8,7 @@ import { POST as explain } from "@/lib/knowledge/study-routes/explain";
 import { GET as interlinear } from "@/lib/knowledge/study-routes/interlinear";
 import { GET as word } from "@/lib/knowledge/study-routes/word";
 import { pathsGet, pathsPost, streakGet } from "@/lib/engagement/handler";
+import { referralClaim, referralGet } from "@/lib/engagement/referral";
 import { analyze, listOrGet, remove } from "@/lib/rehearsal/handler";
 
 export const runtime = "nodejs";
@@ -24,6 +25,7 @@ export async function GET(req: Request, ctx: Ctx) {
   if (kind === "rehearsals" && !arg) return listOrGet(req);
   if (kind === "paths") return pathsGet(req, arg);
   if (kind === "streak" && !arg) return streakGet(req);
+  if (kind === "referral" && !arg) return referralGet(req);
   return notFound();
 }
 
@@ -31,6 +33,7 @@ export async function POST(req: Request, ctx: Ctx) {
   const p = (await ctx.params).path;
   if (p[0] === "compare" && p[1] === "explain") return explain(req);
   if (p[0] === "rehearsals" && !p[1]) return analyze(req);
+  if (p[0] === "referral" && p[1] === "claim") return referralClaim(req);
   if (p[0] === "paths" && (p[1] === "start" || p[1] === "day")) return pathsPost(req, p[1]);
   return notFound();
 }

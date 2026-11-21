@@ -386,3 +386,8 @@ export const getPathDetail = (id: string) => apiJson<PathDetail>(`/study/paths/$
 export const startPath = (pathId: string) => apiJson<{ ok: true }>("/study/paths/start", { method: "POST", body: JSON.stringify({ pathId }) });
 export const completePathDay = (pathId: string, day: number) => apiJson<{ ok: true; done: number; total: number; completed: boolean; milestone: string | null }>("/study/paths/day", { method: "POST", body: JSON.stringify({ pathId, day }) });
 export const getStreak = (ack = false) => apiJson<StreakData>(`/study/streak?tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo")}${ack ? "&ack=1" : ""}`);
+
+// ---- Referral (Prompt 2.7) ----
+export interface ReferralStatus { code: string; pending: number; rewarded: number; days_earned: number; max_rewards: number; referred_by_pending: boolean; settled: { settled?: boolean; friend_days?: number; referrer_days?: number; days_needed?: number } }
+export const getReferral = () => apiJson<ReferralStatus>("/study/referral");
+export const claimReferral = (code: string) => apiJson<{ result: string }>("/study/referral/claim", { method: "POST", body: JSON.stringify({ code }) });

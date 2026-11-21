@@ -7,6 +7,7 @@ import type { AvatarState } from "@/components/teacher/Avatar";
 import { AvatarArt } from "@/components/teacher/AvatarArt";
 import { DeepPanel } from "@/components/modes/DeepPanel";
 import { DocPanel } from "@/components/modes/DocPanel";
+import { ShareCardButton } from "@/components/share/ShareCardButton";
 import { SermonPanel } from "@/components/modes/SermonPanel";
 import { VisualPanel } from "@/components/visuals/VisualPanel";
 import { Bubble } from "@/components/ui/Bubble";
@@ -344,6 +345,7 @@ export default function StudyPage() {
           {verse.lines.map((l) => (
             <p key={l.ref} className="mb-2 text-[17px]"><sup className="mr-1 text-muted">{l.ref.split(".").pop()}</sup>{l.text}</p>
           ))}
+          <ShareCardButton text={verse.lines.map((l) => l.text).join(" ")} title={verse.title} credit={t("share.card.credit")} className="mt-2" />
           {verse.ref && <Button type="button" variant="ghost" onClick={() => void addBookmark(verse.ref!, MAIN_VERSION).then(() => setMarked(true)).catch(() => undefined)} className="mt-2">{marked ? t("bookmark.done") : t("bookmark.add")}</Button>}
           <Button type="button" variant="ghost" onClick={() => setVerse(null)} className="mt-2">{t("study.verse.close")}</Button>
         </Modal>

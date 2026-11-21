@@ -55,3 +55,28 @@ describe("guided paths", () => {
     expect(layerTrail({})).toBe("");
   });
 });
+
+import { fitFont, wrapLines } from "@/lib/share/card";
+describe("share card text layout", () => {
+  const measure = (s: string) => s.length * 10; // 10 px per character
+  it("wraps words into lines that fit", () => {
+    expect(wrapLines("um dois tres quatro cinco", 90, measure)).toEqual(["um dois", "tres", "quatro", "cinco"]);
+    expect(wrapLines("", 90, measure)).toEqual([]);
+  });
+  it("keeps a word longer than the width on its own line instead of looping", () => {
+    expect(wrapLines("supercalifragilistico ok", 50, measure)).toEqual(["supercalifragilistico", "ok"]);
+  });
+  it("picks the largest font that fits and shrinks for long texts", () => {
+    const m = (size: number, s: string) => s.length * size * 0.5;
+    const short = fitFont("Deus é amor", 900, 600, m);
+    const long = fitFont("palavra ".repeat(120), 900, 600, m);
+    expect(short.size).toBe(64);
+    expect(long.size).toBeLessThan(64);
+  });
+  it("cuts a text that cannot fit even at the smallest size, with an ellipsis", () => {
+    const m = (size: number, s: string) => s.length * size * 0.5;
+    const r = fitFont("palavra ".repeat(600), 900, 300, m);
+    expect(r.size).toBe(28);
+    expect(r.lines[r.lines.length - 1].endsWith("…")).toBe(true);
+  });
+});

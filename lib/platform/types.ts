@@ -42,7 +42,9 @@ export interface LocalStore {
 
 export interface Share {
   canShare(): boolean;
-  share(data: { title?: string; text?: string; url?: string }): Promise<"shared" | "copied" | "unavailable">;
+  /** `file`: an image to share with the text (WhatsApp, Instagram); where the device cannot share files, only the text and link go. */
+  share(data: { title?: string; text?: string; url?: string; file?: { name: string; blob: Blob } }): Promise<"shared" | "copied" | "unavailable">;
+  canShareFiles?(): boolean;
 }
 
 export interface Files {
