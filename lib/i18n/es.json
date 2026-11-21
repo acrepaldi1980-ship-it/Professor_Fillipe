@@ -891,5 +891,22 @@
   "lang.help": "El idioma de la interfaz y de las respuestas del profesor.",
   "lang.pt-BR": "Português (Brasil)",
   "lang.es": "Español",
-  "lang.note.es": "En español: la interfaz y el profesor. Las rutas, los mapas y los modelos 3D siguen en portugués por ahora."
+  "lang.note.es": "En español: la interfaz y el profesor. Las rutas, los mapas y los modelos 3D siguen en portugués por ahora.",
+  "imm.enter": "Entrar al ambiente",
+  "imm.help.touch": "Arrastra el círculo para caminar y el lado derecho de la pantalla para mirar alrededor. Toca los puntos que aparecen para saber más.",
+  "imm.help.desktop": "Usa W A S D o las flechas para caminar y el ratón para mirar (haz clic en la escena). Presiona E para abrir el punto de interés.",
+  "imm.keys": "Ambiente inmersivo: W A S D para caminar, ratón para mirar, E para abrir un punto",
+  "imm.joystick": "Control direccional para caminar",
+  "imm.see": "Ver: {label}",
+  "imm.sheet": "Ficha histórica",
+  "imm.sources": "Fuentes",
+  "imm.mute": "Silenciar",
+  "imm.unmute": "Activar sonido",
+  "imm.tour": "Recorrido guiado",
+  "imm.tour.start": "Empezar el recorrido",
+  "imm.next": "Siguiente estación",
+  "imm.prev": "Anterior",
+  "imm.listen": "Escuchar",
+  "imm.notfound": "Ambiente no encontrado.",
+  "imm.nowebgl": "Este dispositivo o navegador no puede mostrar ambientes en 3D."
 }

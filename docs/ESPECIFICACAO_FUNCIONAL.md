@@ -853,7 +853,7 @@ Rota `/admin`, só para o papel `admin` (e `reviewer` nas telas de revisão).
 - Primeiro ambiente: Tabernáculo (Êxodo 25–40). Fila: Jerusalém e o Templo de Herodes (séc. I), Mar da Galileia e Cafarnaum, travessia do Mar Vermelho, Pentecostes, Atenas no tempo de Paulo.
 - Desempenho: ≥ 30 quadros por segundo em Android intermediário; carregamento por zonas.
 - Realidade virtual: teletransporte e rotação em passos para conforto.
-- Tecnologia: definida no prompt 3.1 **[DECISÃO D-11]**.
+- Tecnologia: **React Three Fiber, decidida em 21/11/2026 (D-11)**, no mesmo app do PWA e do Capacitor. Motor base e formato do pacote de ambiente: `lib/immersive` e `components/immersive` (o primeiro ambiente real, o Tabernáculo, vem no prompt 3.2).
 - O guia é o **mesmo personagem do avatar** (8.17), em versão 3D com os mesmos traços, roupas e cores.
 
 ### 8.17 M17 — Avatar do Professor Filipe (P0 2D, P1 completo, P2 3D)
@@ -1521,7 +1521,7 @@ Acolhedora e moderna, legível para todas as idades. Três propostas de identida
 | D-08 | Regras para menores de 13 a 17 anos | **Decidida:** ciência do responsável (caixa obrigatória); sem assinatura sem responsável | Prompt 1.1 |
 | D-09 | Fornecedor de embeddings | Multilíngue, com bom desempenho em português | Prompt 0.1 |
 | D-10 | Compra dentro dos apps das lojas | Pesquisar regras atuais no Brasil | Prompt 2.5 |
-| D-11 | Tecnologia da imersão 3D | Web (React Three Fiber/WebGPU) ou nativa (Unity/Unreal) | Prompt 3.1 |
+| D-11 | Tecnologia da imersão 3D | **Decidida em 21/11/2026:** Web, com React Three Fiber (WebGL, e WebGPU quando houver suporte), no mesmo app do PWA e do Capacitor | Prompt 3.1 |
 | D-12 | Encarregado de dados (DPO) | Nome e contato | Antes do beta |
 | D-13 | Identidade visual | Três propostas no prompt 1.1 | Prompt 1.1 |
 | D-14 | Nome final do app e do professor | "Professor Filipe" provisório; verificar marca no INPI | Antes do beta |

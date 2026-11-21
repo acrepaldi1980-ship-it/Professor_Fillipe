@@ -15,3 +15,6 @@ Só a **12ª (Tel Dan, EXIF "Oren Rozen")** foi publicada: bate com a foto escol
 | 09 | Pedra de Pilatos (511 px) | Média; falta autor e licença |
 | 10 | Pedra de Pilatos, fundo preto (1080 px) | Boa; falta autor e licença (pode ser foto de museu) |
 | 11 | Cartaz "Estela de Tel Dã" com texto | Não serve: arte com texto de terceiros |
+| 12 | Teatro romano visto do alto, com palco de madeira (Canon EOS 60D, 2014; sítio não identificado com certeza) | Boa resolução (2000 px); falta saber o sítio, o autor e a licença |
+| 13 | Bete-Seã (Citópolis) com o tell ao fundo (678 px) | Pequena e sem autor |
+| 14 | Cavernas de Qumran (1072x1620) | **É a peça que faltava**; boa resolução; falta o autor e a licença |

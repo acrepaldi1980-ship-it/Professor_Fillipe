@@ -98,11 +98,24 @@ export interface Speech {
   voices(): Promise<{ name: string; lang: string }[]>;
 }
 
+/** Ambient and spatial sound of an immersive environment (spec 8.16): wind, camp, a fire that gets louder as you walk toward it. */
+export interface AmbienceLayer { id: string; kind: "ambient" | "spatial"; layer: "wind" | "camp" | "fire" | "murmur"; volume: number; at?: [number, number, number]; radius?: number }
+export interface Ambience {
+  isSupported(): boolean;
+  /** Starts the layers. Must be called from a user gesture (browsers block audio otherwise). */
+  start(layers: AmbienceLayer[]): Promise<void>;
+  /** The visitor's position and the way they face; spatial sounds follow. */
+  setListener(pos: [number, number, number], yaw: number): void;
+  setMuted(muted: boolean): void;
+  stop(): void;
+}
+
 export interface Platform {
   name: PlatformName;
   microphone: Microphone;
   audioPlayer: AudioPlayer;
   speech: Speech;
+  ambience: Ambience;
   push: PushNotifications;
   store: LocalStore;
   share: Share;
