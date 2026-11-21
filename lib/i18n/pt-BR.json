@@ -355,6 +355,7 @@
   "research.working": "Pesquisando e montando o documento: etapa {n} de {total} ({what})...",
   "research.done": "Documento pronto. Para mudar algo, diga na conversa (por exemplo: refaça a introdução) ou use Pedir mudança.",
   "research.failed": "Não consegui montar: {what}.",
+  "research.busy": "O serviço de IA está sobrecarregado agora e não consegui montar o documento. Tente de novo em alguns minutos; o que já foi escrito fica salvo.",
   "research.retry": "Tentar de novo",
   "research.start": "Pesquisar e montar o documento",
   "research.change": "Pedir mudança",

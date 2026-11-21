@@ -33,6 +33,7 @@ try {
     });
   }, { key: `sb-${REF}-auth-token`, value: JSON.stringify(data.session) });
 
+  if (!process.env.ONLY || process.env.ONLY === "deep") {
   // deep study: one passage, one click, the whole study is delivered
   await p.goto(`${BASE}/modos?m=deep`, { waitUntil: "networkidle" });
   await p.fill("input", "Atos 8:26-40");
@@ -45,7 +46,8 @@ try {
   const sid = (await sql(`select id from sessions where user_id='${id}' and mode='deep' order by created_at desc limit 1`))[0].id;
   const deep = (await sql(`select data from deep_studies where session_id='${sid}'`))[0]?.data ?? {};
   say("deep: every key word comes from the original-language data (Strong number present)", (deep.keywords ?? []).length >= 3 && deep.keywords.every((k) => !!k.strong));
-  say("deep: references are real Bible references and the bibliography lists library works", (deep.crossrefs ?? []).every((r) => /^[0-9A-Z]{3}\.\d+\.\d+$/.test(r)) && Array.isArray(deep.bibliography));
+  say("deep: references are real Bible references and the bibliography lists library works", (deep.crossrefs ?? []).length > 0 && (deep.crossrefs ?? []).every((r) => /^[0-9A-Z]{3}\.\d+\.\d+(-[0-9A-Z]{3}\.\d+\.\d+)?$/.test(r)) && (deep.bibliography ?? []).length > 0);
+  if (!(deep.crossrefs ?? []).length || !(deep.bibliography ?? []).length) console.log("   deep crossrefs/bibliography:", JSON.stringify(deep.crossrefs), JSON.stringify(deep.bibliography));
   // a change asked in the conversation
   const before = deep.overview;
   await p.fill("input[placeholder]", "Mude o resumo para ficar mais simples, para adolescentes");
@@ -62,15 +64,18 @@ try {
   }, sid);
   say("deep: the study exports as a PDF", pdf.status === 200 && pdf.head === "%PDF-" && pdf.size > 2500);
 
+  }
   // lesson and sermon: same behavior
-  for (const [mode, fill, want, label] of [["lesson", async () => { await p.fill("input >> nth=0", "Filipe e o eunuco etíope"); await p.fill("input >> nth=1", "Atos 8:26-40"); }, ["Objetivo", "Quebra-gelo", "Pontos principais", "Perguntas de discussão", "Aplicação"], "Refaça o quebra-gelo com algo mais divertido"], ["sermon", async () => { await p.fill("input", "Atos 8:26-40"); }, ["Ideia central", "Introdução", "Divisões", "Conclusão", "Apelo"], "Refaça a conclusão com mais emoção"]]) {
+  for (const [mode, fill, want, label] of ([["lesson", async () => { await p.fill("input >> nth=0", "Filipe e o eunuco etíope"); await p.fill("input >> nth=1", "Atos 8:26-40"); }, ["Objetivo", "Quebra-gelo", "Pontos principais", "Perguntas de discussão", "Aplicação"], "Refaça o quebra-gelo com algo mais divertido"], ["sermon", async () => { await p.fill("input", "Atos 8:26-40"); }, ["Ideia central", "Introdução", "Divisões", "Conclusão", "Apelo"], "Refaça a conclusão com mais emoção"]]).filter(([m]) => !process.env.ONLY || process.env.ONLY === m)) {
     await p.goto(`${BASE}/modos?m=${mode}`, { waitUntil: "networkidle" });
     await fill();
     await p.click("button[type=submit]");
     await p.waitForSelector("[data-testid=research-bar]", { timeout: 30000 });
     await p.waitForSelector("text=Documento pronto", { timeout: 240000 }).catch(() => {});
     const h3 = (await p.locator("aside h3").allTextContents()).join("|");
-    say(`${mode}: the document is delivered complete with progress and no manual step`, want.every((w) => h3.includes(w)) && (await p.locator("text=Nada faltando").count()) > 0);
+    const complete = want.every((w) => h3.includes(w)) && (await p.locator("text=Nada faltando").count()) > 0;
+    if (!complete) console.log("   remaining:", (await p.locator("aside section:has(h3:text('O que ainda falta')) li").allTextContents()).join(" | "), "| headings:", h3);
+    say(`${mode}: the document is delivered complete with progress and no manual step`, complete);
     const sess = (await sql(`select id from sessions where user_id='${id}' and mode='${mode}' order by created_at desc limit 1`))[0].id;
     const tb = mode === "lesson" ? "lesson_plans" : "sermon_outlines";
     const doc1 = JSON.stringify((await sql(`select data from ${tb} where session_id='${sess}'`))[0].data);

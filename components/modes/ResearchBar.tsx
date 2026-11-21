@@ -25,6 +25,7 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
   const [current, setCurrent] = useState("");
   const [failed, setFailed] = useState<string[]>([]);
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [section, setSection] = useState(CHANGEABLE[mode][0].key);
   const [instruction, setInstruction] = useState("");
   const [changing, setChanging] = useState(false);
@@ -34,12 +35,13 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
 
   const run = useCallback(async () => {
-    setRunning(true); setDone(false); setFailed([]);
+    setRunning(true); setDone(false); setFailed([]); setBusy(false);
     const bad: string[] = [];
     try {
       let keys = (await getSessionDocument(sessionId)).gapKeys ?? [];
       const tried = new Set<string>();
       let n = 0;
+      let streak = 0; // consecutive failures: the AI service is overloaded or out of quota, stop instead of waiting for every step
       setTotal(keys.length + (mode === "sermon" ? 2 : 0));
       for (let guard = 0; guard < 24; guard++) {
         const next = keys.find((k) => !tried.has(k));
@@ -49,8 +51,11 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
         setCurrent(next); setStep(n);
         try {
           const out = await suggestDocumentSection(sessionId, next);
-          keys = out.gapKeys; onUpdate(out);
-        } catch { bad.push(next); }
+          keys = out.gapKeys; onUpdate(out); streak = 0;
+        } catch {
+          bad.push(next);
+          if (++streak >= 2) { setBusy(true); break; }
+        }
         n++;
       }
       // a sermon outline has three divisions
@@ -93,7 +98,7 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
       {!running && done && failed.length === 0 && <p role="status" className="rounded-control border border-line bg-bg p-2 text-sm">{t("research.done")}</p>}
       {!running && failed.length > 0 && (
         <div role="alert" className="rounded-control border border-line bg-bg p-2 text-sm">
-          <p>{t("research.failed").replace("{what}", [...new Set(failed.map(stepName))].join(", "))}</p>
+          <p>{busy ? t("research.busy") : t("research.failed").replace("{what}", [...new Set(failed.map(stepName))].join(", "))}</p>
           <Button type="button" variant="ghost" className="mt-1 text-sm" onClick={() => void run()}>{t("research.retry")}</Button>
         </div>
       )}
