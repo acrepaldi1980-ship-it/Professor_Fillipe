@@ -20,6 +20,110 @@
   }
  },
  {
+  "id": "mesha-stele",
+  "name": "Estela de Mesa",
+  "period": "Séc. IX a.C.",
+  "place": "Dibon, Moabe (Jordânia)",
+  "lat": 31.502,
+  "lng": 35.779,
+  "refs": [
+   "2KI.3.4"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Estela_de_Mesa",
+  "text": "Pedra de basalto em que Mesa, rei de Moabe, conta sua revolta contra Israel e cita o nome do Senhor e a casa de Onri. Ajuda a entender o contexto de 2 Reis 3. Está no Louvre.",
+  "image": "/arqueologia/mesha-stele.jpg",
+  "credit": {
+   "title": "F4171 Louvre stele de Mesha AO5066 rwk.jpg",
+   "author": "Mbzt",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:F4171_Louvre_stele_de_Mesha_AO5066_rwk.jpg"
+  }
+ },
+ {
+  "id": "isaiah-scroll",
+  "name": "Grande Rolo de Isaías",
+  "period": "Séc. II a.C.",
+  "place": "Qumran, deserto da Judeia",
+  "lat": 31.741,
+  "lng": 35.459,
+  "refs": [
+   "ISA.53.1",
+   "ISA.40.3"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Grande_Rolo_de_Isa%C3%ADas",
+  "text": "Rolo de pergaminho com o livro de Isaías quase completo, achado em 1947 numa caverna perto do mar Morto. É mais de mil anos mais antigo que os manuscritos hebraicos que se conheciam antes, e o texto é muito próximo do que lemos hoje.",
+  "image": "/arqueologia/isaiah-scroll.jpg",
+  "credit": {
+   "title": "Great Isaiah Scroll Ch53.jpg",
+   "author": "Photography by Ardon Bar Hama (see [2], author of original document is unknown.",
+   "license": "Public domain",
+   "page": "https://commons.wikimedia.org/wiki/File:Great_Isaiah_Scroll_Ch53.jpg"
+  }
+ },
+ {
+  "id": "cyrus-cylinder",
+  "name": "Cilindro de Ciro",
+  "period": "539 a.C.",
+  "place": "Babilônia",
+  "lat": 32.536,
+  "lng": 44.421,
+  "refs": [
+   "EZR.1.1",
+   "ISA.45.1"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Cilindro_de_Ciro",
+  "text": "Cilindro de argila em escrita cuneiforme em que Ciro, o rei persa, conta que deixou povos deportados voltarem às suas terras e reconstruírem seus templos. Combina com a política descrita em Esdras 1. Está no Museu Britânico.",
+  "image": "/arqueologia/cyrus-cylinder.jpg",
+  "credit": {
+   "title": "Cyrus Cylinder 2.jpg",
+   "author": "Photograph by Mike Peel (www.mikepeel.net).",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Cyrus_Cylinder_2.jpg"
+  }
+ },
+ {
+  "id": "pilate-stone",
+  "name": "Pedra de Pilatos",
+  "period": "Séc. I d.C.",
+  "place": "Cesareia Marítima",
+  "lat": 32.5,
+  "lng": 34.892,
+  "refs": [
+   "LUK.3.1",
+   "MAT.27.2"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Pedra_de_Pilatos",
+  "text": "Bloco de calcário encontrado em 1961 com o nome de Pôncio Pilatos e o título de prefeito da Judeia. É uma prova direta, fora dos Evangelhos, de que ele existiu e governou.",
+  "image": "/arqueologia/pilate-stone.jpg",
+  "credit": {
+   "title": "Holy Land 2016 P0231 Caesarea Maritima Pilate stone.jpg",
+   "author": "Fallaner",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Holy_Land_2016_P0231_Caesarea_Maritima_Pilate_stone.jpg"
+  }
+ },
+ {
+  "id": "hezekiah-tunnel",
+  "name": "Túnel de Ezequias",
+  "period": "Cerca de 700 a.C.",
+  "place": "Jerusalém",
+  "lat": 31.7,
+  "lng": 35.2,
+  "refs": [
+   "2KI.20.20",
+   "2CH.32.30"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/T%C3%BAnel_de_Ezequias",
+  "text": "Canal de cerca de 533 metros escavado na rocha para levar a água da fonte de Giom para dentro da cidade antes do cerco assírio. Dá para andar por ele hoje.",
+  "image": "/arqueologia/hezekiah-tunnel.jpg",
+  "credit": {
+   "title": "Hezekiah's Tunnel enlightened.jpg",
+   "author": "Davidbena",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Hezekiah%27s_Tunnel_enlightened.jpg"
+  }
+ },
+ {
   "id": "jericho",
   "name": "Tell es-Sultan (Jericó antiga)",
   "period": "Muitas camadas, de 9000 a.C. em diante",
