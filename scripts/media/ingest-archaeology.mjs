@@ -10,6 +10,9 @@ const DIR = "public/arqueologia";
 const OUT = "lib/archaeology/items.json";
 const MANIFEST = JSON.parse(readFileSync("lib/archaeology/manifest.json", "utf8"));
 const OK = /^(public domain|pd|cc0|cc by(-sa)? [0-9.]+)/i;
+const RECEIVED = existsSync("lib/archaeology/received.json") ? JSON.parse(readFileSync("lib/archaeology/received.json", "utf8")) : {};
+// the credit is the one of the Commons file the photo matches (received.json), else the chosen photo of the piece
+const creditFor = (id) => { const m = MANIFEST.find((x) => x.id === id); if (!m) return null; const want = RECEIVED[id]; if (!want) return m.best; return [m.best, ...(m.alternatives ?? [])].find((c) => c?.title === want) ?? null; };
 const files = existsSync(DIR) ? readdirSync(DIR) : [];
 const textOf = (it) => { const r = { ...it }; delete r.q; delete r.pick; return r; };
 
@@ -17,7 +20,7 @@ const out = [];
 for (const it of ITEMS) {
   const src = files.find((f) => f.replace(/\.[^.]+$/, "") === it.id);
   if (!src) continue;
-  const best = MANIFEST.find((m) => m.id === it.id)?.best;
+  const best = creditFor(it.id);
   if (!best || !OK.test(best.license) || /nc|nd/i.test(best.license.replace(/cc by-sa|cc by/i, ""))) { console.log("SKIP (no allowed license on record):", it.id); continue; }
   const dest = `${DIR}/${it.id}.jpg`;
   const tmp = `${DIR}/.tmp-${it.id}.jpg`;

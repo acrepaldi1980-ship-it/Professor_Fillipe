@@ -18,5 +18,151 @@
    "license": "CC BY-SA 4.0",
    "page": "https://commons.wikimedia.org/wiki/File:JRSLM_300116_Tel_Dan_Stele_01.jpg"
   }
+ },
+ {
+  "id": "jericho",
+  "name": "Tell es-Sultan (Jericó antiga)",
+  "period": "Muitas camadas, de 9000 a.C. em diante",
+  "place": "Jericó",
+  "lat": 31.871,
+  "lng": 35.444,
+  "refs": [
+   "JOS.6.20"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Tell_es-Sultan",
+  "note": "A data da queda das muralhas e a sua relação com Josué são muito debatidas.",
+  "text": "Montículo de ruínas empilhadas por milhares de anos. Tem uma das torres de pedra mais antigas do mundo. A relação das camadas de muralha com a queda de Josué 6 é debatida entre arqueólogos.",
+  "image": "/arqueologia/jericho.jpg",
+  "credit": {
+   "title": "Cable and Ancient Jericho - panoramio.jpg",
+   "author": "Mujaddara",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Cable_and_Ancient_Jericho_-_panoramio.jpg"
+  }
+ },
+ {
+  "id": "megiddo",
+  "name": "Megiddo",
+  "period": "Camadas do séc. X a.C. em diante",
+  "place": "Vale de Jezreel",
+  "lat": 32.585,
+  "lng": 35.185,
+  "refs": [
+   "1KI.9.15",
+   "REV.16.16"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Megido",
+  "note": "A atribuição das construções a Salomão é debatida (cronologia alta ou baixa).",
+  "text": "Cidade fortificada que guardava a rota entre o Egito e a Mesopotâmia. Salomão a fortificou em 1 Reis 9, e o nome Armagedom, em Apocalipse 16, vem de \"monte de Megido\".",
+  "image": "/arqueologia/megiddo.jpg",
+  "credit": {
+   "title": "20191028 120303 Tel Megiddo Israel anagoria.JPG",
+   "author": "Anagoria",
+   "license": "CC BY 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:20191028_120303_Tel_Megiddo_Israel_anagoria.JPG"
+  }
+ },
+ {
+  "id": "hazor",
+  "name": "Hazor",
+  "period": "Séc. XIII-IX a.C.",
+  "place": "Alta Galileia",
+  "lat": 33.017,
+  "lng": 35.568,
+  "refs": [
+   "JOS.11.10",
+   "1KI.9.15"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Hazor",
+  "text": "A maior cidade de Canaã no segundo milênio a.C. Josué 11 a chama de \"cabeça de todos aqueles reinos\", e as escavações acharam um grande palácio e restos de incêndio.",
+  "image": "/arqueologia/hazor.jpg",
+  "credit": {
+   "title": "Zone M4 de Tel Hazor.jpg",
+   "author": "Imhotep tep",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:Zone_M4_de_Tel_Hazor.jpg"
+  }
+ },
+ {
+  "id": "ketef-hinnom",
+  "name": "Rolos de prata de Ketef Hinnom",
+  "period": "Séc. VII a.C.",
+  "place": "Jerusalém",
+  "lat": 31.766,
+  "lng": 35.225,
+  "refs": [
+   "NUM.6.24"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Rolos_de_Ketef_Hinom",
+  "text": "Dois pequenos rolos de prata, usados como amuleto, com a bênção sacerdotal de Números 6:24-26. É o trecho bíblico mais antigo que se conhece escrito em um objeto.",
+  "image": "/arqueologia/ketef-hinnom.jpg",
+  "credit": {
+   "title": "Ketef Hinnom KH2 Scroll.jpg",
+   "author": "Ketef Hinnom Silver Scrolls",
+   "license": "Public domain",
+   "page": "https://commons.wikimedia.org/wiki/File:Ketef_Hinnom_KH2_Scroll.jpg"
+  }
+ },
+ {
+  "id": "arch-titus",
+  "name": "Arco de Tito",
+  "period": "Cerca de 81 d.C.",
+  "place": "Roma, Itália",
+  "lat": 41.89,
+  "lng": 12.488,
+  "refs": [
+   "LUK.21.20",
+   "MAT.24.2"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Arco_de_Tito",
+  "text": "Arco romano com um relevo que mostra soldados carregando a menorá e outros objetos saqueados do Templo de Jerusalém, destruído no ano 70, como Jesus anunciou.",
+  "image": "/arqueologia/arch-titus.jpg",
+  "credit": {
+   "title": "Arch of Titus Menorah 22.jpg",
+   "author": "original file by Steerpike",
+   "license": "CC BY 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Arch_of_Titus_Menorah_22.jpg"
+  }
+ },
+ {
+  "id": "philippi",
+  "name": "Filipos",
+  "period": "Séc. I d.C.",
+  "place": "Macedônia, Grécia",
+  "lat": 41.013,
+  "lng": 24.286,
+  "refs": [
+   "ACT.16.12"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Filipos",
+  "text": "Colônia romana na estrada Via Egnatia, onde Paulo fundou a primeira igreja da Europa. Restam o fórum, o teatro e trechos da estrada.",
+  "image": "/arqueologia/philippi.jpg",
+  "credit": {
+   "title": "Archaeological site of Philippi BW 2017-10-05 13-04-47.jpg",
+   "author": "Berthold Werner",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Archaeological_site_of_Philippi_BW_2017-10-05_13-04-47.jpg"
+  }
+ },
+ {
+  "id": "herodium",
+  "name": "Herodium",
+  "period": "Cerca de 20 a.C.",
+  "place": "Perto de Belém",
+  "lat": 31.665,
+  "lng": 35.241,
+  "refs": [
+   "MAT.2.1",
+   "MAT.2.16"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Herodium",
+  "text": "Palácio-fortaleza em forma de cone construído por Herodes, o Grande, a poucos quilômetros de Belém. É o rei que, segundo Mateus 2, ouviu falar do nascimento de Jesus.",
+  "image": "/arqueologia/herodium.jpg",
+  "credit": {
+   "title": "The Herodium fortress remains (FL45944164).jpg",
+   "author": "IPPA photographer",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:The_Herodium_fortress_remains_(FL45944164).jpg"
+  }
  }
 ]
