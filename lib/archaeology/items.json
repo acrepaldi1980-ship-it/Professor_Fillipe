@@ -124,6 +124,68 @@
   }
  },
  {
+  "id": "ephesus-theatre",
+  "name": "Teatro de Éfeso",
+  "period": "Séc. I d.C.",
+  "place": "Éfeso, Turquia",
+  "lat": 37.941,
+  "lng": 27.341,
+  "refs": [
+   "ACT.19.29"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Teatro_de_%C3%89feso",
+  "text": "Teatro com lugar para cerca de 25 mil pessoas, onde a multidão se reuniu gritando contra Paulo na revolta dos ourives, em Atos 19.",
+  "image": "/arqueologia/ephesus-theatre.jpg",
+  "credit": {
+   "title": "Great Theatre of Ephesus 2024.jpg",
+   "author": "Furkan Akkurt",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Great_Theatre_of_Ephesus_2024.jpg"
+  }
+ },
+ {
+  "id": "capernaum-synagogue",
+  "name": "Sinagoga de Cafarnaum",
+  "period": "Séc. IV-V d.C., sobre base mais antiga",
+  "place": "Cafarnaum, Galileia",
+  "lat": 32.88,
+  "lng": 35.575,
+  "refs": [
+   "MRK.1.21",
+   "LUK.7.5"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Cafarnaum",
+  "note": "A sinagoga visível é posterior a Jesus; ela foi construída sobre uma estrutura de basalto mais antiga.",
+  "text": "Ruínas de uma sinagoga de calcário branco. Embaixo dela há muros de basalto preto, que muitos ligam à sinagoga do tempo de Jesus, onde ele ensinou em Marcos 1.",
+  "image": "/arqueologia/capernaum-synagogue.jpg",
+  "credit": {
+   "title": "Kafarnaum BW 20.jpg",
+   "author": "Berthold Werner",
+   "license": "Public domain",
+   "page": "https://commons.wikimedia.org/wiki/File:Kafarnaum_BW_20.jpg"
+  }
+ },
+ {
+  "id": "magdala-stone",
+  "name": "Pedra de Magdala",
+  "period": "Séc. I d.C.",
+  "place": "Magdala, Galileia",
+  "lat": 32.826,
+  "lng": 35.5,
+  "refs": [
+   "LUK.8.2"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Magdala",
+  "text": "Bloco de pedra decorado com uma menorá, achado numa sinagoga do século I em Magdala, a cidade de Maria Madalena. É uma das sinagogas mais antigas da Galileia.",
+  "image": "/arqueologia/magdala-stone.jpg",
+  "credit": {
+   "title": "140367 ancient synagogue in magdala PikiWiki Israel.jpg",
+   "author": "מיכל פריימן",
+   "license": "CC BY 2.5",
+   "page": "https://commons.wikimedia.org/wiki/File:140367_ancient_synagogue_in_magdala_PikiWiki_Israel.jpg"
+  }
+ },
+ {
   "id": "jericho",
   "name": "Tell es-Sultan (Jericó antiga)",
   "period": "Muitas camadas, de 9000 a.C. em diante",
@@ -267,6 +329,46 @@
    "author": "IPPA photographer",
    "license": "CC BY 4.0",
    "page": "https://commons.wikimedia.org/wiki/File:The_Herodium_fortress_remains_(FL45944164).jpg"
+  }
+ },
+ {
+  "id": "sepphoris",
+  "name": "Séforis",
+  "period": "Séc. I d.C.",
+  "place": "Galileia",
+  "lat": 32.753,
+  "lng": 35.279,
+  "refs": [
+   "MAT.13.55"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Seforis",
+  "text": "Cidade grande a poucos quilômetros de Nazaré, reconstruída no tempo de Jesus. Com teatro, ruas e mosaicos, mostra o mundo urbano que cercava a Galileia do Evangelho.",
+  "image": "/arqueologia/sepphoris.jpg",
+  "credit": {
+   "title": "Zippori.jpg",
+   "author": "Yael Alef",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Zippori.jpg"
+  }
+ },
+ {
+  "id": "beth-shean",
+  "name": "Bete-Seã",
+  "period": "Séc. XI a.C. e período romano",
+  "place": "Vale do Jordão",
+  "lat": 32.5,
+  "lng": 35.5,
+  "refs": [
+   "1SA.31.10"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Bete-Se%C3%A3",
+  "text": "Cidade antiga onde, em 1 Samuel 31, os filisteus penduraram o corpo de Saul. Hoje tem um grande parque arqueológico com teatro e ruas romanas.",
+  "image": "/arqueologia/beth-shean.jpg",
+  "credit": {
+   "title": "143802 mosaic beit shean national park PikiWiki Israel.jpg",
+   "author": "רחל וייסלר",
+   "license": "CC BY 2.5",
+   "page": "https://commons.wikimedia.org/wiki/File:143802_mosaic_beit_shean_national_park_PikiWiki_Israel.jpg"
   }
  }
 ]
