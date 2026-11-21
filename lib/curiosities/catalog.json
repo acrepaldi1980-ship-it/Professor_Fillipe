@@ -10,46 +10,58 @@
    "Estela de Tel Dan (Museu de Israel)",
    "2 Samuel 7"
   ],
-  "duration": 40.18,
+  "duration": 38.93,
   "sentences": [
    {
     "text": "Durante muito tempo, alguns estudiosos duvidavam de que o rei Davi tivesse existido.",
     "start": 0.6,
-    "end": 5.29
+    "end": 5.3
    },
    {
     "text": "Em 1993, escavadores em Tel Dan, no norte de Israel, acharam um fragmento de pedra negra com uma inscrição em aramaico.",
-    "start": 5.74,
-    "end": 13.7
+    "start": 5.75,
+    "end": 13.44
    },
    {
     "text": "A inscrição fala de um rei de Israel e de um rei da casa de Davi.",
-    "start": 14.15,
-    "end": 17.59
+    "start": 13.89,
+    "end": 17.22
    },
    {
     "text": "Essa pedra é do século nove antes de Cristo, e foi escrita por um inimigo de Israel, não por um autor bíblico.",
-    "start": 18.04,
-    "end": 23.74
+    "start": 17.67,
+    "end": 23.22
    },
    {
     "text": "Ou seja, a dinastia de Davi já era conhecida por povos vizinhos poucas gerações depois dele.",
-    "start": 24.19,
-    "end": 29.41
+    "start": 23.67,
+    "end": 28.78
    },
    {
     "text": "Isso combina com a promessa de Deus em Segundo Samuel sete, que fala da casa e do reino de Davi, firmados para sempre.",
-    "start": 29.86,
-    "end": 36.74
+    "start": 29.23,
+    "end": 35.71
    },
    {
     "text": "Você já tinha ouvido falar dessa pedra?",
-    "start": 37.19,
-    "end": 39.33
+    "start": 36.16,
+    "end": 38.08
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "tel-dan",
+    "image": "/arqueologia/tel-dan.jpg",
+    "name": "Estela de Tel Dan",
+    "credit": {
+     "title": "JRSLM 300116 Tel Dan Stele 01.jpg",
+     "author": "Oren Rozen",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:JRSLM_300116_Tel_Dan_Stele_01.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "tunel-de-ezequias",
@@ -63,46 +75,58 @@
    "2 Reis 20:20",
    "2 Crônicas 32:30"
   ],
-  "duration": 40.21,
+  "duration": 39.89,
   "sentences": [
    {
     "text": "Quando os assírios marcharam contra Judá, o rei Ezequias tinha um problema: Jerusalém dependia de uma fonte que ficava fora das muralhas.",
     "start": 0.6,
-    "end": 7.94
+    "end": 7.61
    },
    {
     "text": "A Bíblia diz que ele fez um aqueduto e trouxe a água para dentro da cidade.",
-    "start": 8.39,
-    "end": 12.49
+    "start": 8.06,
+    "end": 12.17
    },
    {
     "text": "Esse túnel existe até hoje, tem cerca de quinhentos e trinta metros e foi escavado na rocha por duas equipes que começaram de lados opostos.",
-    "start": 12.94,
-    "end": 20.98
+    "start": 12.62,
+    "end": 20.74
    },
    {
     "text": "Dentro dele foi achada a inscrição de Siloé, em hebraico, que conta o momento em que os dois grupos se encontraram.",
-    "start": 21.43,
-    "end": 27.24
+    "start": 21.19,
+    "end": 27.04
    },
    {
     "text": "Hoje dá para caminhar pelo túnel, com água pelos tornozelos ou pelos joelhos.",
-    "start": 27.69,
-    "end": 31.85
+    "start": 27.49,
+    "end": 31.67
    },
    {
     "text": "É uma das raras obras citadas na Bíblia que ainda podemos percorrer.",
-    "start": 32.3,
-    "end": 35.75
+    "start": 32.12,
+    "end": 35.52
    },
    {
     "text": "Qual outra construção bíblica você gostaria de ver de perto?",
-    "start": 36.2,
-    "end": 39.36
+    "start": 35.97,
+    "end": 39.04
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "hezekiah-tunnel",
+    "image": "/arqueologia/hezekiah-tunnel.jpg",
+    "name": "Túnel de Ezequias",
+    "credit": {
+     "title": "Hezekiah's Tunnel enlightened.jpg",
+     "author": "Davidbena",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Hezekiah%27s_Tunnel_enlightened.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "passaro-na-gaiola",
@@ -117,42 +141,42 @@
    "Relevos de Laquis (Museu Britânico)",
    "2 Reis 18 e 19"
   ],
-  "duration": 39.31,
+  "duration": 39.74,
   "sentences": [
    {
     "text": "O rei assírio Senaqueribe mandou gravar em um prisma de argila a sua campanha contra Judá.",
     "start": 0.6,
-    "end": 5.09
+    "end": 5.19
    },
    {
     "text": "Ele se gaba de ter conquistado muitas cidades de Ezequias e diz que prendeu o rei em Jerusalém, como um pássaro numa gaiola.",
-    "start": 5.54,
-    "end": 11.88
+    "start": 5.64,
+    "end": 11.99
    },
    {
     "text": "Repare no que o prisma não diz: ele nunca afirma ter tomado Jerusalém.",
-    "start": 12.33,
-    "end": 15.99
+    "start": 12.44,
+    "end": 15.98
    },
    {
     "text": "Já os painéis de Laquis, no palácio dele, mostram com detalhes o cerco àquela cidade de Judá, com rampa, soldados e prisioneiros.",
-    "start": 16.44,
-    "end": 23.98
+    "start": 16.43,
+    "end": 24.1
    },
    {
     "text": "A Bíblia, em Segundo Reis dezoito e dezenove, conta a mesma campanha: Laquis cai, mas Jerusalém é poupada.",
-    "start": 24.43,
-    "end": 30.51
+    "start": 24.55,
+    "end": 30.69
    },
    {
     "text": "O relato assírio e o bíblico concordam no cerco, e as duas fontes deixam Jerusalém de pé.",
-    "start": 30.96,
-    "end": 35.85
+    "start": 31.14,
+    "end": 36.31
    },
    {
     "text": "O que mais chama sua atenção nessa história?",
-    "start": 36.3,
-    "end": 38.46
+    "start": 36.76,
+    "end": 38.89
    }
   ],
   "images": [],
@@ -169,47 +193,47 @@
    "Obelisco Negro de Salmaneser III (Museu Britânico)",
    "2 Reis 9 e 10"
   ],
-  "duration": 41.4,
+  "duration": 41.24,
   "sentences": [
    {
     "text": "No Museu Britânico existe um obelisco de pedra negra, achado em Nimrud, no antigo império assírio.",
     "start": 0.6,
-    "end": 5.88
+    "end": 5.99
    },
    {
     "text": "Ele mostra reis levando presentes ao rei Salmaneser terceiro.",
-    "start": 6.33,
-    "end": 9.65
+    "start": 6.44,
+    "end": 9.77
    },
    {
     "text": "Um dos painéis é identificado como Jeú, filho de Onri, curvado até o chão e entregando prata e ouro.",
-    "start": 10.1,
-    "end": 15.98
+    "start": 10.22,
+    "end": 15.88
    },
    {
     "text": "Jeú é o rei que a Bíblia descreve em Segundo Reis nove e dez, ungido para acabar com a casa de Acabe.",
-    "start": 16.43,
-    "end": 22.07
+    "start": 16.33,
+    "end": 21.93
    },
    {
     "text": "Esta é a mais antiga imagem conhecida de um rei de Israel.",
-    "start": 22.52,
-    "end": 26.11
+    "start": 22.38,
+    "end": 25.89
    },
    {
     "text": "Um detalhe curioso: o texto assírio chama Jeú de filho de Onri, mas ele não era da família de Onri.",
-    "start": 26.56,
-    "end": 31.81
+    "start": 26.34,
+    "end": 31.55
    },
    {
     "text": "Os assírios usavam esse nome para o reino de Israel, que ficou conhecido por causa daquela dinastia.",
-    "start": 32.26,
-    "end": 37.41
+    "start": 32,
+    "end": 37.32
    },
    {
     "text": "Que outros reis da Bíblia você gostaria de conhecer melhor?",
-    "start": 37.86,
-    "end": 40.55
+    "start": 37.77,
+    "end": 40.39
    }
   ],
   "images": [],
@@ -225,37 +249,37 @@
   "sources": [
    "Estela de Merneptá (Museu do Cairo)"
   ],
-  "duration": 38.21,
+  "duration": 38.36,
   "sentences": [
    {
     "text": "O faraó Merneptá mandou gravar numa grande estela de pedra um hino sobre suas vitórias, por volta do ano mil duzentos e oito antes de Cristo.",
     "start": 0.6,
-    "end": 8.46
+    "end": 8.47
    },
    {
     "text": "Nessa lista de povos vencidos aparece uma frase curta: Israel está arrasado, sua semente não existe mais.",
-    "start": 8.91,
-    "end": 15.09
+    "start": 8.92,
+    "end": 15.12
    },
    {
     "text": "É a mais antiga vez em que o nome Israel aparece num documento fora da Bíblia.",
-    "start": 15.54,
-    "end": 19.39
+    "start": 15.57,
+    "end": 19.51
    },
    {
     "text": "O faraó se enganou: o povo seguiu existindo e, séculos depois, a Bíblia conta a sua história.",
-    "start": 19.84,
-    "end": 25.3
+    "start": 19.96,
+    "end": 25.37
    },
    {
     "text": "O nome Israel vem de Gênesis trinta e dois, quando Jacó recebe esse nome depois de lutar com Deus.",
-    "start": 25.75,
-    "end": 31.2
+    "start": 25.82,
+    "end": 31.47
    },
    {
     "text": "Interessante pensar que um faraó tentou riscar do mapa um povo que a Bíblia diz ter sido escolhido por Deus, não é?",
-    "start": 31.65,
-    "end": 37.36
+    "start": 31.92,
+    "end": 37.51
    }
   ],
   "images": [],
@@ -273,46 +297,58 @@
    "Cilindro de Ciro (Museu Britânico)",
    "Esdras 1"
   ],
-  "duration": 38.31,
+  "duration": 38.37,
   "sentences": [
    {
     "text": "Em 539 antes de Cristo, Ciro, rei da Pérsia, conquistou a Babilônia.",
     "start": 0.6,
-    "end": 5.7
+    "end": 5.62
    },
    {
     "text": "Ele mandou escrever num cilindro de argila que povos deportados poderiam voltar às suas terras e reerguer seus templos.",
-    "start": 6.15,
-    "end": 12.42
+    "start": 6.07,
+    "end": 12.34
    },
    {
     "text": "Esse cilindro está hoje no Museu Britânico.",
-    "start": 12.87,
-    "end": 15.19
+    "start": 12.79,
+    "end": 15.17
    },
    {
     "text": "Ele não cita Jerusalém nem os judeus pelo nome, mas a política que descreve é a mesma da Bíblia.",
-    "start": 15.64,
-    "end": 20.58
+    "start": 15.62,
+    "end": 20.73
    },
    {
     "text": "Esdras um conta que Ciro permitiu que os judeus voltassem para reconstruir o Templo.",
-    "start": 21.03,
-    "end": 25.28
+    "start": 21.18,
+    "end": 25.44
    },
    {
     "text": "O livro de Isaías, que a tradição situa mais de cem anos antes, chama Ciro pelo nome, em Isaías quarenta e cinco.",
-    "start": 25.73,
-    "end": 32.33
+    "start": 25.89,
+    "end": 32.57
    },
    {
     "text": "O que isso mostra sobre a forma como a Bíblia entende o governo de Deus sobre os reis da terra?",
-    "start": 32.78,
-    "end": 37.46
+    "start": 33.02,
+    "end": 37.52
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "cyrus-cylinder",
+    "image": "/arqueologia/cyrus-cylinder.jpg",
+    "name": "Cilindro de Ciro",
+    "credit": {
+     "title": "Cyrus Cylinder 2.jpg",
+     "author": "Photograph by Mike Peel (www.mikepeel.net).",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Cyrus_Cylinder_2.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "rolo-de-isaias",
@@ -325,46 +361,58 @@
    "Grande Rolo de Isaías (Museu de Israel)",
    "Cavernas de Qumran"
   ],
-  "duration": 39.16,
+  "duration": 39,
   "sentences": [
    {
     "text": "Em 1947, um pastor beduíno procurava uma cabra perdida perto do mar Morto e encontrou jarros com rolos antigos numa caverna.",
     "start": 0.6,
-    "end": 9.04
+    "end": 8.94
    },
    {
     "text": "Entre eles estava o Grande Rolo de Isaías, com o livro quase inteiro, copiado por volta do século dois antes de Cristo.",
-    "start": 9.49,
-    "end": 15.61
+    "start": 9.39,
+    "end": 15.43
    },
    {
     "text": "Até então, os manuscritos hebraicos mais antigos do Antigo Testamento tinham cerca de mil anos.",
-    "start": 16.06,
-    "end": 21.73
+    "start": 15.88,
+    "end": 21.68
    },
    {
     "text": "O rolo de Isaías era cerca de mil anos mais antigo.",
-    "start": 22.18,
+    "start": 22.13,
     "end": 25.29
    },
    {
     "text": "Quando compararam o texto, viram que ele era muito parecido com o que lemos hoje, com diferenças pequenas de grafia.",
     "start": 25.74,
-    "end": 31.64
+    "end": 31.53
    },
    {
     "text": "Isso mostra o cuidado dos copistas ao longo dos séculos.",
-    "start": 32.09,
-    "end": 35.13
+    "start": 31.98,
+    "end": 34.97
    },
    {
     "text": "Qual capítulo de Isaías você gostaria de ler primeiro?",
-    "start": 35.58,
-    "end": 38.31
+    "start": 35.42,
+    "end": 38.15
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "isaiah-scroll",
+    "image": "/arqueologia/isaiah-scroll.jpg",
+    "name": "Grande Rolo de Isaías",
+    "credit": {
+     "title": "Great Isaiah Scroll Ch53.jpg",
+     "author": "Photography by Ardon Bar Hama (see [2], author of original document is unknown.",
+     "license": "Public domain",
+     "page": "https://commons.wikimedia.org/wiki/File:Great_Isaiah_Scroll_Ch53.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "bencao-mais-antiga",
@@ -378,7 +426,7 @@
    "Rolos de prata de Ketef Hinnom (Museu de Israel)",
    "Números 6"
   ],
-  "duration": 39.02,
+  "duration": 39.11,
   "sentences": [
    {
     "text": "Em 1979, num túmulo perto de Jerusalém, foram achados dois pequenos rolos de prata, finos como uma folha, dobrados como amuletos.",
@@ -388,36 +436,48 @@
    {
     "text": "Quando conseguiram abri-los sem os destruir, leram uma inscrição em hebraico antigo.",
     "start": 9.86,
-    "end": 14.19
+    "end": 14.24
    },
    {
     "text": "Ela traz palavras muito parecidas com a bênção de Números seis: o Senhor te abençoe e te guarde.",
-    "start": 14.64,
-    "end": 19.88
+    "start": 14.69,
+    "end": 20.04
    },
    {
     "text": "Os rolos são do século sete antes de Cristo, cerca de quatro séculos mais antigos que os Manuscritos do Mar Morto.",
-    "start": 20.33,
-    "end": 26.99
+    "start": 20.49,
+    "end": 27.17
    },
    {
     "text": "É o trecho bíblico mais antigo que se conhece escrito num objeto.",
-    "start": 27.44,
-    "end": 31
+    "start": 27.62,
+    "end": 31.25
    },
    {
     "text": "Eram usados como amuletos de proteção, e hoje estão no Museu de Israel.",
-    "start": 31.45,
-    "end": 35.44
+    "start": 31.7,
+    "end": 35.55
    },
    {
     "text": "Você já recebeu essa bênção em algum culto?",
-    "start": 35.89,
-    "end": 38.17
+    "start": 36,
+    "end": 38.26
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "ketef-hinnom",
+    "image": "/arqueologia/ketef-hinnom.jpg",
+    "name": "Rolos de prata de Ketef Hinnom",
+    "credit": {
+     "title": "Ketef Hinnom KH2 Scroll.jpg",
+     "author": "Ketef Hinnom Silver Scrolls",
+     "license": "Public domain",
+     "page": "https://commons.wikimedia.org/wiki/File:Ketef_Hinnom_KH2_Scroll.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "pilatos-existiu",
@@ -430,46 +490,58 @@
    "Pedra de Pilatos (Museu de Israel)",
    "Lucas 3:1"
   ],
-  "duration": 40.44,
+  "duration": 40.92,
   "sentences": [
    {
     "text": "Pôncio Pilatos aparece nos Evangelhos e também em escritores romanos, mas por muito tempo não havia nenhuma inscrição com o nome dele.",
     "start": 0.6,
-    "end": 7.67
+    "end": 7.7
    },
    {
     "text": "Em 1961, arqueólogos italianos trabalhavam no teatro de Cesareia Marítima quando acharam um bloco de calcário reaproveitado numa escada.",
-    "start": 8.12,
-    "end": 16.63
+    "start": 8.15,
+    "end": 16.61
    },
    {
     "text": "Nele estava escrito o nome de Pôncio Pilatos e o título de prefeito da Judeia.",
-    "start": 17.08,
-    "end": 21.21
+    "start": 17.06,
+    "end": 21.27
    },
    {
     "text": "A pedra era parte de uma dedicatória a Tibério, o imperador.",
-    "start": 21.66,
-    "end": 24.97
+    "start": 21.72,
+    "end": 25.04
    },
    {
     "text": "Lucas três um dá o nome de Pilatos como governador da Judeia no tempo em que João Batista começou a pregar.",
-    "start": 25.42,
-    "end": 31.03
+    "start": 25.49,
+    "end": 31.31
    },
    {
     "text": "A pedra mostra que os Evangelhos citam pessoas reais, nos cargos certos, no lugar e na época em que viveram.",
-    "start": 31.48,
-    "end": 37.34
+    "start": 31.76,
+    "end": 37.74
    },
    {
     "text": "O que você sentiu ao saber disso?",
-    "start": 37.79,
-    "end": 39.59
+    "start": 38.19,
+    "end": 40.07
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "pilate-stone",
+    "image": "/arqueologia/pilate-stone.jpg",
+    "name": "Pedra de Pilatos",
+    "credit": {
+     "title": "Holy Land 2016 P0231 Caesarea Maritima Pilate stone.jpg",
+     "author": "Fallaner",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Holy_Land_2016_P0231_Caesarea_Maritima_Pilate_stone.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "dois-tanques",
@@ -483,42 +555,42 @@
    "Tanque de Siloé",
    "João 5 e 9"
   ],
-  "duration": 40.88,
+  "duration": 40.68,
   "sentences": [
    {
     "text": "O Evangelho de João fala de dois tanques em Jerusalém, e por muito tempo houve quem achasse que eram invenção do autor.",
     "start": 0.6,
-    "end": 6.92
+    "end": 6.86
    },
    {
     "text": "João cinco descreve o tanque de Betesda, perto da porta das Ovelhas, com cinco pórticos.",
-    "start": 7.37,
-    "end": 12.46
+    "start": 7.31,
+    "end": 12.24
    },
    {
     "text": "No século dezenove foram achados dois grandes reservatórios nesse lugar, que combinam com a descrição.",
-    "start": 12.91,
-    "end": 18.67
+    "start": 12.69,
+    "end": 18.26
    },
    {
     "text": "João nove fala do tanque de Siloé, onde o cego de nascença lavou o rosto.",
-    "start": 19.12,
-    "end": 23.18
+    "start": 18.71,
+    "end": 22.89
    },
    {
     "text": "Em 2004, obras de esgoto na região revelaram degraus de um grande tanque do primeiro século, e ele foi identificado como o Siloé daquele tempo.",
-    "start": 23.63,
-    "end": 31.61
+    "start": 23.34,
+    "end": 31.29
    },
    {
     "text": "João descreve lugares que existiam antes de a cidade ser destruída, no ano setenta.",
-    "start": 32.06,
-    "end": 36.98
+    "start": 31.74,
+    "end": 36.74
    },
    {
     "text": "Qual cena do Evangelho de João você gostaria de visitar?",
-    "start": 37.43,
-    "end": 40.03
+    "start": 37.19,
+    "end": 39.83
    }
   ],
   "images": [],
@@ -537,46 +609,58 @@
    "Arco de Tito (Roma)",
    "Marcos 13"
   ],
-  "duration": 36.34,
+  "duration": 36.01,
   "sentences": [
    {
     "text": "Em Marcos treze, um discípulo comenta a Jesus como eram grandes as pedras e as construções do Templo.",
     "start": 0.6,
-    "end": 6.23
+    "end": 6.08
    },
    {
     "text": "Jesus responde que não ficaria pedra sobre pedra que não fosse derrubada.",
-    "start": 6.68,
-    "end": 10.36
+    "start": 6.53,
+    "end": 10.26
    },
    {
     "text": "Herodes, o Grande, tinha ampliado o Monte do Templo, e até hoje se veem blocos enormes na base do muro.",
-    "start": 10.81,
-    "end": 16.88
+    "start": 10.71,
+    "end": 16.58
    },
    {
     "text": "No ano setenta, os romanos destruíram o Templo.",
-    "start": 17.33,
-    "end": 20.16
+    "start": 17.03,
+    "end": 19.9
    },
    {
     "text": "Em Roma, o Arco de Tito mostra soldados carregando a menorá e outros objetos tirados de Jerusalém.",
-    "start": 20.61,
-    "end": 26.38
+    "start": 20.35,
+    "end": 26.07
    },
    {
     "text": "Alguns blocos caídos foram achados no chão, junto ao muro, lá onde os soldados os jogaram.",
-    "start": 26.83,
-    "end": 32.16
+    "start": 26.52,
+    "end": 31.89
    },
    {
     "text": "O que essa história te ensina sobre as palavras de Jesus?",
-    "start": 32.61,
-    "end": 35.49
+    "start": 32.34,
+    "end": 35.16
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "arch-titus",
+    "image": "/arqueologia/arch-titus.jpg",
+    "name": "Arco de Tito",
+    "credit": {
+     "title": "Arch of Titus Menorah 22.jpg",
+     "author": "original file by Steerpike",
+     "license": "CC BY 3.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Arch_of_Titus_Menorah_22.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "galio-e-paulo",
@@ -594,31 +678,31 @@
    {
     "text": "Atos dezoito conta que, em Corinto, os judeus levaram Paulo diante do procônsul Gálio.",
     "start": 0.6,
-    "end": 5.56
+    "end": 5.55
    },
    {
     "text": "Em Delfos, na Grécia, foi achada uma carta do imperador Cláudio que cita Gálio como governador da província da Acaia.",
-    "start": 6.01,
-    "end": 12.38
+    "start": 6,
+    "end": 12.27
    },
    {
     "text": "Os especialistas calculam que ele governou por volta dos anos cinquenta e um e cinquenta e dois depois de Cristo.",
-    "start": 12.83,
-    "end": 19.02
+    "start": 12.72,
+    "end": 18.95
    },
    {
     "text": "Com isso, dá para situar a estadia de Paulo em Corinto nessa mesma época.",
-    "start": 19.47,
-    "end": 23.27
+    "start": 19.4,
+    "end": 23.13
    },
    {
     "text": "É um dos poucos pontos firmes que permitem montar a cronologia da vida do apóstolo.",
-    "start": 23.72,
-    "end": 28
+    "start": 23.58,
+    "end": 28.03
    },
    {
     "text": "Por que será que a Bíblia cita nomes e cargos tão exatos?",
-    "start": 28.45,
+    "start": 28.48,
     "end": 31.62
    }
   ],
@@ -636,37 +720,37 @@
    "Inscrição de Erasto, Corinto",
    "Romanos 16:23"
   ],
-  "duration": 34.16,
+  "duration": 34.24,
   "sentences": [
    {
     "text": "No fim da carta aos Romanos, Paulo manda saudações de Erasto, que ele descreve como tesoureiro da cidade.",
     "start": 0.6,
-    "end": 6.04
+    "end": 6.03
    },
    {
     "text": "Em Corinto, num calçamento de pedra do primeiro século, foi achada uma inscrição em latim que fala de um Erasto.",
-    "start": 6.49,
-    "end": 12.44
+    "start": 6.48,
+    "end": 12.53
    },
    {
     "text": "Ela diz que ele pagou aquela obra do próprio bolso, em retribuição ao cargo que tinha na cidade.",
-    "start": 12.89,
-    "end": 17.84
+    "start": 12.98,
+    "end": 18.04
    },
    {
     "text": "Muitos estudiosos acham provável que seja o mesmo Erasto, mas essa ligação não é certa.",
-    "start": 18.29,
-    "end": 23.48
+    "start": 18.49,
+    "end": 23.66
    },
    {
     "text": "O que importa é que nomes como esse mostram que o cristianismo chegou a gente de todos os níveis sociais.",
-    "start": 23.93,
-    "end": 29.31
+    "start": 24.11,
+    "end": 29.42
    },
    {
     "text": "Quem você conhece que serve à igreja com os bens e com o cargo que tem?",
-    "start": 29.76,
-    "end": 33.31
+    "start": 29.87,
+    "end": 33.39
    }
   ],
   "images": [],
@@ -684,42 +768,42 @@
    "Areópago, Atenas",
    "Atos 17"
   ],
-  "duration": 33.4,
+  "duration": 33.45,
   "sentences": [
    {
     "text": "Em Atenas, Paulo foi levado ao Areópago, uma colina de rocha ao pé da Acrópole, onde o conselho da cidade se reunia.",
     "start": 0.6,
-    "end": 6.98
+    "end": 6.96
    },
    {
     "text": "Lá ele não começou citando as Escrituras, que os atenienses não conheciam.",
-    "start": 7.43,
-    "end": 11.25
+    "start": 7.41,
+    "end": 11.26
    },
    {
     "text": "Falou do altar que ele tinha visto com a inscrição: ao deus desconhecido.",
-    "start": 11.7,
-    "end": 15.45
+    "start": 11.71,
+    "end": 15.42
    },
    {
     "text": "E disse que aquele Deus, que eles adoravam sem conhecer, era o criador de todas as coisas.",
-    "start": 15.9,
-    "end": 20.69
+    "start": 15.87,
+    "end": 20.67
    },
    {
     "text": "Hoje se pode subir até o Areópago por degraus de pedra e ver a Acrópole bem em frente.",
-    "start": 21.14,
-    "end": 25.87
+    "start": 21.12,
+    "end": 25.9
    },
    {
     "text": "Paulo adaptou a mensagem ao público sem mudar o evangelho.",
-    "start": 26.32,
-    "end": 29.14
+    "start": 26.35,
+    "end": 29.2
    },
    {
     "text": "Como você explicaria sua fé para alguém que nunca leu a Bíblia?",
-    "start": 29.59,
-    "end": 32.55
+    "start": 29.65,
+    "end": 32.6
    }
   ],
   "images": [],
@@ -736,46 +820,58 @@
    "Grande Teatro de Éfeso",
    "Atos 19"
   ],
-  "duration": 37.35,
+  "duration": 37.49,
   "sentences": [
    {
     "text": "Atos dezenove conta que Paulo ficou dois anos em Éfeso e que tanta gente deixou a adoração de Ártemis que os ourives perderam dinheiro.",
     "start": 0.6,
-    "end": 7.84
+    "end": 8
    },
    {
     "text": "Um deles, chamado Demétrio, reuniu os colegas e a cidade se agitou.",
-    "start": 8.29,
-    "end": 12.36
+    "start": 8.45,
+    "end": 12.63
    },
    {
     "text": "A multidão correu para o teatro, gritando: grande é a Ártemis dos efésios.",
-    "start": 12.81,
-    "end": 17.2
+    "start": 13.08,
+    "end": 17.22
    },
    {
     "text": "O teatro de Éfeso existe até hoje e comportava cerca de vinte e cinco mil pessoas.",
-    "start": 17.65,
-    "end": 22.79
+    "start": 17.67,
+    "end": 22.77
    },
    {
     "text": "Ele fica bem no centro da cidade antiga, e ainda dá para entender como a confusão se espalhou rapidamente.",
-    "start": 23.24,
-    "end": 29.2
+    "start": 23.22,
+    "end": 29.22
    },
    {
     "text": "O escrivão da cidade acalmou a multidão e mandou todos para casa.",
-    "start": 29.65,
-    "end": 33.23
+    "start": 29.67,
+    "end": 33.3
    },
    {
     "text": "Alguma vez sua fé atrapalhou os negócios de alguém?",
-    "start": 33.68,
-    "end": 36.5
+    "start": 33.75,
+    "end": 36.64
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "ephesus-theatre",
+    "image": "/arqueologia/ephesus-theatre.jpg",
+    "name": "Teatro de Éfeso",
+    "credit": {
+     "title": "Great Theatre of Ephesus 2024.jpg",
+     "author": "Furkan Akkurt",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Great_Theatre_of_Ephesus_2024.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "sinagoga-de-cafarnaum",
@@ -788,46 +884,58 @@
    "Sinagoga de Cafarnaum",
    "Marcos 1:21"
   ],
-  "duration": 36.94,
+  "duration": 37.04,
   "sentences": [
    {
     "text": "Marcos conta que Jesus entrou na sinagoga de Cafarnaum e ensinou com autoridade.",
     "start": 0.6,
-    "end": 5.08
+    "end": 5.2
    },
    {
     "text": "Hoje, em Cafarnaum, vê-se uma grande sinagoga de calcário branco.",
-    "start": 5.53,
-    "end": 9.13
+    "start": 5.65,
+    "end": 9.21
    },
    {
     "text": "Mas ela foi construída por volta dos séculos quatro e cinco depois de Cristo, bem depois de Jesus.",
-    "start": 9.58,
-    "end": 14.98
+    "start": 9.66,
+    "end": 15.14
    },
    {
     "text": "Escavações mostraram que, por baixo dela, existem muros de pedra negra, de basalto, de uma construção mais antiga.",
-    "start": 15.43,
-    "end": 22.41
+    "start": 15.59,
+    "end": 22.66
    },
    {
     "text": "Muitos estudiosos pensam que essa base é da sinagoga do tempo de Jesus, e outros preferem esperar mais provas.",
-    "start": 22.86,
-    "end": 28.86
+    "start": 23.11,
+    "end": 29.15
    },
    {
     "text": "De qualquer forma, estamos pisando na cidade em que ele fez muitos milagres.",
-    "start": 29.31,
-    "end": 33.48
+    "start": 29.6,
+    "end": 33.62
    },
    {
     "text": "Que passagem de Cafarnaum você mais gosta?",
-    "start": 33.93,
-    "end": 36.09
+    "start": 34.07,
+    "end": 36.19
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "capernaum-synagogue",
+    "image": "/arqueologia/capernaum-synagogue.jpg",
+    "name": "Sinagoga de Cafarnaum",
+    "credit": {
+     "title": "Kafarnaum BW 20.jpg",
+     "author": "Berthold Werner",
+     "license": "Public domain",
+     "page": "https://commons.wikimedia.org/wiki/File:Kafarnaum_BW_20.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "cidade-de-madalena",
@@ -840,46 +948,58 @@
    "Pedra de Magdala",
    "Lucas 8:2"
   ],
-  "duration": 38.63,
+  "duration": 38.72,
   "sentences": [
    {
     "text": "Maria Madalena era chamada assim porque vinha de Magdala, uma cidade de pescadores à beira do mar da Galileia.",
     "start": 0.6,
-    "end": 6.24
+    "end": 6.4
    },
    {
     "text": "Em 2009, durante as obras de um projeto turístico, foi descoberta ali uma sinagoga do primeiro século.",
-    "start": 6.69,
-    "end": 12.68
+    "start": 6.85,
+    "end": 12.83
    },
    {
     "text": "No meio dela, havia um bloco de pedra decorado com uma menorá, o candelabro de sete braços.",
-    "start": 13.13,
-    "end": 18.34
+    "start": 13.28,
+    "end": 18.59
    },
    {
     "text": "É uma das mais antigas representações da menorá achadas numa sinagoga.",
-    "start": 18.79,
-    "end": 22.79
+    "start": 19.04,
+    "end": 23.04
    },
    {
     "text": "Como a sinagoga existia no tempo de Jesus, é possível que ele tenha passado por ali em suas viagens pela Galileia.",
-    "start": 23.24,
-    "end": 28.98
+    "start": 23.49,
+    "end": 29.15
    },
    {
     "text": "Lucas oito conta que várias mulheres seguiam Jesus e o ajudavam, entre elas Maria, chamada Madalena.",
-    "start": 29.43,
-    "end": 35.22
+    "start": 29.6,
+    "end": 35.33
    },
    {
     "text": "O que mais te chama atenção na história dela?",
-    "start": 35.67,
-    "end": 37.78
+    "start": 35.78,
+    "end": 37.87
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "magdala-stone",
+    "image": "/arqueologia/magdala-stone.jpg",
+    "name": "Pedra de Magdala",
+    "credit": {
+     "title": "140367 ancient synagogue in magdala PikiWiki Israel.jpg",
+     "author": "מיכל פריימן",
+     "license": "CC BY 2.5",
+     "page": "https://commons.wikimedia.org/wiki/File:140367_ancient_synagogue_in_magdala_PikiWiki_Israel.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "muralhas-de-jerico",
@@ -892,46 +1012,58 @@
    "Tell es-Sultan (Jericó)",
    "Josué 6"
   ],
-  "duration": 42.71,
+  "duration": 42.94,
   "sentences": [
    {
     "text": "Jericó é uma das cidades mais antigas do mundo, e seu monte, o Tell es-Sultan, tem camadas de ocupação de milhares de anos.",
     "start": 0.6,
-    "end": 7.38
+    "end": 7.54
    },
    {
     "text": "Os arqueólogos acharam ali muralhas e uma torre de pedra de muita idade, de bem antes de Josué.",
-    "start": 7.83,
-    "end": 12.91
+    "start": 7.99,
+    "end": 13.26
    },
    {
     "text": "Um grande desafio é ligar essas ruínas à queda das muralhas em Josué seis.",
-    "start": 13.36,
-    "end": 17.95
+    "start": 13.71,
+    "end": 18.23
    },
    {
     "text": "Alguns pesquisadores colocam a destruição em torno de mil quatrocentos e cinquenta antes de Cristo, outros em mil duzentos e cinquenta, e outros ainda duvidam da ligação.",
-    "start": 18.4,
-    "end": 28.11
+    "start": 18.68,
+    "end": 28.59
    },
    {
     "text": "Isso mostra como é importante distinguir o que a arqueologia prova do que ela apenas sugere.",
-    "start": 28.56,
-    "end": 33.04
+    "start": 29.04,
+    "end": 33.44
    },
    {
     "text": "A fé não depende de um tijolo, mas o estudo honesto ajuda a entender o texto.",
-    "start": 33.49,
-    "end": 37.69
+    "start": 33.89,
+    "end": 37.98
    },
    {
     "text": "O que você pensa sobre essa diferença entre fatos e interpretações?",
-    "start": 38.14,
-    "end": 41.86
+    "start": 38.43,
+    "end": 42.09
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "jericho",
+    "image": "/arqueologia/jericho.jpg",
+    "name": "Tell es-Sultan (Jericó antiga)",
+    "credit": {
+     "title": "Cable and Ancient Jericho - panoramio.jpg",
+     "author": "Mujaddara",
+     "license": "CC BY-SA 3.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Cable_and_Ancient_Jericho_-_panoramio.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "megiddo-armagedom",
@@ -946,46 +1078,69 @@
    "1 Reis 9:15",
    "Apocalipse 16:16"
   ],
-  "duration": 40.41,
+  "duration": 40.89,
   "sentences": [
    {
     "text": "Primeiro Reis nove, versículo quinze, diz que Salomão construiu a muralha de Jerusalém, Hazor, Megido e Gezer.",
     "start": 0.6,
-    "end": 6.96
+    "end": 7.26
    },
    {
     "text": "Megido ficava num ponto estratégico, no vale de Jezreel, por onde passava a principal rota entre o Egito e a Mesopotâmia.",
-    "start": 7.41,
-    "end": 13.72
+    "start": 7.71,
+    "end": 14.16
    },
    {
     "text": "Escavações revelaram portões, estábulos e um enorme sistema de água, com camadas de muitos séculos.",
-    "start": 14.17,
-    "end": 20.15
+    "start": 14.61,
+    "end": 20.5
    },
    {
     "text": "Os arqueólogos discutem se parte dessas construções é de Salomão ou de uma época um pouco posterior.",
-    "start": 20.6,
-    "end": 26.04
+    "start": 20.95,
+    "end": 26.39
    },
    {
     "text": "A palavra Armagedom, em Apocalipse dezesseis, vem do hebraico Har Megido, que significa monte de Megido.",
-    "start": 26.49,
-    "end": 32.11
+    "start": 26.84,
+    "end": 32.43
    },
    {
     "text": "Não é por acaso que a Bíblia escolheu um lugar de tantas batalhas como símbolo.",
-    "start": 32.56,
-    "end": 36.41
+    "start": 32.88,
+    "end": 36.92
    },
    {
     "text": "Que outro lugar histórico você acha que merece estudo?",
-    "start": 36.86,
-    "end": 39.56
+    "start": 37.37,
+    "end": 40.04
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "megiddo",
+    "image": "/arqueologia/megiddo.jpg",
+    "name": "Megiddo",
+    "credit": {
+     "title": "20191028 120303 Tel Megiddo Israel anagoria.JPG",
+     "author": "Anagoria",
+     "license": "CC BY 3.0",
+     "page": "https://commons.wikimedia.org/wiki/File:20191028_120303_Tel_Megiddo_Israel_anagoria.JPG"
+    }
+   },
+   {
+    "id": "hazor",
+    "image": "/arqueologia/hazor.jpg",
+    "name": "Hazor",
+    "credit": {
+     "title": "Zone M4 de Tel Hazor.jpg",
+     "author": "Imhotep tep",
+     "license": "CC0",
+     "page": "https://commons.wikimedia.org/wiki/File:Zone_M4_de_Tel_Hazor.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "herodes-e-belem",
@@ -998,46 +1153,58 @@
    "Herodium",
    "Mateus 2"
   ],
-  "duration": 39.55,
+  "duration": 40.23,
   "sentences": [
    {
     "text": "Mateus dois conta que, no nascimento de Jesus, em Belém, o rei Herodes ficou perturbado com a notícia de um novo rei.",
     "start": 0.6,
-    "end": 6.93
+    "end": 7.14
    },
    {
     "text": "Herodes, o Grande, foi um construtor imenso: ampliou o Templo de Jerusalém e levantou fortalezas pelo país.",
-    "start": 7.38,
-    "end": 13.46
+    "start": 7.59,
+    "end": 13.62
    },
    {
     "text": "Uma delas é o Herodium, um palácio em forma de cone, a poucos quilômetros de Belém.",
-    "start": 13.91,
-    "end": 18.35
+    "start": 14.07,
+    "end": 18.42
    },
    {
     "text": "Nas escavações do século vinte e um, acharam-se ali o que muitos acreditam ser a sua tumba.",
-    "start": 18.8,
-    "end": 23.82
+    "start": 18.87,
+    "end": 24.03
    },
    {
     "text": "Ele morreu por volta do ano quatro antes de Cristo, o que explica por que se pensa que Jesus nasceu alguns anos antes do ano um.",
-    "start": 24.27,
-    "end": 31.05
+    "start": 24.48,
+    "end": 31.52
    },
    {
     "text": "O poder do rei e a humildade da manjedoura formam um contraste que Mateus faz questão de mostrar.",
-    "start": 31.5,
-    "end": 36.69
+    "start": 31.97,
+    "end": 37.24
    },
    {
     "text": "O que esse contraste diz a você?",
-    "start": 37.14,
-    "end": 38.7
+    "start": 37.69,
+    "end": 39.38
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "herodium",
+    "image": "/arqueologia/herodium.jpg",
+    "name": "Herodium",
+    "credit": {
+     "title": "The Herodium fortress remains (FL45944164).jpg",
+     "author": "IPPA photographer",
+     "license": "CC BY 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:The_Herodium_fortress_remains_(FL45944164).jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "filipos-colonia-romana",
@@ -1050,46 +1217,58 @@
    "Sítio arqueológico de Filipos",
    "Atos 16"
   ],
-  "duration": 38.32,
+  "duration": 38.19,
   "sentences": [
    {
     "text": "Atos dezesseis conta que Paulo atravessou o mar depois de uma visão e chegou a Filipos, na Macedônia.",
     "start": 0.6,
-    "end": 6.03
+    "end": 6.11
    },
    {
     "text": "Lucas diz que ela era uma colônia romana, a principal cidade daquele distrito.",
-    "start": 6.48,
-    "end": 10.7
+    "start": 6.56,
+    "end": 10.76
    },
    {
     "text": "Hoje se visitam as ruínas do fórum, do teatro e um trecho da Via Egnácia, a estrada que ligava o oriente ao ocidente do império.",
-    "start": 11.15,
-    "end": 18.05
+    "start": 11.21,
+    "end": 18.16
    },
    {
     "text": "Foi ali, perto de um rio, que Paulo encontrou um grupo de mulheres em oração, entre elas Lídia, vendedora de púrpura.",
-    "start": 18.5,
-    "end": 24.73
+    "start": 18.61,
+    "end": 24.72
    },
    {
     "text": "Lídia abriu sua casa e foi a primeira convertida da Europa, segundo Atos.",
-    "start": 25.18,
-    "end": 29.44
+    "start": 25.17,
+    "end": 29.35
    },
    {
     "text": "Anos depois, Paulo escreveu aos filipenses uma carta cheia de gratidão e alegria.",
-    "start": 29.89,
-    "end": 34.65
+    "start": 29.8,
+    "end": 34.54
    },
    {
     "text": "Quem foi a primeira pessoa que te falou de Jesus?",
-    "start": 35.1,
-    "end": 37.47
+    "start": 34.99,
+    "end": 37.34
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "philippi",
+    "image": "/arqueologia/philippi.jpg",
+    "name": "Filipos",
+    "credit": {
+     "title": "Archaeological site of Philippi BW 2017-10-05 13-04-47.jpg",
+     "author": "Berthold Werner",
+     "license": "CC BY-SA 3.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Archaeological_site_of_Philippi_BW_2017-10-05_13-04-47.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "qumran-e-o-deserto",
@@ -1108,40 +1287,52 @@
    {
     "text": "Perto do mar Morto, nas cavernas de Qumran, foram achados centenas de manuscritos, os Manuscritos do Mar Morto.",
     "start": 0.6,
-    "end": 7.12
+    "end": 6.94
    },
    {
     "text": "Eram guardados por uma comunidade judaica que se retirou da vida da cidade para viver de forma rigorosa, no deserto.",
-    "start": 7.57,
-    "end": 13.79
+    "start": 7.39,
+    "end": 13.54
    },
    {
     "text": "Eles aplicavam a si mesmos Isaías quarenta, versículo três: no deserto, preparai o caminho do Senhor.",
-    "start": 14.24,
-    "end": 20.23
+    "start": 13.99,
+    "end": 19.88
    },
    {
     "text": "Mateus três diz que a mesma frase se refere a João Batista, que pregava no deserto da Judeia.",
-    "start": 20.68,
-    "end": 25.8
+    "start": 20.33,
+    "end": 25.64
    },
    {
     "text": "Duas leituras diferentes do mesmo versículo, na mesma região, na mesma época.",
-    "start": 26.25,
-    "end": 30.39
+    "start": 26.09,
+    "end": 30.28
    },
    {
     "text": "Isso mostra como o deserto era um lugar de espera e de preparação para muitos judeus.",
-    "start": 30.84,
-    "end": 35.32
+    "start": 30.73,
+    "end": 35.31
    },
    {
     "text": "E você, onde costuma ouvir a voz de Deus com mais clareza?",
-    "start": 35.77,
+    "start": 35.76,
     "end": 39.26
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "isaiah-scroll",
+    "image": "/arqueologia/isaiah-scroll.jpg",
+    "name": "Grande Rolo de Isaías",
+    "credit": {
+     "title": "Great Isaiah Scroll Ch53.jpg",
+     "author": "Photography by Ardon Bar Hama (see [2], author of original document is unknown.",
+     "license": "Public domain",
+     "page": "https://commons.wikimedia.org/wiki/File:Great_Isaiah_Scroll_Ch53.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  }
 ]
