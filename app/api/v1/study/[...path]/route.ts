@@ -2,11 +2,13 @@
 //   GET  /api/v1/study/interlinear/:ref   GET /api/v1/study/word/:strong
 //   GET  /api/v1/study/compare            POST /api/v1/study/compare/explain
 //   GET/POST/DELETE /api/v1/study/rehearsals  (Ensaio do sermão)
+//   GET/POST/DELETE /api/v1/study/environments  (ambientes imersivos publicados pelo admin)
 //   GET /api/v1/study/paths[/:id], POST /api/v1/study/paths/start|day, GET /api/v1/study/streak  (trilhas e sequência de estudo)
 import { GET as compare } from "@/lib/knowledge/study-routes/compare";
 import { POST as explain } from "@/lib/knowledge/study-routes/explain";
 import { GET as interlinear } from "@/lib/knowledge/study-routes/interlinear";
 import { GET as word } from "@/lib/knowledge/study-routes/word";
+import { envDelete, envGet, envPost } from "@/lib/immersive/handler";
 import { pathsGet, pathsPost, streakGet } from "@/lib/engagement/handler";
 import { referralClaim, referralGet } from "@/lib/engagement/referral";
 import { notificationsGet, notificationsPut, notificationsSubscribe, notifyTick } from "@/lib/notify/handler";
@@ -27,6 +29,7 @@ export async function GET(req: Request, ctx: Ctx) {
   if (kind === "paths") return pathsGet(req, arg);
   if (kind === "streak" && !arg) return streakGet(req);
   if (kind === "referral" && !arg) return referralGet(req);
+  if (kind === "environments" && !arg) return envGet(req);
   if (kind === "notifications" && !arg) return notificationsGet(req);
   return notFound();
 }
@@ -36,6 +39,7 @@ export async function POST(req: Request, ctx: Ctx) {
   if (p[0] === "compare" && p[1] === "explain") return explain(req);
   if (p[0] === "rehearsals" && !p[1]) return analyze(req);
   if (p[0] === "referral" && p[1] === "claim") return referralClaim(req);
+  if (p[0] === "environments" && !p[1]) return envPost(req);
   if (p[0] === "notifications" && p[1] === "subscribe") return notificationsSubscribe(req);
   if (p[0] === "notify-tick" && !p[1]) return notifyTick(req);
   if (p[0] === "paths" && (p[1] === "start" || p[1] === "day")) return pathsPost(req, p[1]);
@@ -51,5 +55,6 @@ export async function PUT(req: Request, ctx: Ctx) {
 export async function DELETE(req: Request, ctx: Ctx) {
   const p = (await ctx.params).path;
   if (p[0] === "rehearsals" && !p[1]) return remove(req);
+  if (p[0] === "environments" && !p[1]) return envDelete(req);
   return notFound();
 }

@@ -17,7 +17,9 @@ export const Zone = z.object({
   id,
   name: z.string().min(2).max(60),
   /** Scene component key in the scene registry (the visual part of the zone). */
+  /** Scene component key (built in code) or, with `model`, "glb": the zone is a GLB file downloaded only when the visitor gets near. */
   scene: id,
+  model: z.object({ url: z.string().url().max(500), scale: z.number().positive().max(100).default(1), y: z.number().min(-20).max(20).default(0), size: z.number().int().positive().optional() }).optional(),
   center: v2,
   /** The zone is built when the visitor is closer than `load` meters to its centre and released when farther than `unload` (hysteresis). */
   load: z.number().positive(),

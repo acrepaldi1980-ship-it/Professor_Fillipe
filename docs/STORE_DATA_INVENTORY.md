@@ -71,3 +71,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 - `profiles.locale`: idioma da interface e do professor.
 - Cartão para compartilhar: gerado no aparelho; nada é enviado ao servidor até o aluno escolher compartilhar.
 - Nas lojas: notificações push exigem a declaração do uso de permissão de notificações e, no iOS, as chaves APNs (2.5).
+
+## Ambientes imersivos (Prompts 3.1 a 3.4)
+- `environments` (pacote de ambiente e relatório de desempenho) e bucket público `environments` (modelos .glb): conteúdo do produto, sem dado pessoal. As perguntas ao professor dentro da cena seguem como mensagens da conversa (mesmas regras de privacidade); a posição do aluno na cena é enviada só junto com cada pergunta e não é guardada. O microfone da cena usa `lib/platform`. O som ambiente é sintetizado no aparelho.

@@ -29,7 +29,7 @@ try {
   const p = await login(ctx);
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));
-  await p.goto(`${BASE}/imersao?fps=1`, { waitUntil: "networkidle" });
+  await p.goto(`${BASE}/imersao?e=campo_de_teste&fps=1`, { waitUntil: "networkidle" });
   await p.waitForSelector("text=Entrar no ambiente", { timeout: 30000 });
   say("entry screen: explains the controls before entering", (await p.locator("body").innerText()).includes("W A S D"));
   await p.getByRole("button", { name: "Entrar no ambiente" }).click();
@@ -107,7 +107,7 @@ try {
   say("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));
   void fps;
   // projection mode for the EBD teacher: the tour with big text, moved with the arrow keys, no chat
-  await p.goto(`${BASE}/imersao?p=1`, { waitUntil: "networkidle" });
+  await p.goto(`${BASE}/imersao?e=campo_de_teste&p=1`, { waitUntil: "networkidle" });
   await p.getByRole("button", { name: "Entrar no ambiente" }).click();
   await p.waitForSelector("[data-testid=imm-pos]", { state: "attached", timeout: 20000 });
   await p.waitForTimeout(1200);
@@ -132,7 +132,7 @@ try {
     await pg.evaluate(async ({ k, v }) => { await new Promise((res, rej) => { const r = indexedDB.open("professor-filipe", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => { const tx = r.result.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = () => res(); tx.onerror = () => rej(); }; r.onerror = () => rej(); }); }, { k: `sb-${REF}-auth-token`, v: JSON.stringify(data.session) });
     return pg; })();
   tp.on("pageerror", (e) => errors.push(String(e)));
-  await tp.goto(`${BASE}/imersao`, { waitUntil: "networkidle" });
+  await tp.goto(`${BASE}/imersao?e=campo_de_teste`, { waitUntil: "networkidle" });
   await tp.waitForSelector("text=Entrar no ambiente", { timeout: 30000 });
   say("touch: the entry screen explains the joystick", (await tp.locator("body").innerText()).includes("Arraste o círculo"));
   await tp.getByRole("button", { name: "Entrar no ambiente" }).click();

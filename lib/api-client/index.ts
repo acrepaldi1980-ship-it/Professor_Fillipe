@@ -399,3 +399,19 @@ export interface NotificationPrefs { enabled: boolean; hour: number; tz: string;
 export const getNotificationPrefs = () => apiJson<NotificationPrefs>("/study/notifications");
 export const saveNotificationPrefs = (p: Partial<Pick<NotificationPrefs, "enabled" | "hour" | "tz" | "lang" | "kinds">>) => apiJson<{ ok: true }>("/study/notifications", { method: "PUT", body: JSON.stringify(p) });
 export const registerPushDevice = (subscription: unknown, platform: "web" | "ios" | "android" = "web") => apiJson<{ ok: true }>("/study/notifications/subscribe", { method: "POST", body: JSON.stringify({ subscription, platform }) });
+
+// ---- Immersive environments published from /admin (Prompt 3.4) ----
+export interface EnvListItem { id: string; title: string; era: string; size_bytes: number; source: "code" | "upload" }
+export interface EnvAdminRow { id: string; title: string; status: "draft" | "published"; size_bytes: number; reports: Record<string, { ok: boolean; bytes: number; triangles: number; images: { width: number | null; height: number | null }[]; problems: string[] }>; updated_at: string; data: unknown }
+export const listEnvironments = () => apiJson<{ environments: EnvListItem[] }>("/study/environments").then((r) => r.environments);
+export const getEnvironment = (id: string) => apiJson<{ package: unknown; source: string; status?: string }>(`/study/environments?id=${encodeURIComponent(id)}`);
+export const adminEnvironments = () => apiJson<{ environments: EnvAdminRow[]; limits: { maxBytes: number; maxTriangles: number; maxTexture: number; maxImages: number } }>("/study/environments?admin=1");
+export async function saveEnvironment(pkg: unknown, status: "draft" | "published", files: Record<string, File>): Promise<{ ok: true; id: string; size_bytes: number }> {
+  const form = new FormData();
+  form.set("meta", JSON.stringify({ package: pkg, status }));
+  for (const [zone, f] of Object.entries(files)) form.set(`glb:${zone}`, f, f.name);
+  const res = await apiFetch("/study/environments", { method: "POST", body: form });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+  return res.json();
+}
+export const deleteEnvironment = (id: string) => apiJson<{ ok: true }>(`/study/environments?id=${encodeURIComponent(id)}`, { method: "DELETE" });

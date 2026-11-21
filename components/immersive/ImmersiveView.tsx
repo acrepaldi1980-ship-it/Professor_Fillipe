@@ -3,9 +3,10 @@
 // Immersive engine (spec 8.16, Prompt 3.1, decision D-11: React Three Fiber): first-person walking (touch joystick, keyboard and mouse), collision with
 // sliding, points of interest with verses, ambient and spatial sound, zones built as you approach, levels of detail, a guided tour and an automatic
 // quality drop when the frame rate falls. Environments are data (lib/immersive/package.ts). Loaded on demand so the 3D engine never weighs on the rest of the app.
+import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { closeSessionFull, createSession, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
@@ -18,6 +19,13 @@ import { Joystick } from "./Joystick";
 import { TEST_SCENES } from "./scenes-test";
 
 const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES };
+/** A zone that is a GLB file: downloaded only when the visitor gets near (the zone is mounted by the Rig), released when far. */
+function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
+  const gltf = useGLTF(url);
+  const obj = useMemo(() => gltf.scene.clone(true), [gltf]);
+  useEffect(() => () => { useGLTF.clear(url); }, [url]);
+  return <primitive object={obj} scale={scale} position={[0, y, 0]} />;
+}
 const LOOK_SPEED = 0.0035; // radians per pixel
 
 interface Input { keys: Set<string>; stick: V2; lookX: number; lookY: number; teleport: { at: V2; yaw: number } | null }
@@ -74,16 +82,17 @@ function Rig({ pkg, input, onSnapshot, onQuality }: { pkg: EnvironmentPackage; i
       <ambientLight intensity={0.7} />
       <directionalLight position={[20, 30, 10]} intensity={2} />
       {pkg.zones.filter((z) => active.has(z.id)).map((z) => {
+        const d = Math.hypot(pos.current[0] - z.center[0], pos.current[1] - z.center[1]);
+        if (z.model) return <Suspense key={z.id} fallback={null}><GlbZone url={z.model.url} scale={z.model.scale} y={z.model.y} /></Suspense>;
         const Scene = SCENES[z.scene];
         if (!Scene) return null;
-        const d = Math.hypot(pos.current[0] - z.center[0], pos.current[1] - z.center[1]);
         return <Scene key={z.id} detail={detailFor(d)} />;
       })}
     </>
   );
 }
 
-export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPackage; onOpenRef?(ref: string): void }) {
+export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: EnvironmentPackage; onOpenRef?(ref: string): void; /** Authoring: lets the admin take the visitor's position and where they look, to place a hotspot or a station. */ onAuthorPick?(p: { x: number; z: number; yaw: number }): void }) {
   const input = useRef<Input>({ keys: new Set(), stick: [0, 0], lookX: 0, lookY: 0, teleport: null });
   const [snap, setSnap] = useState<Snapshot>({ pos: pkg.spawn as V2, yaw: pkg.spawnYaw, zones: [], hotspot: null, fps: 0 });
   const [started, setStarted] = useState(false);
@@ -219,6 +228,7 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
               <button type="button" aria-pressed={muted} onClick={() => setMuted((m) => !m)} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{muted ? t("imm.unmute") : t("imm.mute")}</button>
             </div>
           </div>
+          {onAuthorPick && <button type="button" data-testid="imm-pick" onClick={() => onAuthorPick({ x: +snap.pos[0].toFixed(2), z: +snap.pos[1].toFixed(2), yaw: +snap.yaw.toFixed(3) })} className="absolute right-2 top-14 min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("env.pick")}</button>}
           {showFps && <div className="absolute left-2 top-12 rounded bg-black/55 px-2 text-xs text-white" data-testid="imm-fps">{Math.round(snap.fps)} fps · dpr {dpr}</div>}
           <span className="sr-only" data-testid="imm-pos" aria-live="off">{snap.pos[0].toFixed(2)},{snap.pos[1].toFixed(2)},{snap.yaw.toFixed(2)},{snap.zones.join("+")}</span>
 

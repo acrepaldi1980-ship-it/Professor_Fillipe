@@ -854,6 +854,7 @@ Rota `/admin`, só para o papel `admin` (e `reviewer` nas telas de revisão).
 - Desempenho: ≥ 30 quadros por segundo em Android intermediário; carregamento por zonas.
 - Realidade virtual: teletransporte e rotação em passos para conforto.
 - Tecnologia: **React Three Fiber, decidida em 21/11/2026 (D-11)**, no mesmo app do PWA e do Capacitor. Motor base e formato do pacote de ambiente: `lib/immersive` e `components/immersive` (o primeiro ambiente real, o Tabernáculo, vem no prompt 3.2).
+- **Linha de produção (Fase 3, prompt 3.4):** `/admin/ambientes` monta e publica ambientes (pacote + um .glb por zona) com validação de desempenho (5 MB, 150 mil triângulos, texturas de 2048 px) e publicação sem nova versão do app: o pacote vai para `environments` e os modelos para o bucket `environments`, baixados por zona sob demanda. Fichas de especificação: `docs/ambientes/`.
 - O guia é o **mesmo personagem do avatar** (8.17), em versão 3D com os mesmos traços, roupas e cores.
 
 ### 8.17 M17 — Avatar do Professor Filipe (P0 2D, P1 completo, P2 3D)
