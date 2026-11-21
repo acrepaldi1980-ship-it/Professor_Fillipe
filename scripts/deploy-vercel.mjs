@@ -3,8 +3,10 @@
 // Secrets come from .env.local (never printed) and the Vercel token is injected by the network proxy.
 // Usage: node scripts/deploy-vercel.mjs [--env-only] [--no-wait]
 import { createHash, randomBytes } from "node:crypto";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { execSync } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
 
 const API = "https://api.vercel.com";
 const NAME = process.env.VERCEL_PROJECT ?? "professor-filipe";
@@ -57,6 +59,9 @@ async function setEnv(project) {
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }
 
+const SENT_FILE = join(tmpdir(), "pf-deploy-sent.json");
+const sent = existsSync(SENT_FILE) ? JSON.parse(readFileSync(SENT_FILE, "utf8")) : {};
+
 async function deploy() {
   const files = execSync("git ls-files", { encoding: "utf8" }).split("\n").filter(Boolean).filter((f) => existsSync(f) && !f.startsWith("data/") && !f.startsWith("docs/") && !f.startsWith("evals/reports/") && !f.startsWith(".github/"));
   // The embedding model is bundled with the deployment (not in git: too large); see lib/knowledge/embeddings.ts.
@@ -66,8 +71,14 @@ async function deploy() {
     const buf = readFileSync(f);
     const sha = createHash("sha1").update(buf).digest("hex");
     entries.push({ file: f, sha, size: buf.length });
-    const res = await fetch(`${API}/v2/files`, { method: "POST", headers: { ...H, "x-vercel-digest": sha, "Content-Type": "application/octet-stream", "Content-Length": String(buf.length) }, body: buf });
-    if (!res.ok && res.status !== 409) throw new Error(`upload ${f} -> ${res.status}`);
+    // Files already uploaded in the last hours are skipped, and 429 (rate limit) is retried with the delay Vercel asks for.
+    if (sent[sha] && Date.now() - sent[sha] < 6 * 3600_000) continue;
+    for (let attempt = 0; ; attempt++) {
+      const res = await fetch(`${API}/v2/files`, { method: "POST", headers: { ...H, "x-vercel-digest": sha, "Content-Type": "application/octet-stream", "Content-Length": String(buf.length) }, body: buf });
+      if (res.ok || res.status === 409) { sent[sha] = Date.now(); writeFileSync(SENT_FILE, JSON.stringify(sent)); break; }
+      if (res.status === 429 && attempt < 12) { await new Promise((r) => setTimeout(r, Math.min(60, Number(res.headers.get("retry-after")) || 15) * 1000)); continue; }
+      throw new Error(`upload ${f} -> ${res.status}`);
+    }
   }
   console.log("files uploaded:", entries.length);
   const d = await post("/v13/deployments?forceNew=1&skipAutoDetectionConfirmation=1", {
