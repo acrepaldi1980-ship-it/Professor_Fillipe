@@ -20,6 +20,27 @@
   }
  },
  {
+  "id": "siloam-inscription",
+  "name": "Inscrição de Siloé",
+  "period": "Cerca de 700 a.C.",
+  "place": "Jerusalém",
+  "lat": 31.772,
+  "lng": 35.236,
+  "refs": [
+   "2KI.20.20",
+   "2CH.32.30"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Inscri%C3%A7%C3%A3o_de_Silo%C3%A9",
+  "text": "Texto em hebraico antigo gravado na parede do túnel de Ezequias. Conta o momento em que as duas equipes de escavadores, que vinham de lados opostos, se encontraram. Está no Museu Arqueológico de Istambul.",
+  "image": "/arqueologia/siloam-inscription.jpg",
+  "credit": {
+   "title": "Siloam Inscription from Hezekiahs Tunnel Istanbul Archaeology Museums.jpg",
+   "author": "ywpark2003 (Prof. Yong Woo Park)",
+   "license": "CC0",
+   "page": "https://commons.wikimedia.org/wiki/File:Siloam_Inscription_from_Hezekiahs_Tunnel_Istanbul_Archaeology_Museums.jpg"
+  }
+ },
+ {
   "id": "mesha-stele",
   "name": "Estela de Mesa",
   "period": "Séc. IX a.C.",
@@ -103,6 +124,27 @@
   }
  },
  {
+  "id": "caiaphas-ossuary",
+  "name": "Ossuário atribuído a Caifás",
+  "period": "Séc. I d.C.",
+  "place": "Jerusalém",
+  "lat": 31.768,
+  "lng": 35.234,
+  "refs": [
+   "MAT.26.3"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Caif%C3%A1s",
+  "note": "A identificação com o sumo sacerdote Caifás é provável, mas debatida entre os pesquisadores.",
+  "text": "Caixa de calcário para guardar ossos, achada em uma tumba de Jerusalém, com a inscrição \"José, filho de Caifás\". Muitos estudiosos a ligam ao sumo sacerdote dos Evangelhos, embora haja debate.",
+  "image": "/arqueologia/caiaphas-ossuary.jpg",
+  "credit": {
+   "title": "Ossuary of the high priest Joseph Caiaphas P1180839.JPG",
+   "author": "deror_avi",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Ossuary_of_the_high_priest_Joseph_Caiaphas_P1180839.JPG"
+  }
+ },
+ {
   "id": "hezekiah-tunnel",
   "name": "Túnel de Ezequias",
   "period": "Cerca de 700 a.C.",
@@ -121,6 +163,48 @@
    "author": "Davidbena",
    "license": "CC BY-SA 4.0",
    "page": "https://commons.wikimedia.org/wiki/File:Hezekiah%27s_Tunnel_enlightened.jpg"
+  }
+ },
+ {
+  "id": "erastus",
+  "name": "Inscrição de Erasto",
+  "period": "Séc. I d.C.",
+  "place": "Corinto, Grécia",
+  "lat": 37.906,
+  "lng": 22.88,
+  "refs": [
+   "ROM.16.23"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Erasto",
+  "note": "Não é certo que seja o mesmo Erasto de Romanos 16, mas o nome, o cargo e o lugar combinam.",
+  "text": "Pedra do calçamento de Corinto com o nome de Erasto, que pagou a obra do próprio bolso. Paulo cita um Erasto, tesoureiro da cidade, em Romanos 16:23.",
+  "image": "/arqueologia/erastus.jpg",
+  "credit": {
+   "title": "Erastus Inschrift.jpg",
+   "author": "Ktiv",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Erastus_Inschrift.jpg"
+  }
+ },
+ {
+  "id": "areopagus",
+  "name": "Areópago",
+  "period": "Séc. I d.C.",
+  "place": "Atenas, Grécia",
+  "lat": 37.972,
+  "lng": 23.722,
+  "refs": [
+   "ACT.17.19",
+   "ACT.17.22"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Are%C3%B3pago",
+  "text": "Colina de rocha ao lado da Acrópole onde se reunia o conselho de Atenas. Foi ali que Paulo falou aos filósofos sobre o \"Deus desconhecido\".",
+  "image": "/arqueologia/areopagus.jpg",
+  "credit": {
+   "title": "Mars Hill.jpg",
+   "author": "Sings83",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Mars_Hill.jpg"
   }
  },
  {

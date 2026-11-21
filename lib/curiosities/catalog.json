@@ -124,6 +124,17 @@
      "license": "CC BY-SA 4.0",
      "page": "https://commons.wikimedia.org/wiki/File:Hezekiah%27s_Tunnel_enlightened.jpg"
     }
+   },
+   {
+    "id": "siloam-inscription",
+    "image": "/arqueologia/siloam-inscription.jpg",
+    "name": "Inscrição de Siloé",
+    "credit": {
+     "title": "Siloam Inscription from Hezekiahs Tunnel Istanbul Archaeology Museums.jpg",
+     "author": "ywpark2003 (Prof. Yong Woo Park)",
+     "license": "CC0",
+     "page": "https://commons.wikimedia.org/wiki/File:Siloam_Inscription_from_Hezekiahs_Tunnel_Istanbul_Archaeology_Museums.jpg"
+    }
    }
   ],
   "hasVideo": true
@@ -706,7 +717,19 @@
     "end": 31.62
    }
   ],
-  "images": [],
+  "images": [
+   {
+    "id": "erastus",
+    "image": "/arqueologia/erastus.jpg",
+    "name": "Inscrição de Erasto",
+    "credit": {
+     "title": "Erastus Inschrift.jpg",
+     "author": "Ktiv",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Erastus_Inschrift.jpg"
+    }
+   }
+  ],
   "hasVideo": false
  },
  {
@@ -753,8 +776,20 @@
     "end": 33.39
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "erastus",
+    "image": "/arqueologia/erastus.jpg",
+    "name": "Inscrição de Erasto",
+    "credit": {
+     "title": "Erastus Inschrift.jpg",
+     "author": "Ktiv",
+     "license": "CC BY-SA 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Erastus_Inschrift.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "paulo-no-areopago",
@@ -806,8 +841,20 @@
     "end": 32.6
    }
   ],
-  "images": [],
-  "hasVideo": false
+  "images": [
+   {
+    "id": "areopagus",
+    "image": "/arqueologia/areopagus.jpg",
+    "name": "Areópago",
+    "credit": {
+     "title": "Mars Hill.jpg",
+     "author": "Sings83",
+     "license": "CC BY 4.0",
+     "page": "https://commons.wikimedia.org/wiki/File:Mars_Hill.jpg"
+    }
+   }
+  ],
+  "hasVideo": true
  },
  {
   "id": "revolta-em-efeso",

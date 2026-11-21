@@ -24,8 +24,10 @@ for (const it of ITEMS) {
   if (!best || !OK.test(best.license) || /nc|nd/i.test(best.license.replace(/cc by-sa|cc by/i, ""))) { console.log("SKIP (no allowed license on record):", it.id); continue; }
   const dest = `${DIR}/${it.id}.jpg`;
   const tmp = `${DIR}/.tmp-${it.id}.jpg`;
-  execFileSync("convert", [`${DIR}/${src}`, "-auto-orient", "-resize", "1100x1100>", "-strip", "-quality", "78", tmp]);
-  renameSync(tmp, dest);
+  // already a processed JPEG (1100 px or less)? leave it: re-encoding every run would lose quality each time
+  const dims = execFileSync("identify", ["-format", "%w %h", `${DIR}/${src}`], { encoding: "utf8" }).trim().split(" ").map(Number);
+  const done = src === `${it.id}.jpg` && Math.max(...dims) <= 1100 && existsSync(OUT) && JSON.parse(readFileSync(OUT, "utf8")).some((x) => x.id === it.id);
+  if (!done) { execFileSync("convert", [`${DIR}/${src}`, "-auto-orient", "-resize", "1100x1100>", "-strip", "-quality", "78", tmp]); renameSync(tmp, dest); }
   if (src !== `${it.id}.jpg`) execFileSync("rm", [`${DIR}/${src}`]);
   out.push({ ...textOf(it), image: `/arqueologia/${it.id}.jpg`, credit: { title: best.title.replace(/^File:/, ""), author: best.author, license: best.license, page: best.page } });
   console.log("OK  ", it.id, "|", best.license, "|", best.author);
