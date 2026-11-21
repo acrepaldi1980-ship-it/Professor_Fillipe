@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 const SECTIONS = [
   { href: "/admin/obras", k: "works", admin: true }, { href: "/admin/biblioteca", k: "queue", admin: true }, { href: "/admin/notas", k: "notes", admin: false },
   { href: "/admin/respostas", k: "flags", admin: false }, { href: "/admin/usuarios", k: "users", admin: true }, { href: "/admin/assinaturas", k: "billing", admin: true },
-  { href: "/admin/metricas", k: "metrics", admin: true }, { href: "/admin/configuracoes", k: "settings", admin: true }, { href: "/admin/auditoria", k: "audit", admin: true },
+  { href: "/admin/metricas", k: "metrics", admin: true }, { href: "/admin/modelos-3d", k: "models3d", admin: true }, { href: "/admin/configuracoes", k: "settings", admin: true }, { href: "/admin/auditoria", k: "audit", admin: true },
 ] as const;
 
 export default function AdminHub() {

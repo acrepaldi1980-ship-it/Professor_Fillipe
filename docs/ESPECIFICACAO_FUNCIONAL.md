@@ -670,6 +670,7 @@ Todos os modos usam o mesmo motor (M05). O que muda é a camada de modo no promp
 - React Three Fiber; girar, ampliar e tocar em pontos de interesse (hotspots) com texto, versículos e verbete.
 - P0: Arca da Aliança, Tabernáculo em maquete, Templo de Salomão. P1: 20+ modelos.
 - Modelos em glTF/GLB com versão leve (≤ 5 MB) para celular.
+- **Fase 2 (Prompt 2.6):** 20 modelos no código e catálogo administrável em `/admin/modelos-3d` (arquivo .glb até 3,5 MB, metadados, licença, fontes, versículos, pontos de toque, pré-visualização, ocultar/excluir, auditoria; sem rosto de Jesus nem Deus Pai). O aluno navega por **tema** e **busca**. 30 rotas de mapa e 15 linhas do tempo, todas com versículos conferidos contra a Bíblia do acervo. Fontes licenciadas e fluxo de geração por IA com revisão: `docs/MODELOS_3D.md`.
 
 ### 8.9 M09 — Revisão e caderno (P0)
 
@@ -972,7 +973,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | `kg_relations` | from_id, to_id, relation, refs[] |
 | `map_routes` | id, name, era, steps (jsonb: lugar, refs, texto), sources |
 | `timelines` | id, name, events (jsonb: id, título, data, incerteza, refs, entidades) |
-| `models3d` | id, name, file_url, light_file_url, hotspots (jsonb), license, sources |
+| `models3d` | id, name, alt, note, theme, refs, camera, file_url, light_file_url, hotspots (jsonb), license, sources, size_bytes, active (modelos adicionados pelo admin; os 20 do código ficam em `lib/visuals/models3d*.ts`) |
 | `illustrations` | id, prompt_hash, prompt, url, approved, tags[] |
 | `own_notes` | id, tradition, book_code, ref_range, kind (`intro`, `pericope`, `article`), title, body, sources (jsonb), status, reviewer_id, originality_score |
 | `ingest_runs` | id, work_id, started_at, finished_at, status, stats (jsonb) |

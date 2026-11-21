@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { VisualPanel } from "@/components/visuals/VisualPanel";
-import { getBibleVerses, listVisuals } from "@/lib/api-client";
+import { getBibleVerses, listVisuals, type CatalogModel } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import type { TeacherResponse } from "@/lib/teacher/schema";
@@ -19,12 +19,16 @@ type Visual = TeacherResponse["visuals"][number];
 export default function VisualsPage() {
   const [maps, setMaps] = useState<{ id: string; name: string }[]>([]);
   const [timelines, setTimelines] = useState<{ id: string; name: string }[]>([]);
-  const [models, setModels] = useState<{ id: string; name: string }[]>([]);
+  const [models, setModels] = useState<CatalogModel[]>([]);
+  const [themes, setThemes] = useState<string[]>([]);
+  const [theme, setTheme] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState<Visual | null>(null);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   useEffect(() => {
-    void listVisuals().then((r) => { setMaps(r.maps); setTimelines(r.timelines); setModels(r.models); }).catch(() => undefined);
+    void listVisuals().then((r) => { setMaps(r.maps); setTimelines(r.timelines); setModels(r.models); setThemes(r.themes); }).catch(() => undefined);
   }, []);
+  const shown = models.filter((m) => (!theme || m.theme === theme) && (!query.trim() || `${m.name} ${m.alt}`.toLowerCase().includes(query.trim().toLowerCase())));
   async function openRef(ref: string) {
     try {
       const r = await getBibleVerses("por_blivre_2018", ref);
@@ -45,7 +49,14 @@ export default function VisualsPage() {
       <section><h2 className="mb-2 text-xl">{t("visuals.timelines")}</h2>
         <ul className="grid gap-2 sm:grid-cols-2">{timelines.map((x) => <li key={x.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "timeline", timeline_id: x.id })}>{x.name}</button></li>)}</ul></section>
       <section><h2 className="mb-2 text-xl">{t("visuals.models")}</h2>
-        <ul className="grid gap-2 sm:grid-cols-2">{models.map((x) => <li key={x.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "model3d", model_id: x.id })}>{x.name}</button></li>)}</ul></section>
+        <div className="mb-2 flex flex-col gap-2">
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("visuals.models.search")} aria-label={t("visuals.models.search")} className="min-h-10 rounded-control border border-line bg-bg px-3" />
+          <div role="group" aria-label={t("visuals.models")} className="flex flex-wrap gap-2">
+            {["", ...themes].map((th) => <button key={th || "all"} type="button" aria-pressed={theme === th} onClick={() => setTheme(th)} className={`min-h-9 rounded-control border px-3 text-sm ${theme === th ? "border-primary bg-primary text-primary-ink" : "border-line"}`}>{th || t("visuals.models.theme.all")}</button>)}
+          </div>
+        </div>
+        {shown.length === 0 && <p className="text-sm text-muted">{t("visuals.models.none")}</p>}
+        <ul className="grid gap-2 sm:grid-cols-2">{shown.map((x) => <li key={x.id}><button type="button" className="w-full rounded-control border border-line bg-surface p-3 text-left" onClick={() => setOpen({ kind: "model3d", model_id: x.id })}>{x.name}</button></li>)}</ul></section>
       {open && <VisualPanel visual={open} durationMs={7000} onClose={() => setOpen(null)} onOpenRef={(r) => void openRef(r)} />}
       {verse && (
         <Modal title={verse.title} onClose={() => setVerse(null)}>

@@ -1,5 +1,7 @@
 // The 11 map routes of the MVP (spec 8.8, RF-M08-02). Each step has approximate coordinates (checked against the OpenBible
 // Geocoding / Theographic data by scripts/seed-routes.mts), the verses that tell it and a one-line note. Place names in Portuguese.
+import { ROUTES_EXTRA } from "./route-data-extra";
+
 export interface RouteStep {
   id: string;
   name: string;
@@ -19,7 +21,7 @@ export interface RouteDef {
 
 const s = (id: string, name: string, lat: number, lon: number, refs: string[], note: string): RouteStep => ({ id, name, lat, lon, refs, note });
 
-export const ROUTES: RouteDef[] = [
+const CORE_ROUTES: RouteDef[] = [
   { id: "exodus", name: "O Êxodo", era: "ot", text: "EXO.12.37-EXO.19.2", steps: [
     s("rameses", "Ramessés", 30.8, 31.8, ["EXO.12.37"], "O povo sai do Egito, cerca de 600 mil homens a pé."),
     s("succoth", "Sucote", 30.55, 32.3, ["EXO.12.37", "EXO.13.20"], "Primeira parada depois da saída."),
@@ -114,5 +116,7 @@ export const ROUTES: RouteDef[] = [
     s("rome_r", "Roma", 41.9, 12.5, ["ACT.28.14-ACT.28.31"], "Paulo prega com toda a liberdade, sem impedimento."),
   ] },
 ];
+
+export const ROUTES: RouteDef[] = [...CORE_ROUTES, ...ROUTES_EXTRA];
 
 export const MAP_CREDITS = "Mapa-base: Natural Earth (domínio público). Lugares: OpenBible.info Geocoding (CC BY 4.0) e Theographic Bible Metadata (CC BY-SA 4.0). Coordenadas aproximadas; locais antigos como o Monte Sinai são debatidos.";

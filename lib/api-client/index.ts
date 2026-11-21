@@ -224,9 +224,9 @@ export async function getMapRoute(id: string): Promise<{ id: string; name: strin
 export async function getTimeline(id: string): Promise<{ id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] }> {
   return (await apiJson<{ timeline: { id: string; name: string; events: import("@/lib/visuals/timeline-data").TimelineEvent[] } }>(`/visuals/timelines?id=${encodeURIComponent(id)}`)).timeline;
 }
-export async function listVisuals(): Promise<{ maps: { id: string; name: string }[]; timelines: { id: string; name: string }[]; models: { id: string; name: string }[] }> {
-  const [m, t, d] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines"), apiJson<{ models: { id: string; name: string }[] }>("/visuals/models")]);
-  return { maps: m.routes, timelines: t.timelines, models: d.models };
+export async function listVisuals(): Promise<{ maps: { id: string; name: string }[]; timelines: { id: string; name: string }[]; models: CatalogModel[]; themes: string[] }> {
+  const [m, t, d] = await Promise.all([apiJson<{ routes: { id: string; name: string }[] }>("/visuals/maps"), apiJson<{ timelines: { id: string; name: string }[] }>("/visuals/timelines"), apiJson<{ models: CatalogModel[]; themes: string[] }>("/visuals/models")]);
+  return { maps: m.routes, timelines: t.timelines, models: d.models, themes: d.themes };
 }
 
 export type IllustrationResult = { status: "ok"; hash: string; alt: string } | { status: "refused" | "limit" | "unavailable" };
@@ -361,3 +361,18 @@ export async function analyzeRehearsal(sessionId: string, audio: Blob, keep: boo
   if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
   return res.json();
 }
+
+// ---- 3D model catalog (Prompt 2.6) ----
+export interface CatalogModel { id: string; name: string; alt: string; theme: string; source: "code" | "upload"; size_bytes?: number | null }
+export interface RemoteModel3D { id: string; name: string; alt: string; note: string; theme: string; refs: string[]; camera: [number, number, number]; hotspots: { id: string; label: string; text: string; refs: string[]; at: [number, number, number] }[]; license: string | null; sources: string[]; file_url: string | null; size_bytes: number | null; active?: boolean }
+export const getModel3d = (id: string) => apiJson<{ model: RemoteModel3D }>(`/visuals/models?id=${encodeURIComponent(id)}`).then((r) => r.model);
+export const adminModels3d = () => apiJson<{ models: RemoteModel3D[]; builtin: { id: string; name: string }[] }>("/visuals/models?admin=1");
+export async function saveModel3d(meta: Record<string, unknown>, file?: File | null): Promise<{ ok: true; id: string }> {
+  const form = new FormData();
+  form.set("meta", JSON.stringify(meta));
+  if (file) form.set("file", file, file.name);
+  const res = await apiFetch("/visuals/models", { method: "POST", body: form });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+  return res.json();
+}
+export const deleteModel3d = (id: string) => apiJson<{ ok: true }>(`/visuals/models?id=${encodeURIComponent(id)}`, { method: "DELETE" });

@@ -20,6 +20,7 @@ export interface Model3D {
 }
 
 import { MODELS_3D_EXTRA } from "./models3d-extra";
+import { MODELS_3D_EXTRA2 } from "./models3d-extra2";
 
 const CORE_MODELS_3D: Model3D[] = [
   { id: "ark_covenant", name: "A Arca da Aliança", camera: [3.4, 2.6, 4.6],
@@ -60,4 +61,14 @@ const CORE_MODELS_3D: Model3D[] = [
     ] },
 ];
 
-export const MODELS_3D: Model3D[] = [...CORE_MODELS_3D, ...MODELS_3D_EXTRA];
+export const MODELS_3D: Model3D[] = [...CORE_MODELS_3D, ...MODELS_3D_EXTRA, ...MODELS_3D_EXTRA2];
+
+/** Themes of the catalog, so the student can browse by subject (the models built in code; uploaded ones carry their own theme). */
+export const THEME_OF: Record<string, string> = {
+  ark_covenant: "Tabernáculo e templo", tabernacle: "Tabernáculo e templo", solomon_temple: "Tabernáculo e templo", menorah: "Tabernáculo e templo", burnt_altar: "Tabernáculo e templo", herod_temple: "Tabernáculo e templo",
+  noah_ark: "Antigo Testamento", babel_tower: "Antigo Testamento", jericho_walls: "Antigo Testamento", solomon_throne: "Antigo Testamento", bronze_serpent: "Antigo Testamento",
+  four_room_house: "Vida no tempo da Bíblia", synagogue_first_century: "Vida no tempo da Bíblia", jerusalem_herod: "Vida no tempo da Bíblia",
+  empty_tomb: "Jesus e os Evangelhos", bethesda_pool: "Jesus e os Evangelhos", galilee_boat: "Jesus e os Evangelhos", upper_room: "Jesus e os Evangelhos", jacob_well: "Jesus e os Evangelhos",
+  paul_ship: "Atos e as viagens de Paulo",
+};
+export const themeOf = (id: string) => THEME_OF[id] ?? "Outros";

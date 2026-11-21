@@ -36,7 +36,7 @@ try {
   await p.waitForSelector("text=Mapas e linhas do tempo", { timeout: 20000 });
   await p.waitForSelector("section:has(h2:text('Mapas')) li", { timeout: 30000 }).catch(() => {});
   await p.waitForTimeout(1500);
-  say("library lists 11 maps and 6 timelines", (await p.locator("section:has(h2:text('Mapas')) li").count()) === 11 && (await p.locator("section:has(h2:text('Linhas do tempo')) li").count()) === 6);
+  say("library lists 30 maps and 15 timelines", (await p.locator("section:has(h2:text('Mapas')) li").count()) === 30 && (await p.locator("section:has(h2:text('Linhas do tempo')) li").count()) === 15);
   await p.click("button:text('A 2ª viagem missionária de Paulo')");
   await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
   say("map renders (MapLibre canvas)", true);
@@ -65,8 +65,8 @@ try {
   await p.screenshot({ path: "/tmp/visuals-timeline.png" });
   // 3D models
   await p.click("[role=dialog] button:text('Fechar')");
-  say("library lists the 15 models", (await p.locator("section:has(h2:text('Modelos em 3D')) li").count()) === 15);
-  await p.click("button:text('A Arca da Aliança')");
+  say("library lists the 20 models", (await p.locator("section:has(h2:text('Modelos em 3D')) li").count()) === 20);
+  await p.click("button:text-is('A Arca da Aliança')");
   await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
   await p.waitForTimeout(2500);
   say("3D: the Ark renders with 5 hotspots", (await p.locator("[role=dialog] button.map-pin").count()) === 5);

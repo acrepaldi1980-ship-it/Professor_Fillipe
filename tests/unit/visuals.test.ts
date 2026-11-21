@@ -7,9 +7,9 @@ import { findReferences } from "../../lib/knowledge/refs-parser";
 import { expandRefs } from "../../lib/knowledge/refs-parser";
 
 describe("route data", () => {
-  it("has the 11 MVP routes with unique ids and plausible Mediterranean coordinates", () => {
-    expect(ROUTES).toHaveLength(11);
-    expect(new Set(ROUTES.map((r) => r.id)).size).toBe(11);
+  it("has the 30 routes (11 of the MVP and 19 of Prompt 2.6) with unique ids and plausible Mediterranean coordinates", () => {
+    expect(ROUTES).toHaveLength(30);
+    expect(new Set(ROUTES.map((r) => r.id)).size).toBe(30);
     for (const r of ROUTES) {
       expect(r.steps.length, r.id).toBeGreaterThanOrEqual(3);
       expect(new Set(r.steps.map((s) => s.id)).size, r.id).toBe(r.steps.length);
@@ -37,9 +37,9 @@ describe("timelines", () => {
     expect(dateLabel({ year: 30, from: 30, to: 33 })).toBe("c. 30 d.C. a 33 d.C.");
     expect(dateLabel({ year: -5, from: -7, to: -4 })).toBe("c. 7 a.C. a 4 a.C.");
   });
-  it("has the 6 MVP timelines, 4 of them for the Old Testament (D-07)", () => {
-    expect(TIMELINES.map((t) => t.id).sort()).toEqual(["early_church", "jesus_life", "judges", "kings", "patriarchs", "prophets"]);
-    expect(TIMELINES.filter((t) => t.era === "ot")).toHaveLength(4);
+  it("has the 15 timelines (6 of the MVP and 9 of Prompt 2.6), 8 of them for the Old Testament (D-07)", () => {
+    expect(TIMELINES.map((t) => t.id).sort()).toEqual(["between_testaments", "bible_history", "david_solomon", "early_church", "exile_return", "exodus_wilderness", "jerusalem_history", "jesus_life", "judges", "kings", "nt_writings", "patriarchs", "paul_life", "prophets", "rome_judea"]);
+    expect(TIMELINES.filter((t) => t.era === "ot")).toHaveLength(8);
     expect(TIMELINES.find((t) => t.id === "patriarchs")!.events.find((x) => x.id === "exodus")).toMatchObject({ year: -1446, to: -1260 });
   });
   it("events are in chronological order and ranges contain the year", () => {

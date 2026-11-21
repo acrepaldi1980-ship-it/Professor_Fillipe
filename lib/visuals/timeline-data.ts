@@ -1,6 +1,8 @@
 // Timelines (spec 8.8, RF-M08-03). Dates are approximate and carry their uncertainty ("c.", a range) on purpose.
 // Old Testament chronology: D-07 (21/11/2026) = conservative modern (Exodus c. 1446 BC from 1 Kings 6:1; kings of Israel and Judah after Thiele).
 // Every date is approximate: other chronologies (late Exodus c. 1260 BC, Ussher) exist and the teacher says so.
+import { TIMELINES_EXTRA } from "./timeline-data-extra";
+
 export interface TimelineEvent {
   id: string;
   name: string;
@@ -19,7 +21,7 @@ export interface TimelineDef {
 }
 const e = (id: string, name: string, year: number, refs: string[], note: string, from?: number, to?: number): TimelineEvent => ({ id, name, year, from, to, refs, note });
 
-export const TIMELINES: TimelineDef[] = [
+const CORE_TIMELINES: TimelineDef[] = [
   { id: "jesus_life", name: "A vida de Jesus", era: "nt", events: [
     e("birth", "Nascimento de Jesus", -5, ["MAT.2.1", "LUK.2.1-LUK.2.7"], "Antes da morte de Herodes, o Grande (4 a.C.).", -7, -4),
     e("temple12", "Jesus aos 12 anos no templo", 8, ["LUK.2.41-LUK.2.52"], "Única cena da infância depois do nascimento.", 7, 9),
@@ -96,3 +98,5 @@ export const TIMELINES: TimelineDef[] = [
     e("malachi", "Malaquias", -430, ["MAL.1.1"], "O último profeta do Antigo Testamento.", -450, -420),
   ] },
 ];
+
+export const TIMELINES: TimelineDef[] = [...CORE_TIMELINES, ...TIMELINES_EXTRA];

@@ -6,13 +6,13 @@ import { useMemo } from "react";
 import { DoubleSide } from "three";
 import { BRONZE, CEDAR, Bronze, Gold, Ground, Linen, Stone, Studio, Tube, Wood } from "./scenes";
 
-type V3 = [number, number, number];
-const SAND = "#cdb48a", WATER = "#4f86a3", SEA = "#3d7a93", GRASS = "#8aa46a", CLAY = "#b98a5a", DARK = "#4a3a2a";
-const Mat = ({ c, r = 0.9, m = 0 }: { c: string; r?: number; m?: number }) => <meshStandardMaterial color={c} roughness={r} metalness={m} side={DoubleSide} />;
-const Box = ({ p, s, c = CLAY, stone = false, wood = false }: { p: V3; s: V3; c?: string; stone?: boolean; wood?: boolean }) => (
+export type V3 = [number, number, number];
+export const SAND = "#cdb48a", WATER = "#4f86a3", SEA = "#3d7a93", GRASS = "#8aa46a", CLAY = "#b98a5a", DARK = "#4a3a2a";
+export const Mat = ({ c, r = 0.9, m = 0 }: { c: string; r?: number; m?: number }) => <meshStandardMaterial color={c} roughness={r} metalness={m} side={DoubleSide} />;
+export const Box = ({ p, s, c = CLAY, stone = false, wood = false }: { p: V3; s: V3; c?: string; stone?: boolean; wood?: boolean }) => (
   <mesh position={p}><boxGeometry args={s} />{stone ? <Stone repeat={[Math.max(1, Math.round(s[0])), Math.max(1, Math.round(s[1]))]} /> : wood ? <Wood base={c} repeat={[2, 1]} /> : <Mat c={c} />}</mesh>
 );
-const Cyl = ({ p, r, h, c = CLAY, seg = 24, rt, m = 0 }: { p: V3; r: number; h: number; c?: string; seg?: number; rt?: number; m?: number }) => (
+export const Cyl = ({ p, r, h, c = CLAY, seg = 24, rt, m = 0 }: { p: V3; r: number; h: number; c?: string; seg?: number; rt?: number; m?: number }) => (
   <mesh position={p}><cylinderGeometry args={[rt ?? r, r, h, seg]} /><Mat c={c} m={m} /></mesh>
 );
 

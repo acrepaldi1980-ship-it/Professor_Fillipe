@@ -3,8 +3,10 @@ import { sanitizeVisuals } from "../../lib/visuals/catalog";
 import { MODELS_3D } from "../../lib/visuals/models3d";
 
 describe("3D catalog", () => {
-  it("has the 3 core models and the 12 of spec 8.18, each with text alternative, note and hotspots with verses", () => {
-    expect(MODELS_3D.map((m) => m.id)).toEqual(["ark_covenant", "tabernacle", "solomon_temple", "menorah", "noah_ark", "babel_tower", "jericho_walls", "four_room_house", "jerusalem_herod", "paul_ship", "empty_tomb", "solomon_throne", "bethesda_pool", "galilee_boat", "synagogue_first_century"]);
+  it("has the 20 models (3 core, 12 of spec 8.18 and 5 of Prompt 2.6), each with text alternative, note and hotspots with verses", () => {
+    expect(MODELS_3D).toHaveLength(20);
+    expect(new Set(MODELS_3D.map((m) => m.id)).size).toBe(20);
+    for (const id of ["herod_temple", "burnt_altar", "bronze_serpent", "upper_room", "jacob_well"]) expect(MODELS_3D.some((m) => m.id === id), id).toBe(true);
     for (const m of MODELS_3D) {
       expect(m.alt.length, m.id).toBeGreaterThan(60);
       expect(m.note.length, m.id).toBeGreaterThan(30);
