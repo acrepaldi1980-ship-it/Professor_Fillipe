@@ -1,1 +1,22 @@
-[]
+[
+ {
+  "id": "tel-dan",
+  "name": "Estela de Tel Dan",
+  "period": "Séc. IX a.C.",
+  "place": "Tel Dan, norte de Israel",
+  "lat": 33.249,
+  "lng": 35.652,
+  "refs": [
+   "2SA.7.16"
+  ],
+  "wiki": "https://pt.wikipedia.org/wiki/Estela_de_Tel_Dan",
+  "text": "Fragmento de basalto com inscrição em aramaico que menciona a \"casa de Davi\". É a referência mais antiga fora da Bíblia à dinastia de Davi, e hoje está no Museu de Israel, em Jerusalém.",
+  "image": "/arqueologia/tel-dan.jpg",
+  "credit": {
+   "title": "JRSLM 300116 Tel Dan Stele 01.jpg",
+   "author": "Oren Rozen",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:JRSLM_300116_Tel_Dan_Stele_01.jpg"
+  }
+ }
+]

@@ -20,7 +20,7 @@ const weekTheme = () => THEMES[Math.floor(Date.now() / (7 * 86_400_000)) % THEME
 const ORDER = ["iniciante", "intermediário", "avançado"];
 
 import archItems from "@/lib/archaeology/items.json";
-const HAS_ARCH = (archItems as { image?: string }[]).some((x) => x.image);
+const HAS_ARCH = (archItems as { image?: string }[]).filter((x) => x.image).length >= 6;
 
 export default function HomePage() {
   const [me, setMe] = useState<MeResponse | null>(null);

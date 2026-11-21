@@ -13,7 +13,7 @@ import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 
 import archItems from "@/lib/archaeology/items.json";
-const HAS_ARCH = (archItems as { image?: string }[]).some((x) => x.image);
+const HAS_ARCH = (archItems as { image?: string }[]).filter((x) => x.image).length >= 6; // the gallery opens when it has a worthwhile set of photos
 
 type Visual = TeacherResponse["visuals"][number];
 
