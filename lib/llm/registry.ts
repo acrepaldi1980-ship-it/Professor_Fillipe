@@ -30,11 +30,8 @@ export const PROVIDERS: ProviderDef[] = [
     { name: "llama-3.3-70b", tier: 1, tools: true },
     { name: "qwen-3-32b", tier: 2, tools: false },
   ] },
-  { id: "openrouter", kind: "openai", baseUrl: "https://openrouter.ai/api/v1", keyEnv: "OPENROUTER_API_KEY", models: [
-    { name: "meta-llama/llama-3.3-70b-instruct:free", tier: 1, tools: false },
-    { name: "openai/gpt-oss-120b:free", tier: 1, tools: false },
-    { name: "google/gemma-3-27b-it:free", tier: 2, tools: false },
-  ] },
+  // OpenRouter's free list changes constantly: its models are discovered at run time (discovery.ts); only OPENROUTER_MODELS overrides that.
+  { id: "openrouter", kind: "openai", baseUrl: "https://openrouter.ai/api/v1", keyEnv: "OPENROUTER_API_KEY", models: [] },
   { id: "mistral", kind: "openai", baseUrl: "https://api.mistral.ai/v1", keyEnv: "MISTRAL_API_KEY", models: [
     { name: "mistral-small-latest", tier: 1, tools: true },
     { name: "open-mistral-nemo", tier: 2, tools: true },

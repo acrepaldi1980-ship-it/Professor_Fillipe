@@ -16,9 +16,13 @@ export interface RouterDeps {
   now?: () => number;
   /** Longest total wait for a cooling endpoint before giving up (ms). */
   maxWaitMs?: number;
+  /** Whole call budget in ms (the serverless function has 60 s): a slow free model must not eat all of it. */
+  deadlineMs?: number;
 }
 
 const inflight = new Map<string, number>();
+/** Consecutive unexplained failures per endpoint: a model that keeps failing (removed, unsupported parameter...) is parked for a while. */
+const streaks = new Map<string, number>();
 let defaultStore: HealthStore | null = null;
 const realCall = (e: Endpoint, req: LlmRequest) => (e.kind === "gemini" ? callGemini(e, req) : callOpenAI(e, req));
 
@@ -56,12 +60,14 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
   const random = deps.random ?? Math.random;
   const now = deps.now ?? Date.now;
   const maxWait = deps.maxWaitMs ?? 12000;
+  const deadline = now() + (deps.deadlineMs ?? 48000);
   if (!endpoints.length) throw new LlmError("auth", 0, 0, "no_providers_configured");
 
   const tried = new Set<string>();
   let attempts = 0, waited = 0, bad = 0;
   let last: LlmError | null = null;
   while (attempts < Math.min(10, endpoints.length + 3)) {
+    if (now() >= deadline) throw last ?? new LlmError("timeout", 0, 0, "deadline");
     const cooling = await store.cooldowns();
     const free = endpoints.filter((e) => !tried.has(e.id) && (cooling.get(e.id) ?? 0) <= now() && (inflight.get(e.id) ?? 0) < e.concurrency);
     const pick = order(free, req, random)[0];
@@ -77,15 +83,23 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
     inflight.set(pick.id, (inflight.get(pick.id) ?? 0) + 1);
     const t0 = now();
     try {
-      const raw = await call(pick, req);
+      // each attempt gets what is left of the budget (at most the request's own timeout), so one slow endpoint cannot use it all
+      const raw = await call(pick, { ...req, timeoutMs: Math.max(4000, Math.min(req.timeoutMs ?? 30000, deadline - now())) });
       if (req.validate && !req.validate(raw.out)) throw new LlmError("bad_output", 200, 0, "validation");
+      streaks.delete(pick.id);
       store.record(pick.id, true, null, now() - t0);
       return { out: raw.out, text: raw.text, endpoint: pick.id, provider: pick.provider, model: pick.model, ms: now() - t0, attempts };
     } catch (e) {
       const err = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
       last = err;
       store.record(pick.id, false, err.kind, now() - t0);
-      const cd = cooldownFor(err.kind, err.retryAfter);
+      let cd = cooldownFor(err.kind, err.retryAfter);
+      if (cd === 0 || err.kind === "server" || err.kind === "timeout") {
+        const n = (streaks.get(pick.id) ?? 0) + 1;
+        streaks.set(pick.id, n);
+        if (n >= 3) { cd = Math.max(cd, 300); streaks.set(pick.id, 0); } // three failures in a row: park it for 5 minutes
+      }
+      console.log(JSON.stringify({ evt: "llm_fail", endpoint: pick.id, kind: err.kind, status: err.status, detail: err.message.slice(0, 120) }));
       if (cd > 0) await store.setCooldown(pick.id, cd + Math.round(random() * 3), `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150)); // a little jitter so instances do not return together
       if (err.kind === "bad_output" && ++bad >= 3) throw err;
     } finally {

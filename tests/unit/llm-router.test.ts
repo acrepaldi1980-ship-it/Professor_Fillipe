@@ -158,3 +158,19 @@ describe("free model discovery", () => {
     expect(out[1].tools).toBe(false);
   });
 });
+
+describe("budget and parking", () => {
+  it("stops at the deadline instead of using the whole function time", async () => {
+    let t = 0;
+    const store = new MemoryStore(() => t);
+    const e = [ep("a/1"), ep("b/2"), ep("c/3")];
+    await expect(route(req(), { endpoints: () => e, store, now: () => t, deadlineMs: 10000, call: async () => { t += 6000; throw new LlmError("timeout", 0); } })).rejects.toMatchObject({ kind: "timeout" });
+  });
+  it("an endpoint that fails three times in a row is parked for 5 minutes", async () => {
+    const store = new MemoryStore();
+    const e = [ep("bad/1", { tier: 0 }), ep("good/2", { tier: 1 })]; // the bad one is always tried first
+    const deps = { endpoints: () => e, store, random: () => 0.5, call: async (x: Endpoint) => { if (x.id === "bad/1") throw new LlmError("other", 400, 0, "unsupported"); return { out: {}, text: "" }; } };
+    for (let i = 0; i < 3; i++) await route(req(), deps);
+    expect((await store.cooldowns()).has("bad/1")).toBe(true);
+  });
+});
