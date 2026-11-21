@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getDueCards, getLevel, getMe, getRecentSessions, setLevel, type MeResponse, type SessionRow } from "@/lib/api-client";
+import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, setLevel, type ChurchLesson, type MeResponse, type SessionRow } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 
 // Theme of the week: rotates through the year (no spending, just a gentle invitation).
@@ -25,7 +25,9 @@ export default function HomePage() {
   const [current, setCurrent] = useState("");
   const [due, setDue] = useState(0);
   const [last, setLast] = useState<SessionRow | null>(null);
+  const [lessons, setLessons] = useState<ChurchLesson[]>([]);
   useEffect(() => {
+    void getMyLessons().then((r) => setLessons(r.lessons)).catch(() => undefined); // the lesson of the week published by the student's church
     void getMe().then(setMe);
     void getDueCards(1).then((r) => setDue(r.total)).catch(() => undefined);
     void getRecentSessions(1).then((r) => setLast(r.sessions[0] ?? null)).catch(() => undefined);
@@ -47,6 +49,17 @@ export default function HomePage() {
       <Link href="/estudo" className="inline-flex min-h-14 items-center justify-center rounded-control bg-primary px-6 text-lg font-semibold text-primary-ink">
         {t("home.start")}
       </Link>
+      {lessons.length > 0 && (
+        <section aria-label={t("home.church.title")} className="flex flex-col gap-2">
+          <h2 className="text-lg">{t("home.church.title")}</h2>
+          {lessons.map((l) => (
+            <Link key={l.id} href={`/estudo?lesson=${l.id}&titulo=${encodeURIComponent(l.title)}`} className="rounded-control border border-primary bg-surface p-3">
+              <strong>{t("home.church.open").replace("{title}", l.title)}</strong>
+              <span className="block text-sm text-muted">{l.class} · {l.church}{l.ref ? ` · ${l.ref}` : ""}</span>
+            </Link>
+          ))}
+        </section>
+      )}
       <section aria-label={t("modes.title")} className="grid grid-cols-2 gap-2">
         {(["lesson", "sermon", "deep"] as const).map((m) => (
           <Link key={m} href={`/modos?m=${m}`} className="rounded-control border border-line bg-surface p-3">

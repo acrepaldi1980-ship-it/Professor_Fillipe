@@ -20,7 +20,14 @@ export async function loadBibleSettings(db: SupabaseClient, userId: string): Pro
       lenses = [];
     }
   }
-  const ids = [p?.main_version_id ?? DEFAULT_BIBLE.main_version_id, ...(p?.compare_version_ids ?? [])];
+  // The church may set a default lens and version; the student's own choice always wins (and can widen it).
+  let churchVersion: string | null = null;
+  if (!lenses.length || !p?.main_version_id) {
+    const { data: ch } = await db.from("churches").select("default_lenses, default_version_id").limit(1).maybeSingle();
+    if (ch && !lenses.length && consents.sensitive_religious?.granted) lenses = ((ch.default_lenses as string[] | null) ?? []).filter((l) => (LENSES as readonly string[]).includes(l));
+    if (ch?.default_version_id && !p?.main_version_id) churchVersion = ch.default_version_id as string;
+  }
+  const ids = [p?.main_version_id ?? churchVersion ?? DEFAULT_BIBLE.main_version_id, ...(p?.compare_version_ids ?? [])];
   const { data: names } = await db.from("bible_versions").select("id,name").in("id", ids);
   const nameOf = (id: string) => names?.find((n) => n.id === id)?.name ?? id;
   const main = ids[0];

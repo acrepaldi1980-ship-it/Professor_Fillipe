@@ -161,6 +161,11 @@ export default function AccountPage() {
       </Card>
 
       <Card className="flex flex-col gap-2">
+        <h2 className="text-lg">{t("church.title")}</h2>
+        <Link href="/igreja" className="rounded-control border border-line p-3"><strong>{t("church.title")}</strong><span className="block text-sm text-muted">{t("church.help")}</span></Link>
+      </Card>
+
+      <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("account.sub")}</h2>
         <Link href="/assinatura" className="rounded-control border border-line p-3"><strong>{t("account.sub")}</strong><span className="block text-sm text-muted">{t("account.sub.help")}</span></Link>
         <Link href="/planos" className="rounded-control border border-line p-3"><strong>{t("account.plans")}</strong></Link>

@@ -65,6 +65,8 @@ export async function applyEvent(ev: NormalizedEvent, provider: string, db: Supa
   await saveSub(db, provider, ev.providerRef, row.user_id, row.plan_id, row.cycle, sub);
   if (sub.status === "active" && !wasActive) void db.rpc("api_billing_track", { p_secret: billingSecret(), p_user: row.user_id, p_event: "subscription_activated", p_props: { plan: row.plan_id, cycle: row.cycle } });
   await syncEntitlement(db, provider, ev.providerRef, row.user_id, row.plan_id, sub, now);
+  // a church subscription also opens or closes the church and the access rights of all its members
+  if (String(row.plan_id).startsWith("church_")) await db.rpc("api_billing_church_sync", { p_secret: billingSecret(), p_provider: provider, p_ref: ev.providerRef });
   await db.rpc("api_billing_processed", { p_secret: billingSecret(), p_key: ev.key });
   return "applied";
 }
@@ -109,4 +111,20 @@ export async function cancelSubscription(userDb: SupabaseClient, userId: string,
   await syncEntitlement(db, row.provider, row.provider_ref, userId, row.plan_id, sub, now);
   void provider;
   return true;
+}
+
+/** The church administrator pays for the church plan chosen when the church was created. Access opens only when the payment is confirmed. */
+export async function startChurchCheckout(userDb: SupabaseClient, input: { userId: string; email: string; name: string; churchId: string; cycle: BillingCycle; method: PayMethod }, provider = getProvider(), db: SupabaseClient = serverDb(), now = new Date()) {
+  const { data: mine } = await userDb.rpc("api_church_my");
+  const church = (mine as { id: string; role: string; plan_id: string }[] | null)?.find((c) => c.id === input.churchId);
+  if (!church || church.role !== "admin") throw new Error("forbidden");
+  const plans = await loadPlans(db);
+  const p = plans.find((x) => (x.id as string) === church.plan_id);
+  if (!p) throw new Error("plan_not_found");
+  const amount = Number(input.cycle === "year" ? p.price_year ?? Number(p.price_month) * 12 : p.price_month);
+  const out = await provider.createCheckout({ userId: input.userId, email: input.email, name: input.name, plan: church.plan_id as never, cycle: input.cycle, method: input.method, trial: false, amountBrl: amount });
+  await saveSub(db, provider.name, out.providerRef, input.userId, church.plan_id as PlanId, input.cycle, { ...NO_SUB, status: "expired" }); // no access until the first payment is confirmed
+  await db.rpc("api_billing_church_link", { p_secret: billingSecret(), p_provider: provider.name, p_ref: out.providerRef, p_church: input.churchId });
+  void now;
+  return { ...out, amount, plan: church.plan_id };
 }

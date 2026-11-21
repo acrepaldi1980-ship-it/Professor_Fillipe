@@ -123,7 +123,7 @@ export interface MeResponse {
 export const getMe = () => apiJson<MeResponse>("/me");
 export const saveMe = (body: Record<string, unknown>) => apiJson<{ ok: true }>("/me", { method: "PUT", body: JSON.stringify(body) });
 export const saveConsent = (kind: string, granted: boolean) => apiJson<{ ok: true }>("/consents", { method: "POST", body: JSON.stringify({ kind, granted }) });
-export const createSession = (mode = "free", context?: Record<string, unknown>) => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode, context }) });
+export const createSession = (mode = "free", context?: Record<string, unknown>, churchLessonId?: string) => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode, context, churchLessonId }) });
 export async function deleteAccount(): Promise<void> {
   const res = await apiFetch("/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "EXCLUIR" }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
@@ -303,3 +303,22 @@ export interface AdminSettings { plans: { id: string; name: string; price_month:
 export const adminSettings = () => apiJson<AdminSettings>("/admin/settings");
 export const adminSaveSetting = (body: Record<string, unknown>) => apiJson<{ ok: boolean; version?: number }>("/admin/settings", { method: "PUT", body: JSON.stringify(body) });
 export const adminAudit = () => apiJson<{ entries: { at: string; actor: string | null; action: string; target: string | null; details: unknown }[] }>("/admin/audit");
+
+// ---- Plano Igreja (Prompt 2.2) ----
+export interface ChurchClass { id: string; name: string; age_group: string; teacher_id: string; archived: boolean; invite_code: string | null; students: number; mine: boolean }
+export interface MyChurch { id: string; name: string; role: "admin" | "teacher" | "student"; plan_id: string; status: "pending" | "active" | "suspended"; student_limit: number; students: number; teacher_code: string | null; classes: ChurchClass[] }
+export interface ChurchLesson { id: string; title: string; ref: string | null; date: string; notes: string | null; class: string; church: string; church_id: string }
+export interface ClassStats { members: number; enough: boolean; min: number; studied: number | null; topics: { topic: string; students: number }[] }
+const churchJson = <T,>(path: string, init?: RequestInit) => apiJson<T>(`/church${path}`, init);
+export const getMyChurches = () => churchJson<{ churches: MyChurch[] }>("");
+export const createChurch = (name: string, plan: string, cnpj?: string) => churchJson<{ id: string }>("", { method: "POST", body: JSON.stringify({ name, plan, cnpj }) });
+export const createClass = (churchId: string, name: string, ageGroup: string, teacherId?: string) => churchJson<{ id: string }>("/classes", { method: "POST", body: JSON.stringify({ churchId, name, ageGroup, teacherId }) });
+export const joinChurch = (code: string) => churchJson<{ role: "student" | "teacher"; church: string; class?: string; church_id: string }>("/join", { method: "POST", body: JSON.stringify({ code }) });
+export async function leaveChurch(churchId: string): Promise<void> { const r = await apiFetch("/church/leave", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ churchId }) }); if (!r.ok) throw new Error(`api_error_${r.status}`); }
+export async function saveChurchSettings(churchId: string, lenses: string[], versionId: string | null): Promise<void> { const r = await apiFetch("/church/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ churchId, lenses, versionId }) }); if (!r.ok) throw new Error(`api_error_${r.status}`); }
+export const getMyLessons = () => churchJson<{ lessons: ChurchLesson[] }>("/lessons");
+export const getClassLessons = (classId: string) => churchJson<{ lessons: { id: string; title: string; ref: string | null; date: string; notes: string | null }[] }>(`/lessons?classId=${encodeURIComponent(classId)}`);
+export const publishLesson = (classId: string, title: string, ref?: string, date?: string, notes?: string) => churchJson<{ id: string }>("/lessons", { method: "POST", body: JSON.stringify({ classId, title, ref, date, notes }) });
+export async function deleteLesson(id: string): Promise<void> { const r = await apiFetch(`/church/lessons?id=${encodeURIComponent(id)}`, { method: "DELETE" }); if (!r.ok) throw new Error(`api_error_${r.status}`); }
+export const getClassStats = (classId: string, lessonId?: string) => churchJson<ClassStats>(`/stats?classId=${encodeURIComponent(classId)}${lessonId ? `&lessonId=${encodeURIComponent(lessonId)}` : ""}`);
+export const startChurchCheckout = (churchId: string, cycle: "month" | "year", method: "pix" | "card" | "boleto") => churchJson<{ checkoutUrl: string; amount: number; plan: string }>("/checkout", { method: "POST", body: JSON.stringify({ churchId, cycle, method }) });

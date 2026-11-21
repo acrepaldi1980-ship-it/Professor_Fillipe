@@ -21,7 +21,6 @@ try {
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
   const { data } = await sb.auth.signInWithPassword({ email, password });
   const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 }, locale: "pt-BR" });
-  await ctx.addInitScript(() => { try { localStorage.setItem("pf-no-research", "1"); } catch {} });
   const p = await ctx.newPage();
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));
@@ -35,6 +34,7 @@ try {
       r.onerror = () => rej();
     });
   }, { key: `sb-${REF}-auth-token`, value: JSON.stringify(data.session) });
+  await p.evaluate(async () => { await new Promise((res) => { const r = indexedDB.open("professor-filipe", 1); r.onsuccess = () => { const tx = r.result.transaction("kv", "readwrite"); tx.objectStore("kv").put(true, "pf-no-research"); tx.oncomplete = () => res(); }; }); }); // the plumbing test fills the document by hand
   // the interview is done for this user (profile.level set)
   await p.goto(`${BASE}/inicio`, { waitUntil: "networkidle" });
   await p.waitForSelector("text=O que vamos fazer hoje", { timeout: 20000 }).catch(() => {});
@@ -68,7 +68,7 @@ try {
   const saved = await sql(`select data->'objective' as o from lesson_plans where user_id='${id}' order by created_at desc limit 1`);
   say("lesson: the suggestion is saved in lesson_plans (up to 3 objectives)", Array.isArray(saved[0]?.o) && saved[0].o.length >= 1 && saved[0].o.length <= 3);
   await p.locator("section:has(h3:text('Quebra-gelo')) button:text('Editar')").click();
-  await p.fill("aside textarea", "Quem já explicou a Bíblia a alguém?");
+  await p.fill("aside textarea[aria-label]", "Quem já explicou a Bíblia a alguém?");
   await p.click("aside button:text('Salvar')");
   await p.waitForSelector("text=Quem já explicou a Bíblia a alguém?");
   await p.locator("section:has(h3:text('Pontos principais')) button:text('Editar')").click();
@@ -105,7 +105,7 @@ try {
   await p.waitForSelector("aside[aria-label='Esboço do sermão']", { timeout: 20000 });
   say("sermon: the outline editor opens", true);
   await p.locator("section:has(h3:text('Ideia central')) button:text('Editar')").click();
-  await p.fill("aside textarea", "Deus alcança quem o busca com sinceridade.");
+  await p.fill("aside textarea[aria-label]", "Deus alcança quem o busca com sinceridade.");
   await p.click("aside button:text('Salvar')");
   await p.waitForSelector("text=Deus alcança quem o busca com sinceridade.");
   await p.waitForSelector("text=Ainda não há divisões.", { timeout: 15000 }).catch(() => {});

@@ -812,12 +812,13 @@ Pontuação final = pontuação da fusão × peso da camada.
 
 ### 8.13 M13 — Plano Igreja (P1)
 
-- Faixas: até 30 alunos R$ 299/mês, até 100 R$ 599/mês, até 300 R$ 999/mês **[DECISÃO D-01]**.
+- Faixas **(D-24, 21/11/2026)**: até 30 alunos R$ 199/mês, até 100 R$ 399/mês, até 300 R$ 699/mês (anual: 10 meses). Membros recebem acesso enquanto o plano da igreja estiver ativo: alunos com o nível Plus; responsável e professores com o nível Premium (aula e sermão).
 - Entidades: igreja, turmas, professores, alunos (vínculo por convite com link ou QR Code).
 - Lição da semana: o professor publica tema, texto e data; os alunos veem um card na tela inicial; o Professor Filipe adapta a lição ao nível de cada aluno.
 - Painel do professor: quantos estudaram, temas com mais dúvidas (agregado, mínimo de 5 alunos para mostrar estatística), sugestões para a aula.
 - **Privacidade:** o professor da EBD **não lê** conversas individuais. Isso é dito ao aluno na entrada da turma.
 - A igreja pode definir lente e versão padrão; o aluno pode ampliar.
+- **Implementado (Prompt 2.2, 21/11/2026):** tela `/igreja` (cadastro, turmas, convite por link e QR Code, lição da semana, painel agregado), `/entrar?c=` para quem chega pelo convite, cartão "Lição da semana" na tela inicial que abre uma sessão de estudo ligada à lição (o professor adapta ao nível do aluno), pagamento do plano pelo mesmo provedor (simulado agora, Asaas depois), job diário que suspende igrejas com plano vencido. **Privacidade testada:** o professor e a igreja não leem mensagens, sessões, resumos, cadernos nem perfis de ninguém (RLS); o painel só devolve números e temas agregados, e só quando pelo menos 5 alunos participam (temas só com 3 ou mais alunos em comum).
 
 ### 8.14 M14 — Administração (P0)
 

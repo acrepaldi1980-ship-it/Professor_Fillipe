@@ -6,7 +6,7 @@ import { enforceLimit, requireFeature } from "@/lib/entitlements/guard";
 import { DeepContext, LessonContext, SermonContext } from "@/lib/modes/schema";
 
 export const runtime = "nodejs";
-const body = z.object({ mode: z.enum(["free", "lesson", "sermon", "deep", "rehearsal", "review"]).default("free"), topic: z.string().max(200).optional(), context: z.record(z.string(), z.unknown()).optional() });
+const body = z.object({ mode: z.enum(["free", "lesson", "sermon", "deep", "rehearsal", "review"]).default("free"), topic: z.string().max(200).optional(), churchLessonId: z.string().uuid().optional(), context: z.record(z.string(), z.unknown()).optional() });
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +28,18 @@ export async function POST(req: Request) {
     if (parsed.data.mode === "sermon") await requireFeature(db, user.id, "sermon");
     if (parsed.data.mode === "lesson") await enforceLimit(db, user.id, "lessons_month");
     if (parsed.data.mode === "deep") await enforceLimit(db, user.id, "deepen_month");
-    const { data, error } = await db.from("sessions").insert({ user_id: user.id, mode: parsed.data.mode, topic, context }).select("id").single();
+    // A lesson published by the church: only a member of that class can open it (row level security on church_lessons). The lesson notes travel
+    // in the session context so the teacher adapts the lesson to this student (level, age) without the class teacher ever seeing the talk.
+    let churchLessonId: string | null = null;
+    let lessonTopic: string | null = null;
+    if (parsed.data.churchLessonId) {
+      const { data: l } = await db.from("church_lessons").select("id, title, ref, notes").eq("id", parsed.data.churchLessonId).maybeSingle();
+      if (!l) throw new HttpError(404, "lesson_not_found");
+      churchLessonId = l.id;
+      lessonTopic = l.title;
+      context = { ...context, church_lesson: { title: l.title, ref: l.ref, notes: l.notes } };
+    }
+    const { data, error } = await db.from("sessions").insert({ user_id: user.id, mode: parsed.data.mode, topic: lessonTopic ?? topic, context, church_lesson_id: churchLessonId }).select("id").single();
     if (error || !data) throw new HttpError(500, "session_failed");
     track(db, "session_started", { mode: parsed.data.mode });
     return Response.json({ sessionId: data.id }, { status: 201 });

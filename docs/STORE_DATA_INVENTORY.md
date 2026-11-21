@@ -57,3 +57,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Segurança e LGPD (Prompt 1.13)
 - `rate_limits`: chave (usuário ou hash do IP) e contagem por janela; apagada sozinha em 1 dia. `app_errors`: rota, código curto e contagem por hora, sem texto de usuário. Exportação dos dados do aluno: arquivo JSON gerado na hora e salvo pelo aluno (`lib/platform` files); nada fica no servidor. Backup diário dos dados de usuário com retenção de 30 dias (artefato privado do GitHub).
+
+## Plano Igreja (Prompt 2.2)
+- `churches` (nome, CNPJ opcional, responsável, plano, lente e versão padrão), `church_members` (quem é responsável, professor ou aluno), `classes` (nome, faixa etária, código de convite), `class_members`, `church_lessons` (tema, texto, data e orientação do professor). O professor e a igreja **não têm acesso** a mensagens, sessões, resumos, cadernos ou perfis dos alunos (RLS). O painel devolve só números e temas agregados com no mínimo 5 alunos. O vínculo `sessions.church_lesson_id` liga uma sessão à lição só para contar participação.

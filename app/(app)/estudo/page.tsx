@@ -65,13 +65,15 @@ export default function StudyPage() {
     const query = new URLSearchParams(window.location.search);
     if (query.get("primeira")) firstLesson.current = true;
     if (query.get("tema")) { firstLesson.current = true; themeRef.current = query.get("tema"); }
+    const lessonId = query.get("lesson"); // a lesson published by the church (home card)
+    if (lessonId) { firstLesson.current = true; themeRef.current = query.get("titulo") ?? t("study.church.default"); }
     const existing = query.get("s");
     if (existing) {
       sessionId.current = existing;
       setSessionReady(true);
       return;
     }
-    void createSession("free")
+    void createSession("free", undefined, lessonId ?? undefined)
       .then(({ sessionId: id }) => {
         sessionId.current = id;
         router.replace(`/estudo?s=${id}`);

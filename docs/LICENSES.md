@@ -322,3 +322,5 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 | Linhas de costa, rios e lagos | Natural Earth | Domínio público | Mapas |
 | Fotos de arqueologia | Wikimedia Commons | Domínio público, CC0, CC BY ou CC BY-SA (nunca NC/ND); autor, licença e página guardados em `lib/archaeology/items.json` | Galeria `/arqueologia` e mini-filmes (CC BY-SA só na galeria, sem alteração) |
 | Textos das curiosidades e das peças | Nossos, a partir da Bíblia e dos artigos de referência citados em cada ficha | Próprio | Revisão do conselho teológico pendente antes do beta público |
+
+| Biblioteca `qrcode` (QR Code do convite da turma) | npm `qrcode` | MIT | Gera o QR Code no aparelho do responsável, sem enviar dados a terceiros |

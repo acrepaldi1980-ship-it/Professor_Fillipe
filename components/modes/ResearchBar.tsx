@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { getSessionDocument, suggestDocumentSection, type SuggestResult } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
+import { getPlatform } from "@/lib/platform";
 
 type Mode = "lesson" | "sermon" | "deep";
 const FULL: Record<Mode, number> = { lesson: 8, sermon: 5, deep: 8 };
@@ -88,8 +89,11 @@ export function ResearchBar({ sessionId, mode, onUpdate }: { sessionId: string; 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    try { if (localStorage.getItem("pf-no-research") === "1") return; } catch { /* storage unavailable: carry on */ }
-    void getSessionDocument(sessionId).then((r) => { if ((r.gapKeys?.length ?? 0) >= FULL[mode]) void run(); }).catch(() => undefined);
+    // tests and support can turn the automatic start off with the local flag "pf-no-research"
+    void getPlatform().store.get<boolean>("pf-no-research").catch(() => null).then((off) => {
+      if (off) return;
+      return getSessionDocument(sessionId).then((r) => { if ((r.gapKeys?.length ?? 0) >= FULL[mode]) void run(); });
+    }).catch(() => undefined);
   }, [sessionId, mode, run]);
 
   async function change() {

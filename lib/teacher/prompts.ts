@@ -127,12 +127,20 @@ export interface PromptInput {
   maxChunkChars?: number;
 }
 
+/** The lesson of the week published by the student's church: the teacher helps this student prepare for it, at this student's level. */
+export function layerChurchLesson(ctx?: Record<string, unknown>): string {
+  const l = ctx?.church_lesson as { title?: string; ref?: string | null; notes?: string | null } | undefined;
+  if (!l?.title) return "";
+  return `LIÇÃO DA SEMANA (publicada pelo professor da EBD da turma do aluno): "${l.title}"${l.ref ? `, texto-base ${l.ref}` : ""}${l.notes ? `. Orientação do professor: ${l.notes}` : ""}.
+Ajude ESTE aluno a se preparar para a aula: explique no nível dele (veja o perfil do aluno), parta do texto-base, pergunte o que ele já sabe e devolva a palavra a ele. Não revele nem peça nada sobre os outros alunos da turma; o professor da EBD não lê esta conversa, e você pode dizer isso se o aluno perguntar.`;
+}
+
 /** Layers 1-5 concatenated (mode = Estudo livre in Phase 0). */
 /** The system prompt in two parts: `stable` (identity, student, lens, mode: the same for a whole conversation, so it can be cached) and `dynamic` (retrieved sources and notices: new every turn). */
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }
