@@ -20,3 +20,5 @@ Só a **12ª (Tel Dan, EXIF "Oren Rozen")** foi publicada: bate com a foto escol
 | 14 | Cavernas de Qumran (1072x1620) | **É a peça que faltava**; boa resolução; falta o autor e a licença |
 | 15 | Ruínas do assentamento de Qumran (516 px) | Pequena e sem autor |
 | 16 | Ruínas de Qumran com o mar Morto ao fundo (900 px, aparenta ser de site de viagens) | Sem autor nem licença; provável direito reservado |
+| 17 | Prisma de Senaqueribe com marca d'água "© 2014 Dr. David E. Graves" (194 px) | Não serve: foto com direitos reservados e minúscula |
+| 18 | Prisma de Senaqueribe, fundo preto (cerca de 220 px) | Parece a foto do Commons (Taylor Prism, David Castor, domínio público), mas está pequena demais; usar o arquivo original do Commons |
