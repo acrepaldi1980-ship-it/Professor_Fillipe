@@ -967,5 +967,13 @@
   "imm.vr.error": "Não consegui iniciar o modo VR neste aparelho. Você pode continuar explorando na tela.",
   "home.imm": "Imersão 3D",
   "home.imm.desc": "Caminhe por lugares da Bíblia com o professor, na tela ou com óculos de realidade virtual.",
-  "home.imm.go": "Entrar na imersão"
+  "home.imm.go": "Entrar na imersão",
+  "pano.keys": "Arraste para olhar em volta, use a roda do mouse para aproximar e toque nas setas para andar.",
+  "pano.hint": "Arraste a imagem para olhar em volta. Toque nas setas ➤ para andar e nos “i” para aprender.",
+  "pano.error": "Não consegui carregar esta foto. Tente outro local ou volte mais tarde.",
+  "pano.places": "Locais",
+  "pano.credit": "Foto",
+  "pano.credits": "Créditos das fotos",
+  "imm.panos": "Fotos 360° reais",
+  "imm.panos.help": "Fotografias panorâmicas de lugares reais, com navegação por pontos."
 }

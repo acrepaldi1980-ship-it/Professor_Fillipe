@@ -54,7 +54,7 @@ export interface TurnMeta {
 
 /** One teacher turn over SSE. Calls onStructured once with the validated contract. */
 export async function teacherTurn(
-  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null } },
+  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
   const res = await apiFetch("/teacher/turn", {

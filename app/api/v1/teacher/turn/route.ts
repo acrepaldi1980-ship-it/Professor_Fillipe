@@ -16,8 +16,9 @@ import { checkLimit, overFairUse } from "@/lib/entitlements";
 import { buildSection } from "@/lib/modes/build";
 import { appendNote, detectEdit } from "@/lib/modes/edit-intent";
 import { addUsage, costBrl } from "@/lib/entitlements/guard";
-import { getPackage } from "@/lib/immersive/registry";
+import { getPackage, getTour } from "@/lib/immersive/registry";
 import { sceneContext } from "@/lib/immersive/guide";
+import { panoContext } from "@/lib/immersive/pano";
 import { applyModePayload, deepSources, loadSessionMode, sermonTypeDefinition } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
@@ -29,6 +30,8 @@ const bodySchema = z.object({
   intent: z.enum(INTENTS).optional(),
   /** Immersive environment (Prompt 3.3): only where the visitor is; the teacher's knowledge of the place comes from the package on the server. */
   scene: z.object({ env: z.string().max(40), x: z.number().finite(), z: z.number().finite(), yaw: z.number().finite(), hotspot: z.string().max(40).nullish(), station: z.number().int().min(0).max(30).nullish() }).optional(),
+  /** 360° photo tour (Prompt 3.5b): which scene, which pin and where the student looks; the knowledge of the place comes from the registered tour. */
+  pano: z.object({ tour: z.string().max(40), scene: z.string().max(40), hotspot: z.string().max(40).nullish(), yaw: z.number().finite().optional(), pitch: z.number().finite().optional() }).optional(),
 });
 
 const sse = (event: string, data: unknown) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -85,7 +88,8 @@ export async function POST(req: Request) {
         const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
         // Inside an immersive environment the teacher knows where the student is and what they see (from the package, never from client text).
         const pkg = parsed.data.scene ? getPackage(parsed.data.scene.env) : undefined;
-        const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : null;
+        const tour = parsed.data.pano ? getTour(parsed.data.pano.tour) : undefined;
+        const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : tour && parsed.data.pano ? panoContext(tour, parsed.data.pano) : null;
         const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, createTurnDeps());
 
         // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.

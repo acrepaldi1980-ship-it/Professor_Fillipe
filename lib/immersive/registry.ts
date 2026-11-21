@@ -4,3 +4,9 @@ import type { EnvironmentPackage } from "./package";
 
 export const PACKAGES: Record<string, EnvironmentPackage> = { [TEST_PACKAGE.id]: TEST_PACKAGE };
 export const getPackage = (id: string) => PACKAGES[id];
+
+// 360° photo tours (Prompt 3.5b). A new tour is one more line here (or an upload in the admin tool, later).
+import { TEST_TOUR } from "./panos/teste";
+import type { PanoTour } from "./pano";
+export const TOURS: Record<string, PanoTour> = { [TEST_TOUR.id]: TEST_TOUR };
+export const getTour = (id: string) => TOURS[id];

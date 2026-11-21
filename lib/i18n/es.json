@@ -967,5 +967,13 @@
   "imm.vr.error": "No pude iniciar el modo RV en este dispositivo. Puedes seguir explorando en la pantalla.",
   "home.imm": "Inmersión 3D",
   "home.imm.desc": "Camina por lugares de la Biblia con el profesor, en la pantalla o con gafas de realidad virtual.",
-  "home.imm.go": "Entrar en la inmersión"
+  "home.imm.go": "Entrar en la inmersión",
+  "pano.keys": "Arrastra para mirar alrededor, usa la rueda del ratón para acercar y toca las flechas para avanzar.",
+  "pano.hint": "Arrastra la imagen para mirar alrededor. Toca las flechas ➤ para avanzar y las “i” para aprender.",
+  "pano.error": "No pude cargar esta foto. Prueba otro lugar o vuelve más tarde.",
+  "pano.places": "Lugares",
+  "pano.credit": "Foto",
+  "pano.credits": "Créditos de las fotos",
+  "imm.panos": "Fotos 360° reales",
+  "imm.panos.help": "Fotografías panorámicas de lugares reales, con navegación por puntos."
 }
