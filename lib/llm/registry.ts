@@ -47,8 +47,10 @@ export const PROVIDERS: ProviderDef[] = [
   ] },
   // Google AI Studio free tier (create the key in a project WITHOUT prepaid billing).
   { id: "gemini", kind: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta", keyEnv: "GEMINI_LLM_API_KEY", models: [
-    { name: "gemini-2.5-flash", tier: 1, tools: false },
-    { name: "gemini-2.5-flash-lite", tier: 2, tools: false },
+    // "-latest" aliases follow Google's current Flash models, so the pool does not break when a version is retired (2.5 closed to new accounts).
+    { name: "gemini-flash-latest", tier: 1, tools: false },
+    { name: "gemini-flash-lite-latest", tier: 2, tools: false },
+    { name: "gemini-3.1-flash-lite", tier: 2, tools: false },
   ] },
 ];
 
