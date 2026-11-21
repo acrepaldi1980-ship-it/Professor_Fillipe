@@ -908,5 +908,9 @@
   "imm.prev": "Anterior",
   "imm.listen": "Escuchar",
   "imm.notfound": "Ambiente no encontrado.",
-  "imm.nowebgl": "Este dispositivo o navegador no puede mostrar ambientes en 3D."
+  "imm.nowebgl": "Este dispositivo o navegador no puede mostrar ambientes en 3D.",
+  "imm.ask": "Preguntar al profesor",
+  "imm.ask.hint": "Pregunta lo que quieras sobre lo que estás viendo. El profesor sabe dónde estás.",
+  "imm.ask.error": "No pude responder ahora. Inténtalo de nuevo.",
+  "imm.finish": "Terminar el recorrido"
 }

@@ -16,6 +16,8 @@ import { checkLimit, overFairUse } from "@/lib/entitlements";
 import { buildSection } from "@/lib/modes/build";
 import { appendNote, detectEdit } from "@/lib/modes/edit-intent";
 import { addUsage, costBrl } from "@/lib/entitlements/guard";
+import { getPackage } from "@/lib/immersive/registry";
+import { sceneContext } from "@/lib/immersive/guide";
 import { applyModePayload, deepSources, loadSessionMode, sermonTypeDefinition } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
@@ -25,6 +27,8 @@ const bodySchema = z.object({
   sessionId: z.string().uuid(),
   text: z.string().min(1).max(2000),
   intent: z.enum(INTENTS).optional(),
+  /** Immersive environment (Prompt 3.3): only where the visitor is; the teacher's knowledge of the place comes from the package on the server. */
+  scene: z.object({ env: z.string().max(40), x: z.number().finite(), z: z.number().finite(), yaw: z.number().finite(), hotspot: z.string().max(40).nullish(), station: z.number().int().min(0).max(30).nullish() }).optional(),
 });
 
 const sse = (event: string, data: unknown) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -79,7 +83,10 @@ export async function POST(req: Request) {
         const sm = await loadSessionMode(db, session.id);
         const mode = sm?.mode ?? "free";
         const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
-        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources, forceFast: fairUse }, createTurnDeps());
+        // Inside an immersive environment the teacher knows where the student is and what they see (from the package, never from client text).
+        const pkg = parsed.data.scene ? getPackage(parsed.data.scene.env) : undefined;
+        const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : null;
+        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, createTurnDeps());
 
         // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.
         let response = baseResponse;

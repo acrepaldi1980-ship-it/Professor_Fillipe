@@ -4,8 +4,10 @@
 // sliding, points of interest with verses, ambient and spatial sound, zones built as you approach, levels of detail, a guided tour and an automatic
 // quality drop when the frame rate falls. Environments are data (lib/immersive/package.ts). Loaded on demand so the 3D engine never weighs on the rest of the app.
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { closeSessionFull, createSession, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { activeZones, collidersOf, detailFor, keysToStick, move, nearestHotspot, spawnIsFree, worldDirection, yawToward, type V2 } from "@/lib/immersive/movement";
 import type { EnvironmentPackage, Hotspot, Station } from "@/lib/immersive/package";
@@ -91,7 +93,18 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
   const [dpr, setDpr] = useState<number>(1.5);
   const [sheet, setSheet] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const router = useRouter();
   const wrap = useRef<HTMLDivElement>(null);
+  // the teacher as guide (Prompt 3.3): free questions answered in the context of the place
+  const sessionId = useRef<string | null>(null);
+  const [ask, setAsk] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [thread, setThread] = useState<{ who: "me" | "teacher"; text: string; options?: string[] }[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [guideError, setGuideError] = useState<string | null>(null);
+  const projection = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("p") === "1"; // for a teacher projecting the tour in a classroom
+  const snapRef = useRef(snap);
   const touch = useMemo(() => typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches, []);
   const showFps = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("fps") === "1";
   const ambience = getPlatform().ambience;
@@ -109,11 +122,14 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
   useEffect(() => {
     if (!started) return;
     const k = input.current.keys;
-    const down = (e: KeyboardEvent) => { const key = e.key.toLowerCase(); if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) { k.add(key); e.preventDefault(); } if (key === "e" || key === "enter") setOpen((cur) => cur ?? (snapHotspot.current ? pkg.hotspots.find((h) => h.id === snapHotspot.current) ?? null : null)); if (key === "escape") setOpen(null); };
+    const down = (e: KeyboardEvent) => { const key = e.key.toLowerCase(); if (projection && (key === "arrowright" || key === "arrowleft")) { goToRef.current?.(Math.max(0, Math.min(pkg.stations.length - 1, stationRef.current + (key === "arrowright" ? 1 : -1)))); e.preventDefault(); return; } if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) { k.add(key); e.preventDefault(); } if (key === "e" || key === "enter") setOpen((cur) => cur ?? (snapHotspot.current ? pkg.hotspots.find((h) => h.id === snapHotspot.current) ?? null : null)); if (key === "escape") setOpen(null); };
     const up = (e: KeyboardEvent) => k.delete(e.key.toLowerCase());
     window.addEventListener("keydown", down); window.addEventListener("keyup", up);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); k.clear(); };
-  }, [started, pkg]);
+  }, [started, pkg, projection]);
+  snapRef.current = snap;
+  const stationRef = useRef(station);
+  stationRef.current = station;
   const snapHotspot = useRef<string | null>(null);
   snapHotspot.current = snap.hotspot;
 
@@ -133,12 +149,40 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
   };
   const onPointerUp = () => { lastLook.current = null; };
 
+  const goToRef = useRef<((i: number) => void) | null>(null);
   function goTo(i: number) {
     const s: Station | undefined = pkg.stations[i];
     if (!s) return;
     stopSpeaking(); setSpeaking(false);
     setStation(i);
     input.current.teleport = { at: s.at as V2, yaw: yawToward(s.at as V2, s.look as V2) };
+  }
+  goToRef.current = goTo;
+  async function sendQuestion(raw: string) {
+    const text = raw.trim();
+    if (!text || busy) return;
+    setBusy(true); setGuideError(null); setQuestion("");
+    setThread((t) => [...t, { who: "me", text }]);
+    try {
+      if (!sessionId.current) sessionId.current = (await createSession("free")).sessionId;
+      const s = snapRef.current;
+      const { response } = await teacherTurn({ sessionId: sessionId.current, text, scene: { env: pkg.id, x: s.pos[0], z: s.pos[1], yaw: s.yaw, hotspot: s.hotspot, station: stationRef.current >= 0 ? stationRef.current : null } });
+      setThread((t) => [...t, { who: "teacher", text: response.display_markdown || response.speech, options: response.next_options.map((o) => o.label).slice(0, 3) }]);
+      void say(response.speech);
+    } catch { setGuideError(t("imm.ask.error")); }
+    setBusy(false);
+  }
+  async function toggleMic() {
+    const mic = getPlatform().microphone;
+    if (!recording) { try { await mic.start(); setRecording(true); } catch { setGuideError(t("study.error.mic")); } return; }
+    setRecording(false);
+    try { const blob = await mic.stop(); const r = await transcribeAudio(blob); if (r.text.trim()) await sendQuestion(r.text); else setGuideError(t("study.error.heard")); } catch { setGuideError(t("study.error.heard")); }
+  }
+  async function finish() {
+    stopSpeaking();
+    const id = sessionId.current;
+    if (id) { try { await closeSessionFull(id); } catch { /* the closing screen retries */ } router.push(`/fechamento?s=${id}`); }
+    else router.back();
   }
   async function say(text: string) { setSpeaking(true); try { await speakText(text); } finally { setSpeaking(false); } }
 
@@ -169,7 +213,9 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
           <div className="pointer-events-none absolute left-2 right-2 top-2 flex items-start justify-between gap-2">
             <div className="pointer-events-auto rounded-control bg-black/45 px-3 py-1 text-sm text-white">{pkg.title}</div>
             <div className="pointer-events-auto flex gap-2">
+              {!projection && <button type="button" data-testid="imm-ask" onClick={() => setAsk((a) => !a)} className="min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("imm.ask")}</button>}
               <button type="button" onClick={() => setSheet(true)} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{t("imm.sheet")}</button>
+              <button type="button" data-testid="imm-finish" onClick={() => void finish()} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{t("imm.finish")}</button>
               <button type="button" aria-pressed={muted} onClick={() => setMuted((m) => !m)} className="min-h-9 rounded-control bg-black/45 px-3 text-sm text-white">{muted ? t("imm.unmute") : t("imm.mute")}</button>
             </div>
           </div>
@@ -181,7 +227,7 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
           )}
 
           {st && (
-            <div className="absolute left-2 right-2 top-14 rounded-control bg-black/60 p-3 text-sm text-white" data-testid="imm-station">
+            <div className={`absolute left-2 right-2 top-14 rounded-control bg-black/60 p-3 text-white ${projection ? "text-2xl leading-snug" : "text-sm"}`} data-testid="imm-station">
               <strong>{st.title}</strong>
               <p className="mt-1">{st.script}</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -198,6 +244,27 @@ export default function ImmersiveView({ pkg, onOpenRef }: { pkg: EnvironmentPack
             </div>
           )}
 
+          {ask && !projection && (
+            <div className="absolute inset-x-2 bottom-14 flex max-h-[55%] flex-col gap-2 rounded-control border border-line bg-surface p-3 text-sm shadow-lg" role="dialog" aria-label={t("imm.ask")} data-testid="imm-chat">
+              <div className="flex-1 overflow-auto" aria-live="polite">
+                {!thread.length && <p className="text-muted">{t("imm.ask.hint")}</p>}
+                {thread.map((m, i) => (
+                  <div key={i} className="mb-2">
+                    <strong>{m.who === "me" ? t("study.you") : t("study.teacher")}</strong>
+                    <p className="whitespace-pre-line" data-testid={m.who === "teacher" ? "imm-answer" : undefined}>{m.text}</p>
+                    {m.who === "teacher" && i === thread.length - 1 && !!m.options?.length && <div className="mt-1 flex flex-wrap gap-1">{m.options.map((o) => <button key={o} type="button" className="min-h-8 rounded-control border border-line px-2 text-xs" onClick={() => void sendQuestion(o)}>{o}</button>)}</div>}
+                  </div>
+                ))}
+                {busy && <p role="status" className="text-muted">{t("study.status.thinking")}</p>}
+                {guideError && <p role="alert">{guideError}</p>}
+              </div>
+              <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); void sendQuestion(question); }}>
+                <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={t("study.placeholder")} aria-label={t("study.placeholder")} className="min-h-10 flex-1 rounded-control border border-line bg-bg px-3" />
+                <button type="button" aria-pressed={recording} aria-label={recording ? t("study.mic.stop") : t("study.mic.start")} onClick={() => void toggleMic()} className="min-h-10 rounded-control border border-line px-3">{recording ? "■" : "🎤"}</button>
+                <button type="submit" disabled={busy} className="min-h-10 rounded-control bg-primary px-3 font-semibold text-primary-ink">{t("study.send")}</button>
+              </form>
+            </div>
+          )}
           {touch && <div className="absolute bottom-6 left-4"><Joystick label={t("imm.joystick")} onChange={(v) => { input.current.stick = v; }} /></div>}
         </>
       )}

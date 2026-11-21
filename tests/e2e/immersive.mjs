@@ -77,6 +77,19 @@ try {
   // beyond the walkable limit
   await p.keyboard.down("a"); await p.waitForTimeout(9000); await p.keyboard.up("a");
   say("bounds: the visitor cannot walk out of the area (x stays within -18 + radius)", (await pos(p)).x >= -18 + 0.35 - 0.05);
+  // the teacher as guide (Prompt 3.3): a free question is answered with the place in the teacher's instructions
+  await p.getByTestId("imm-ask").click();
+  await p.fill("[data-testid=imm-chat] input", "O que é este lugar onde estou?");
+  await p.locator("[data-testid=imm-chat] button[type=submit]").click();
+  await p.waitForSelector("[data-testid=imm-answer]", { timeout: 30000 }).catch(async () => { console.log("CHAT:", (await p.locator("[data-testid=imm-chat]").innerText().catch(() => "no chat")).slice(0, 300)); });
+  const lastSys = process.env.MOCK_URL ? await (await fetch(`${process.env.MOCK_URL}/stats`)).json().then((j) => String(j.lastSystem ?? "")).catch(() => "") : "";
+  say("guide: the teacher answers inside the scene", (await p.locator("[data-testid=imm-answer]").count()) >= 1);
+  if (lastSys) {
+    say("guide: the teacher was told where the student is (zone and direction)", lastSys.includes("AMBIENTE IMERSIVO") && lastSys.includes("zona \"Altar\"") && lastSys.includes("olhando para o"));
+    say("guide: and the sourced historical fact sheet", lastSys.includes("FICHA HISTÓRICA") && lastSys.includes("Êxodo 27"));
+  }
+  await p.locator("[data-testid=imm-chat] button:has-text('Fechar')").count();
+  await p.getByTestId("imm-ask").click();
   // sheet
   await p.getByRole("button", { name: "Ficha histórica" }).click();
   say("sheet: the historical fact sheet shows the summary and the sources", (await p.locator("[data-testid=imm-sheet]").innerText()).includes("Fontes") && (await p.locator("[data-testid=imm-sheet]").innerText()).includes("Êxodo 27"));
@@ -84,9 +97,28 @@ try {
   // sound
   await p.getByRole("button", { name: "Silenciar" }).click();
   say("sound: the mute switch toggles", (await p.getByRole("button", { name: "Ativar som" }).count()) === 1);
-  const fps = await p.locator("[data-testid=imm-fps]").innerText();
-  console.log("INFO  frame rate in software rendering:", fps);
+  await p.getByTestId("imm-finish").click();
+  await p.waitForURL(/\/fechamento\?s=/, { timeout: 60000 });
+  say("exit: finishing the tour opens the session closing (summary, map, cards like other sessions)", /fechamento\?s=[0-9a-f-]{36}/.test(p.url()));
+  await p.goBack();
+  await p.waitForTimeout(500);
+  const fps = "n/a (left the scene)";
+  console.log("INFO  frame rate in software rendering: see ?fps=1");
   say("no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));
+  void fps;
+  // projection mode for the EBD teacher: the tour with big text, moved with the arrow keys, no chat
+  await p.goto(`${BASE}/imersao?p=1`, { waitUntil: "networkidle" });
+  await p.getByRole("button", { name: "Entrar no ambiente" }).click();
+  await p.waitForSelector("[data-testid=imm-pos]", { state: "attached", timeout: 20000 });
+  await p.waitForTimeout(1200);
+  say("projection: there is no chat button (the teacher drives the tour)", (await p.getByTestId("imm-ask").count()) === 0);
+  await p.keyboard.press("ArrowRight");
+  await p.waitForSelector("[data-testid=imm-station]", { timeout: 5000 });
+  say("projection: the right arrow starts the first station with large text", /text-2xl/.test((await p.locator("[data-testid=imm-station]").getAttribute("class")) ?? ""));
+  await p.keyboard.press("ArrowRight"); await p.waitForTimeout(1200);
+  say("projection: the right arrow goes to the next station (the altar)", (await pos(p)).z < -20 && (await p.locator("[data-testid=imm-station]").innerText()).includes("Diante do altar"));
+  await p.keyboard.press("ArrowLeft"); await p.waitForTimeout(1200);
+  say("projection: the left arrow goes back", Math.abs((await pos(p)).z - 9) < 0.5);
   await ctx.close();
 
   // touch: the joystick
