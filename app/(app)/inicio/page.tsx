@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/teacher/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, setLevel, type ChurchLesson, type MeResponse, type SessionRow } from "@/lib/api-client";
+import { getDueCards, getLevel, getMe, getMyLessons, getRecentSessions, getStreak, listPaths, setLevel, type ChurchLesson, type MeResponse, type PathSummary, type SessionRow, type StreakData } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 
 // Theme of the week: rotates through the year (no spending, just a gentle invitation).
@@ -26,9 +26,13 @@ export default function HomePage() {
   const [due, setDue] = useState(0);
   const [last, setLast] = useState<SessionRow | null>(null);
   const [lessons, setLessons] = useState<ChurchLesson[]>([]);
+  const [streak, setStreak] = useState<StreakData | null>(null);
+  const [paths, setPaths] = useState<PathSummary[]>([]);
   useEffect(() => {
     void getMyLessons().then((r) => setLessons(r.lessons)).catch(() => undefined); // the lesson of the week published by the student's church
     void getMe().then(setMe);
+    void getStreak(true).then(setStreak).catch(() => undefined);
+    void listPaths().then((r) => setPaths(r.paths)).catch(() => undefined);
     void getDueCards(1).then((r) => setDue(r.total)).catch(() => undefined);
     void getRecentSessions(1).then((r) => setLast(r.sessions[0] ?? null)).catch(() => undefined);
     void getLevel().then((l) => {
@@ -46,6 +50,9 @@ export default function HomePage() {
         <Avatar state="happy" size={72} />
         <h1 className="text-2xl">{t("home.hello")}{name ? `, ${name}` : ""}!</h1>
       </header>
+      {streak && streak.current >= 2 && (
+        <p className="text-sm text-muted" data-testid="streak">{t(streak.studied_today ? "streak.today" : "streak.alive").replace("{n}", String(streak.current))}{streak.new_milestones.length > 0 ? ` ${t("streak.milestone").replace("{n}", streak.new_milestones.find((m) => m.startsWith("streak_"))?.slice(7) ?? "")}` : ""}</p>
+      )}
       <Link href="/estudo" className="inline-flex min-h-14 items-center justify-center rounded-control bg-primary px-6 text-lg font-semibold text-primary-ink">
         {t("home.start")}
       </Link>
@@ -107,6 +114,10 @@ export default function HomePage() {
       <Card>
         <h2 className="text-lg">{t("home.review.due").replace("{n}", String(due))}</h2>
         {due > 0 ? <Link className="mt-1 inline-block underline" href="/revisao">{t("home.review.go")}</Link> : <p className="text-muted">{t("home.review.empty")}</p>}
+      </Card>
+      <Card>
+        <h2 className="text-lg">{t("paths.home")}</h2>
+        {(() => { const cur = paths.find((x) => x.started && !x.completed); const p = cur ?? paths.find((x) => !x.started); return p ? (<><p className="text-muted">{p.title}{p.next_day && p.started ? ` · ${t("paths.day").replace("{n}", String(p.next_day.day))}: ${p.next_day.title}` : ""}</p><Link className="mt-1 inline-block underline" href={p.started && p.next_day ? `/estudo?trilha=${p.id}&dia=${p.next_day.day}` : `/trilhas?id=${p.id}`}>{p.started ? t("paths.continue") : t("paths.begin")}</Link>{" · "}<Link className="underline" href="/trilhas">{t("paths.all")}</Link></>) : <Link className="underline" href="/trilhas">{t("paths.all")}</Link>; })()}
       </Card>
       <Card>
         <h2 className="text-lg">{t("home.track")}</h2>

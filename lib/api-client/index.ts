@@ -123,7 +123,7 @@ export interface MeResponse {
 export const getMe = () => apiJson<MeResponse>("/me");
 export const saveMe = (body: Record<string, unknown>) => apiJson<{ ok: true }>("/me", { method: "PUT", body: JSON.stringify(body) });
 export const saveConsent = (kind: string, granted: boolean) => apiJson<{ ok: true }>("/consents", { method: "POST", body: JSON.stringify({ kind, granted }) });
-export const createSession = (mode = "free", context?: Record<string, unknown>, churchLessonId?: string) => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode, context, churchLessonId }) });
+export const createSession = (mode = "free", context?: Record<string, unknown>, churchLessonId?: string, trail?: { pathId: string; pathDay: number }) => apiJson<{ sessionId: string }>("/sessions", { method: "POST", body: JSON.stringify({ mode, context, churchLessonId, ...(trail ?? {}) }) });
 export async function deleteAccount(): Promise<void> {
   const res = await apiFetch("/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "EXCLUIR" }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
@@ -376,3 +376,13 @@ export async function saveModel3d(meta: Record<string, unknown>, file?: File | n
   return res.json();
 }
 export const deleteModel3d = (id: string) => apiJson<{ ok: true }>(`/visuals/models?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+
+// ---- Guided paths and study streak (Prompt 2.7) ----
+export interface PathSummary { id: string; title: string; description: string; level: string; total: number; done: number; started: boolean; completed: boolean; next_day: { day: number; title: string } | null }
+export interface PathDetail extends PathSummary { days: { day: number; title: string; ref: string; goal: string; done: boolean }[] }
+export interface StreakData { current: number; best: number; total_days: number; studied_today: boolean; new_milestones: string[] }
+export const listPaths = () => apiJson<{ paths: PathSummary[] }>("/study/paths");
+export const getPathDetail = (id: string) => apiJson<PathDetail>(`/study/paths/${encodeURIComponent(id)}`);
+export const startPath = (pathId: string) => apiJson<{ ok: true }>("/study/paths/start", { method: "POST", body: JSON.stringify({ pathId }) });
+export const completePathDay = (pathId: string, day: number) => apiJson<{ ok: true; done: number; total: number; completed: boolean; milestone: string | null }>("/study/paths/day", { method: "POST", body: JSON.stringify({ pathId, day }) });
+export const getStreak = (ack = false) => apiJson<StreakData>(`/study/streak?tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo")}${ack ? "&ack=1" : ""}`);

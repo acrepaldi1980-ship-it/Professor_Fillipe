@@ -135,12 +135,20 @@ export function layerChurchLesson(ctx?: Record<string, unknown>): string {
 Ajude ESTE aluno a se preparar para a aula: explique no nível dele (veja o perfil do aluno), parta do texto-base, pergunte o que ele já sabe e devolva a palavra a ele. Não revele nem peça nada sobre os outros alunos da turma; o professor da EBD não lê esta conversa, e você pode dizer isso se o aluno perguntar.`;
 }
 
+/** A day of a guided path (trail): the teacher leads this one step, in order, and keeps it short. */
+export function layerTrail(ctx?: Record<string, unknown>): string {
+  const l = ctx?.trail as { path?: string; day?: number; total?: number; title?: string; ref?: string; goal?: string } | undefined;
+  if (!l?.title) return "";
+  return `TRILHA GUIADA: "${l.path}", dia ${l.day} de ${l.total}: "${l.title}", texto-base ${l.ref}. Objetivo do dia: ${l.goal}
+Conduza ESTE passo da trilha: comece dizendo em uma frase por que o dia importa, parta do texto-base citado, pergunte o que o aluno já sabe e devolva a palavra a ele. Fique no tema do dia; quando o objetivo estiver cumprido, ofereça um resumo em até 3 frases e diga que ele pode marcar o dia como concluído. Não adiante os próximos dias.`;
+}
+
 /** Layers 1-5 concatenated (mode = Estudo livre in Phase 0). */
 /** The system prompt in two parts: `stable` (identity, student, lens, mode: the same for a whole conversation, so it can be cached) and `dynamic` (retrieved sources and notices: new every turn). */
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), layerTrail(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

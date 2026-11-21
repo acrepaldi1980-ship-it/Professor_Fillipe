@@ -17,7 +17,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -51,6 +51,9 @@ export default function StudyPage() {
   const sessionId = useRef("");
   const firstLesson = useRef(false); // arrived from the welcome card (RF-M03-04)
   const firstFired = useRef(false);
+  const trailRef = useRef<{ pathId: string; day: number } | null>(null); // a day of a guided path (?trilha=&dia=)
+  const [trailBanner, setTrailBanner] = useState<{ pathId: string; day: number } | null>(null);
+  const [trailDone, setTrailDone] = useState(false);
   const themeRef = useRef<string | null>(null); // a topic suggested by the home screen (?tema=)
   const [sessionReady, setSessionReady] = useState(false);
   const [mode, setMode] = useState<string>("free");
@@ -66,6 +69,8 @@ export default function StudyPage() {
     const query = new URLSearchParams(window.location.search);
     if (query.get("primeira")) firstLesson.current = true;
     if (query.get("tema")) { firstLesson.current = true; themeRef.current = query.get("tema"); }
+    const tp = query.get("trilha"), td = Number(query.get("dia"));
+    if (tp && td > 0) { trailRef.current = { pathId: tp, day: td }; setTrailBanner({ pathId: tp, day: td }); firstLesson.current = true; }
     const lessonId = query.get("lesson"); // a lesson published by the church (home card)
     if (lessonId) { firstLesson.current = true; themeRef.current = query.get("titulo") ?? t("study.church.default"); }
     const existing = query.get("s");
@@ -74,10 +79,10 @@ export default function StudyPage() {
       setSessionReady(true);
       return;
     }
-    void createSession("free", undefined, lessonId ?? undefined)
+    void createSession("free", undefined, lessonId ?? undefined, trailRef.current ? { pathId: trailRef.current.pathId, pathDay: trailRef.current.day } : undefined)
       .then(({ sessionId: id }) => {
         sessionId.current = id;
-        router.replace(`/estudo?s=${id}`);
+        router.replace(`/estudo?s=${id}${trailRef.current ? `&trilha=${trailRef.current.pathId}&dia=${trailRef.current.day}` : ""}`);
         setSessionReady(true);
       })
       .catch(() => router.replace("/login"));
@@ -187,6 +192,10 @@ export default function StudyPage() {
     if (!sessionReady || !firstLesson.current || firstFired.current) return;
     firstFired.current = true;
     trackEvent("first_lesson_started");
+    if (trailRef.current) {
+      const tr = trailRef.current;
+      return void getPathDetail(tr.pathId).then((d) => { const day = d.days.find((x) => x.day === tr.day); void send(t("study.trail.ask").replace("{n}", String(tr.day)).replace("{title}", day?.title ?? d.title)); }).catch(() => void send(t("study.trail.ask").replace("{n}", String(tr.day)).replace("{title}", "")));
+    }
     if (themeRef.current) return void send(t("study.first.ask").replace("{topic}", themeRef.current));
     void getMe().then((m) => {
       const topic = m.profile?.first_topic;
@@ -267,6 +276,12 @@ export default function StudyPage() {
         </div>
       )}
       <div className={`flex min-w-0 flex-col ${docMode && tab === "doc" ? "hidden md:flex" : ""}`}>
+      {trailBanner && (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-control border border-primary bg-surface p-2 text-sm" data-testid="trail-banner">
+          <span>{t("study.trail.banner").replace("{n}", String(trailBanner.day))}</span>
+          {trailDone ? <span role="status" className="font-semibold">{t("study.trail.done")}</span> : <Button type="button" className="text-sm" onClick={() => void completePathDay(trailBanner.pathId, trailBanner.day).then(() => setTrailDone(true)).catch(() => undefined)}>{t("study.trail.complete")}</Button>}
+        </div>
+      )}
       <header className="flex flex-col items-center gap-1 py-2">
         <div className="h-[46dvh] max-h-[460px] min-h-[260px] w-full max-w-sm">
           {greeting ? (

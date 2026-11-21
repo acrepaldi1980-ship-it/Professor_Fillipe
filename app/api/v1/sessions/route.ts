@@ -3,10 +3,11 @@ import { z } from "zod";
 import { track } from "@/lib/analytics/track";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { enforceLimit, requireFeature } from "@/lib/entitlements/guard";
+import { getPath } from "@/lib/paths/data";
 import { DeepContext, LessonContext, SermonContext } from "@/lib/modes/schema";
 
 export const runtime = "nodejs";
-const body = z.object({ mode: z.enum(["free", "lesson", "sermon", "deep", "rehearsal", "review"]).default("free"), topic: z.string().max(200).optional(), churchLessonId: z.string().uuid().optional(), context: z.record(z.string(), z.unknown()).optional() });
+const body = z.object({ mode: z.enum(["free", "lesson", "sermon", "deep", "rehearsal", "review"]).default("free"), topic: z.string().max(200).optional(), churchLessonId: z.string().uuid().optional(), pathId: z.string().max(40).optional(), pathDay: z.number().int().min(1).max(60).optional(), context: z.record(z.string(), z.unknown()).optional() });
 
 export async function POST(req: Request) {
   try {
@@ -38,6 +39,14 @@ export async function POST(req: Request) {
       churchLessonId = l.id;
       lessonTopic = l.title;
       context = { ...context, church_lesson: { title: l.title, ref: l.ref, notes: l.notes } };
+    }
+    // A day of a guided path: the teacher leads this day (passage and goal come from our own content, not from the request).
+    if (parsed.data.pathId && parsed.data.pathDay) {
+      const p = getPath(parsed.data.pathId);
+      const day = p?.days.find((x) => x.day === parsed.data.pathDay);
+      if (!p || !day) throw new HttpError(404, "path_not_found");
+      context = { ...context, trail: { path: p.title, day: day.day, total: p.days.length, title: day.title, ref: day.ref, goal: day.goal } };
+      lessonTopic = `${p.title}: dia ${day.day}, ${day.title}`;
     }
     const { data, error } = await db.from("sessions").insert({ user_id: user.id, mode: parsed.data.mode, topic: lessonTopic ?? topic, context, church_lesson_id: churchLessonId }).select("id").single();
     if (error || !data) throw new HttpError(500, "session_failed");
