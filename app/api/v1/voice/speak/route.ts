@@ -5,6 +5,7 @@ import { z } from "zod";
 import { enforceRate, LIMITS } from "@/lib/security/rate-limit";
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { addUsage, enforceLimit } from "@/lib/entitlements/guard";
+import { logEvent } from "@/lib/telemetry/log";
 import { ttsChain } from "@/lib/voice";
 import { prepareForSpeech } from "@/lib/voice/speech-text";
 
@@ -39,8 +40,8 @@ export async function POST(req: Request) {
       }
       void addUsage(ctx.db, "voice_seconds", Math.max(1, Math.round(spoken.length / 14))); // ~14 characters per second of speech
       return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store" } });
-    } catch {
-      /* try the next provider */
+    } catch (e) {
+      logEvent("tts_provider_failed", { provider: provider.name, code: String((e as Error).message).slice(0, 120) });
     }
   }
   return Response.json({ error: "tts_unavailable" }, { status: 502 });
