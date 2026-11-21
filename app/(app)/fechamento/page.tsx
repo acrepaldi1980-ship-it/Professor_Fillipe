@@ -15,6 +15,7 @@ export default function ClosingPage() {
   const [data, setData] = useState<ClosingData | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "none">("loading");
   const [speaking, setSpeaking] = useState(false);
+  const [noVoice, setNoVoice] = useState(false);
   const started = useRef(false);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function ClosingPage() {
   async function listen() {
     if (!data) return;
     setSpeaking(true);
-    try { await speakText(data.summary); } finally { setSpeaking(false); }
+    try { if (!(await speakText(data.summary))) setNoVoice(true); } finally { setSpeaking(false); }
   }
 
   if (state === "loading") return <main className="grid min-h-dvh place-items-center p-6"><div className="flex flex-col items-center gap-3 text-center"><Avatar state="thinking" size={88} /><p role="status" className="text-muted">{t("closing.loading")}</p></div></main>;
@@ -52,6 +53,7 @@ export default function ClosingPage() {
       <Card className="flex flex-col gap-2">
         <h2 className="text-lg">{t("closing.summary")}</h2>
         <p className="whitespace-pre-line">{data.summary}</p>
+        {noVoice && <p role="alert" className="text-sm text-muted">{t("study.error.malevoice")}</p>}
         <div><Button type="button" onClick={() => (speaking ? (stopSpeaking(), setSpeaking(false)) : void listen())}>{speaking ? t("closing.stop") : t("closing.listen")}</Button></div>
       </Card>
       <section><h2 className="mb-2 text-lg">{t("closing.map")}</h2><MindMapView map={data.mind_map} /></section>

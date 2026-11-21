@@ -75,6 +75,8 @@ export interface SpeechOptions {
   /** Exact name of a device voice chosen by the student (otherwise the best male pt-BR voice). */
   voiceName?: string | null;
   onLevel?: (level: number) => void;
+  /** Called instead of speaking when the device has no male voice. */
+  onUnavailable?: () => void;
 }
 
 export interface Speech {
@@ -84,6 +86,8 @@ export interface Speech {
   /** Speaks one sentence with the best pt-BR voice of the device; resolves when it ends. onLevel drives the mouth. */
   speak(text: string, opts?: SpeechOptions): Promise<void>;
   cancel(): void;
+  /** True when the device has at least one male Portuguese voice (the teacher never speaks with a female voice). */
+  hasMaleVoice(): Promise<boolean>;
   /** Portuguese voices installed on the device, best first (male voices first: the teacher is a mature man). */
   voices(): Promise<{ name: string; lang: string }[]>;
 }

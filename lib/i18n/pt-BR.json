@@ -133,7 +133,7 @@
   "admin.library.review": "Fila de revisão de licenças",
   "admin.library.reviewHelp": "Obras que não passaram no verificador de licença (colaborador sem data de morte conhecida ou falecido depois de 1931). Não entram na base até uma pessoa decidir.",
   "account.voice": "Voz do professor",
-  "account.voice.help": "Usa as vozes instaladas no seu aparelho. A melhor costuma ser uma voz masculina \"natural\".",
+  "account.voice.help": "Só vozes masculinas em português são usadas: o professor é um homem.",
   "account.voice.auto": "Automática (voz masculina em português)",
   "account.voice.test": "Ouvir a voz",
   "account.voice.sample": "Olá! Que bom ter você aqui. Vamos estudar a Palavra juntos?",
@@ -383,5 +383,8 @@
   "account.admin.notes": "Revisar notas pentecostais",
   "account.admin.notes.help": "Leia, comente, aprove e publique as notas de estudo.",
   "account.admin.library": "Biblioteca e licenças",
-  "account.admin.library.help": "Totais da base e fila de revisão de licenças."
+  "account.admin.library.help": "Totais da base e fila de revisão de licenças.",
+  "study.error.malevoice": "Este aparelho não tem uma voz masculina em português, então o professor só vai escrever. Veja em Conta como instalar uma.",
+  "account.voice.nomale": "Seu aparelho não tem voz masculina em português",
+  "account.voice.nomale.help": "O professor sempre fala com voz masculina. Para ouvi-lo agora, instale uma: no iPhone, Ajustes > Acessibilidade > Conteúdo Falado > Vozes > Português > Felipe. No Windows, Configurações > Hora e idioma > Fala > Adicionar vozes > Antonio ou Daniel (português). No Android, Configurações > Saída de texto para fala > Google > Português (Brasil) e escolha a voz masculina. Quando a voz do servidor estiver ativa, isso não será mais preciso."
 }

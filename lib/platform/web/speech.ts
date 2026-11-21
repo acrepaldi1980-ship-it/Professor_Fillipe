@@ -29,8 +29,14 @@ import type { Speech, SpeechOptions } from "../types";
 // Quality depends on the device, so we always pick the best installed pt-BR voice.
 const GOOD = /natural|online|premium|enhanced|neural/i;
 // Names of male and female Portuguese voices found on current systems (Windows/Edge, iOS, Android, Chrome).
-const MALE = /antonio|ant[oô]nio|felipe|ricardo|daniel|thiago|jorge|luiz|fabio|donato|male|masculin|\bmasc\b/i;
-const FEMALE = /francisca|luciana|maria|vitoria|vit[oó]ria|camila|helena|giovanna|female|feminin|google portugu/i;
+const MALE = /antonio|ant[oô]nio|felipe|ricardo|daniel|thiago|jorge|luiz|fabio|donato|\bmale\b|masculin|\bmasc\b|[-_]ptd[-_]|\bptd\b/i;
+const FEMALE = /francisca|luciana|fernanda|maria|vitoria|vit[oó]ria|camila|helena|giovanna|brenda|leila|\bfemale\b|feminin|[-_]afs[-_]|\bafs\b/i;
+
+/** The teacher is a man: every spoken line must come from a male voice (owner's rule, 21/11/2026). Names and ids that tell the gender are matched. */
+export const isMaleVoice = (v: { name: string; voiceURI?: string }) => {
+  const id = `${v.name} ${v.voiceURI ?? ""}`;
+  return MALE.test(id) && !FEMALE.test(id);
+};
 
 function score(v: SpeechSynthesisVoice): number {
   let s = 0;
@@ -75,13 +81,22 @@ export class WebSpeech implements Speech {
 
   async voices() {
     if (!this.isSupported()) return [];
-    return (await this.loadVoices()).map((v) => ({ name: v.name, lang: v.lang }));
+    return (await this.maleList()).map((v) => ({ name: v.name, lang: v.lang }));
+  }
+
+  /** Male Portuguese voices installed on the device, best first. */
+  private async maleList(): Promise<SpeechSynthesisVoice[]> {
+    return (await this.loadVoices()).filter(isMaleVoice);
+  }
+
+  async hasMaleVoice(): Promise<boolean> {
+    return this.isSupported() && (await this.maleList()).length > 0;
   }
 
   private async pickVoice(name?: string | null): Promise<SpeechSynthesisVoice | null> {
-    const all = await this.loadVoices();
-    if (name) return all.find((v) => v.name === name) ?? all[0] ?? null;
-    this.voice ??= all[0] ?? null;
+    const males = await this.maleList();
+    if (name) return males.find((v) => v.name === name) ?? males[0] ?? null;
+    this.voice ??= males[0] ?? null;
     return this.voice;
   }
 
@@ -90,13 +105,18 @@ export class WebSpeech implements Speech {
     // "Lucas 15:11-32" must be spoken as "Lucas, capítulo 15, versículos 11 a 32" (not read as a clock time), and names get their pronunciation.
     const text = prepareForSpeech(raw);
     const voice = await this.pickVoice(opts.voiceName);
+    // No male voice on this device: never speak with a female voice. The caller shows the text and explains how to get a male voice.
+    if (!voice) {
+      opts.onUnavailable?.();
+      return;
+    }
     return new Promise<void>((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = voice?.lang ?? "pt-BR";
       if (voice) u.voice = voice;
       // Calm, slightly lower voice: a mature teacher, not an announcer.
       u.rate = opts.rate ?? 0.93;
-      u.pitch = opts.pitch ?? (voice && MALE.test(voice.name) ? 0.92 : 0.8);
+      u.pitch = opts.pitch ?? 0.92;
       // The Web Speech API exposes no audio, so the mouth is planned from the text (syllables and pauses). The plan is played on a
       // clock that follows the REAL speed of the voice: every word boundary reported by the engine re-anchors the clock and refines
       // the speed (moving average), and the speed measured at the end of each utterance is remembered per voice, so devices that

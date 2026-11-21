@@ -42,6 +42,7 @@ Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fec
 
 | ID | Escolha | Data |
 | --- | --- | --- |
+| D-21 | **Toda fala do professor é masculina** (regra do Anderson, 21/11): voz do servidor masculina (Gemini "Charon" ou ElevenLabs "George"); no aparelho só entram vozes masculinas em português; sem voz masculina o professor não fala (só escreve) e a tela Conta explica como instalar uma | 2026-11-21 |
 | D-07 | Cronologia de referência do AT: **conservadora moderna** (Êxodo c. 1446 a.C. pela leitura de 1 Reis 6:1; reis de Israel e Judá por Thiele); datas sempre com incerteza e aviso de divergência | 2026-11-21 |
 | D-05 | Gerador de ilustrações: **Gemini Imagen** (mesma conta e crédito do Google AI Studio da voz) | 2026-11-21 |
 | D-06 | Sermão "explicativo" = explicar um conceito ou doutrina (parte de uma pergunta; divisões: o que é, de onde vem na Bíblia, o que muda na vida; textos de vários lugares) | 2026-11-20 |

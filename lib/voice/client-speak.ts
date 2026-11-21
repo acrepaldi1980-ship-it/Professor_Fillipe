@@ -14,27 +14,36 @@ export function stopSpeaking() {
   getPlatform().speech.cancel();
 }
 
-export async function speakText(text: string, onLevel?: (level: number) => void): Promise<void> {
+/** Speaks with the teacher's (male) voice. Resolves false when no male voice was available anywhere (the caller then shows the text only). */
+export async function speakText(text: string, onLevel?: (level: number) => void): Promise<boolean> {
   const my = ++token;
   const platform = getPlatform();
   const unsubscribe = onLevel ? platform.audioPlayer.onLevel(onLevel) : undefined;
+  let spokeAny = false;
   try {
     for (const sentence of splitSentences(text)) {
-      if (my !== token) return;
+      if (my !== token) return spokeAny;
       let played = false;
       if (server !== "down") {
         try {
           const blob = await speakSentence(sentence);
-          if (my !== token) return;
+          if (my !== token) return spokeAny;
           server = "ok";
           await platform.audioPlayer.play(blob);
           played = true;
+          spokeAny = true;
         } catch {
           server = "down";
         }
       }
-      if (!played && my === token && platform.speech.isSupported()) await platform.speech.speak(sentence, { voiceName: (await loadPrefs()).voiceName, onLevel });
+      if (!played && my === token && platform.speech.isSupported()) {
+        let missing = false;
+        await platform.speech.speak(sentence, { voiceName: (await loadPrefs()).voiceName, onLevel, onUnavailable: () => { missing = true; } });
+        if (missing) return spokeAny;
+        spokeAny = true;
+      }
     }
+    return spokeAny;
   } finally {
     unsubscribe?.();
   }

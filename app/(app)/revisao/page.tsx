@@ -22,12 +22,13 @@ export default function ReviewPage() {
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState(false);
   const [level, setLevel] = useState(0);
+  const [noVoice, setNoVoice] = useState(false);
 
   useEffect(() => { void getDueCards(20).then((r) => setCards(r.cards)).catch(() => setCards([])); }, []);
   useEffect(() => () => stopSpeaking(), []);
 
   const card = cards?.[i];
-  const ask = useCallback((c: DueCard) => { void speakText(`${t("review.ask.prefix")}${c.question}`, setLevel); }, []);
+  const ask = useCallback((c: DueCard) => { void speakText(`${t("review.ask.prefix")}${c.question}`, setLevel).then((ok) => { if (!ok) setNoVoice(true); }); }, []);
   useEffect(() => { if (started && card && !result) ask(card); }, [started, card, result, ask]);
 
   async function submit(text: string) {
@@ -73,6 +74,7 @@ export default function ReviewPage() {
           </div>
         </>
       )}
+      {noVoice && <Toast>{t("study.error.malevoice")}</Toast>}
       {error && <Toast>{t("review.error")}</Toast>}
       {result && (
         <div className="flex flex-col gap-2" role="status">

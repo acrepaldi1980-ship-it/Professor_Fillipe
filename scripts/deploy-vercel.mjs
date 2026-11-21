@@ -45,12 +45,14 @@ async function setEnv(project) {
     ["GROQ_API_KEY", envFile.GROQ_API_KEY, "sensitive"],
     ["REFERENCE_DATABASE_URL", envFile.REFERENCE_DATABASE_URL, "sensitive"],
     ["GEMINI_API_KEY", envFile.GEMINI_API_KEY, "sensitive"],
-    ["VOICE_PROVIDER", "gemini", "plain"],
+    ["VOICE_PROVIDER", envFile.VOICE_PROVIDER ?? "gemini", "plain"],
+    // optional ElevenLabs key (male voice "George") as a second server voice; add VOICE_API_KEY=... to .env.local to enable it
+    ["VOICE_API_KEY", envFile.VOICE_API_KEY, "sensitive"],
     ["TEACHER_LLM_PROVIDER", "groq", "plain"],
     ["TRANSFORMERS_CACHE_DIR", "/tmp/hf-cache", "plain"],
   ];
   if (!has("FIELD_ENCRYPTION_KEY")) vars.push(["FIELD_ENCRYPTION_KEY", randomBytes(32).toString("base64"), "sensitive"]);
-  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
+  const body = vars.filter(([k, val]) => val && (!has(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k === "VOICE_API_KEY")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
   await post(`/v10/projects/${project.id}/env?upsert=true`, body);
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }

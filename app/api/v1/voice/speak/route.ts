@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import { errorResponse, requireUser } from "@/lib/auth/server";
-import { tts } from "@/lib/voice";
+import { ttsChain } from "@/lib/voice";
 import { prepareForSpeech } from "@/lib/voice/speech-text";
 
 export const runtime = "nodejs";
@@ -21,18 +21,21 @@ export async function POST(req: Request) {
   }
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
-  const provider = tts();
   const spoken = prepareForSpeech(parsed.data.text);
-  const key = createHash("sha1").update(`${provider.name}|${parsed.data.voiceId ?? ""}|${spoken}`).digest("hex");
-  try {
-    let audio = cache.get(key);
-    if (!audio) {
-      audio = await provider.synthesize!(spoken, { voiceId: parsed.data.voiceId });
-      cache.set(key, audio);
-      if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value as string);
+  // Providers in order; the first that answers wins. The cache is keyed by text and voice, so a repeated sentence costs nothing.
+  for (const provider of ttsChain()) {
+    const key = createHash("sha1").update(`${provider.name}|${parsed.data.voiceId ?? ""}|${spoken}`).digest("hex");
+    try {
+      let audio = cache.get(key);
+      if (!audio) {
+        audio = await provider.synthesize!(spoken, { voiceId: parsed.data.voiceId });
+        cache.set(key, audio);
+        if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value as string);
+      }
+      return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store" } });
+    } catch {
+      /* try the next provider */
     }
-    return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store" } });
-  } catch {
-    return Response.json({ error: "tts_unavailable" }, { status: 502 });
   }
+  return Response.json({ error: "tts_unavailable" }, { status: 502 });
 }

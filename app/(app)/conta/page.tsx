@@ -26,12 +26,13 @@ export default function AccountPage() {
   const [error, setError] = useState(false);
   const [lenses, setLenses] = useState<{ chosen: string[]; available: string[] }>({ chosen: [], available: [] });
   const [voices, setVoices] = useState<{ name: string; lang: string }[]>([]);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
 
   useEffect(() => {
     void getMe().then(setMe);
     void getLenses().then((r) => setLenses({ chosen: r.lenses, available: r.available })).catch(() => undefined);
     void loadPrefs().then(setPrefs);
-    void getPlatform().speech.voices().then(setVoices);
+    void getPlatform().speech.voices().then((v) => { setVoices(v); setVoicesLoaded(true); });
   }, []);
 
   const update = (p: Prefs) => {
@@ -130,6 +131,13 @@ export default function AccountPage() {
             </select>
           </label>
           <Button type="button" variant="ghost" onClick={() => { getPlatform().speech.unlock(); getPlatform().speech.cancel(); void getPlatform().speech.speak(t("account.voice.sample"), { voiceName: prefs.voiceName }); }}>{t("account.voice.test")}</Button>
+        </Card>
+      )}
+
+      {voices.length === 0 && voicesLoaded && (
+        <Card className="flex flex-col gap-2" role="status">
+          <h2 className="text-lg">{t("account.voice.nomale")}</h2>
+          <p className="text-sm text-muted">{t("account.voice.nomale.help")}</p>
         </Card>
       )}
 

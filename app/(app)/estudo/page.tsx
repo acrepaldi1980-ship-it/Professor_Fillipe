@@ -128,7 +128,9 @@ export default function StudyPage() {
         if (!played && my === playId.current) {
           if (platform.speech.isSupported()) {
             const voiceName = (await loadPrefs()).voiceName;
-            await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv) });
+            let missing = false;
+            await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv), onUnavailable: () => { missing = true; } });
+            if (missing) { setError(t("study.error.malevoice")); break; }
           } else setError(t("study.error.voice"));
         }
       }
