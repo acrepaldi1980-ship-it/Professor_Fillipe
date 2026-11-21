@@ -49,6 +49,8 @@ try {
   // the sender
   say("sender: without the secret it is refused (401)", (await tick("?dry=1", "")).status === 401 && (await tick("?dry=1", "wrong")).status === 401);
   say("sender: the database function refuses anyone without the server secret", (await b.sb.rpc("api_notify_candidates", { p_secret: "nope" })).error !== null);
+  const real = await tick("");
+  say("sender: a real (not simulated) run with the right secret answers 200 and sends nothing when nobody is due", real.status === 200 && typeof real.body.considered === "number" && real.body.sent === 0, JSON.stringify(real.body).slice(0, 120));
   const none = (await tick(`?dry=1&at=${AT_EVENING}`)).body;
   say("sender: nothing to say, nothing sent", !none.users.some((u) => u.user_id === a.id));
   await a.call("POST", "/study/paths/start", { pathId: "paulo14" });

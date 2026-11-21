@@ -1,6 +1,6 @@
 // The hourly sender (spec 8.15): reads the candidates, decides with chooseNotification, sends Web Push to each device, drops dead devices
 // (404/410) and marks the day. Native push (APNs/FCM) arrives with the store apps (Prompt 2.5); tokens that are not Web Push are skipped here.
-import webpush from "web-push";
+import * as webpushModule from "web-push";
 import { chooseNotification, type Candidate, type Decision } from "./plan";
 import { notificationText } from "./messages";
 
@@ -42,10 +42,13 @@ export async function runTick(deps: Deps, now = new Date(), dry = false): Promis
   return out;
 }
 
+// web-push is a CommonJS module: depending on the bundler its functions are on the namespace or on `default`.
+const webpush = ((webpushModule as unknown as { default?: typeof webpushModule }).default ?? webpushModule) as typeof webpushModule;
+
 /** The real sender, with the VAPID keys of the app. */
 export function webPushSender(): Deps["send"] {
   const pub = process.env.VAPID_PUBLIC_KEY, priv = process.env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) throw new Error("vapid_not_configured");
   webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? "https://professor-filipe.vercel.app", pub, priv);
-  return (sub, payload) => webpush.sendNotification(sub as webpush.PushSubscription, payload, { TTL: 6 * 3600, urgency: "low" });
+  return (sub, payload) => webpush.sendNotification(sub as webpushModule.PushSubscription, payload, { TTL: 6 * 3600, urgency: "low" });
 }

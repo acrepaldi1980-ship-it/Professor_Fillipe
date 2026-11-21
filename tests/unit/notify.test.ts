@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { notificationText } from "@/lib/notify/messages";
 import { chooseNotification, localParts, type Candidate } from "@/lib/notify/plan";
-import { runTick, type Deps, type Row } from "@/lib/notify/send";
+import { runTick, webPushSender, type Deps, type Row } from "@/lib/notify/send";
+import * as wp from "web-push";
 
 // 2026-11-21 22:00 UTC = 19:00 in São Paulo (UTC-3)
 const NOW = new Date("2026-11-21T22:00:00Z");
@@ -96,5 +97,18 @@ describe("runTick", () => {
     const { deps, marked } = mk([row()], async () => { sends++; return { statusCode: 201 }; });
     const r = await runTick(deps, NOW, true);
     expect(r.sent).toBe(1); expect(sends).toBe(0); expect(marked).toEqual([]);
+  });
+});
+
+describe("webPushSender", () => {
+  it("is built from the VAPID keys (the real sender, not only the simulated one) and refuses to start without them", () => {
+    const keys = (wp as unknown as { default?: typeof wp }).default?.generateVAPIDKeys?.() ?? wp.generateVAPIDKeys();
+    const old = { pub: process.env.VAPID_PUBLIC_KEY, priv: process.env.VAPID_PRIVATE_KEY };
+    try {
+      process.env.VAPID_PUBLIC_KEY = keys.publicKey; process.env.VAPID_PRIVATE_KEY = keys.privateKey;
+      expect(typeof webPushSender()).toBe("function");
+      delete process.env.VAPID_PUBLIC_KEY;
+      expect(() => webPushSender()).toThrow("vapid_not_configured");
+    } finally { process.env.VAPID_PUBLIC_KEY = old.pub; process.env.VAPID_PRIVATE_KEY = old.priv; if (old.pub === undefined) delete process.env.VAPID_PUBLIC_KEY; if (old.priv === undefined) delete process.env.VAPID_PRIVATE_KEY; }
   });
 });
