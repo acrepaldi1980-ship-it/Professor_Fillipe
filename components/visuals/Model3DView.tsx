@@ -9,6 +9,7 @@ import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { MODELS_3D, type Hotspot } from "@/lib/visuals/models3d";
 import { ArkScene, TabernacleScene, TempleScene } from "./scenes3d/scenes";
+import { EXTRA_SCENES } from "./scenes3d/scenes-extra";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
@@ -16,7 +17,7 @@ export default function Model3DView({ modelId, onOpenRef }: { modelId: string; o
   const model = useMemo(() => MODELS_3D.find((m) => m.id === modelId), [modelId]);
   const [sel, setSel] = useState<Hotspot | null>(null);
   if (!model) return null;
-  const Scene = model.id === "ark_covenant" ? ArkScene : model.id === "tabernacle" ? TabernacleScene : TempleScene;
+  const Scene = EXTRA_SCENES[model.id] ?? (model.id === "ark_covenant" ? ArkScene : model.id === "tabernacle" ? TabernacleScene : TempleScene);
   return (
     <figure className="flex h-full min-h-[360px] flex-col gap-2" aria-label={model.name}>
       <div className="min-h-[280px] flex-1 overflow-hidden rounded-control border border-line bg-[#e9dfc8]" role="img" aria-label={model.alt}>

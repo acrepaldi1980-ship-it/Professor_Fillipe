@@ -51,3 +51,4 @@ Thumbs.db
 !.vscode/extensions.json
 /models/
 backups/
+media-out/

@@ -19,7 +19,9 @@ export interface Model3D {
   hotspots: Hotspot[];
 }
 
-export const MODELS_3D: Model3D[] = [
+import { MODELS_3D_EXTRA } from "./models3d-extra";
+
+const CORE_MODELS_3D: Model3D[] = [
   { id: "ark_covenant", name: "A Arca da Aliança", camera: [3.4, 2.6, 4.6],
     alt: "Modelo 3D da Arca da Aliança: uma caixa de madeira de acácia coberta de ouro, com quatro argolas e dois varais, tampa de ouro (o propiciatório) e dois querubins de asas abertas, frente a frente.",
     note: "Medidas de Êxodo 25:10: 2,5 côvados de comprimento, 1,5 de largura e 1,5 de altura. A forma exata dos querubins não é descrita no texto: aqui são estilizados.",
@@ -57,3 +59,5 @@ export const MODELS_3D: Model3D[] = [
       { id: "dedication", label: "A dedicação", text: "A glória do Senhor encheu o templo, e Salomão orou diante de todo o povo.", refs: ["1KI.8.10-1KI.8.13", "2CH.7.1-2CH.7.3"], at: [0, 4.2, 0] },
     ] },
 ];
+
+export const MODELS_3D: Model3D[] = [...CORE_MODELS_3D, ...MODELS_3D_EXTRA];

@@ -8,7 +8,7 @@ import { CatmullRomCurve3, DoubleSide, Vector3 } from "three";
 import { linenTexture, metalTexture, stoneTexture, woodTexture } from "./textures";
 
 type V3 = [number, number, number];
-const GOLD = "#e0b53a", BRONZE = "#b0702f", CEDAR = "#a9794b", RED = "#9b3a2a", BLUE = "#3b5a7a", PURPLE = "#5b2f63";
+export const GOLD = "#e0b53a", BRONZE = "#b0702f", CEDAR = "#a9794b", RED = "#9b3a2a", BLUE = "#3b5a7a", PURPLE = "#5b2f63";
 
 export function Studio() {
   return (
@@ -21,33 +21,33 @@ export function Studio() {
   );
 }
 
-function Gold({ hammered = true }: { hammered?: boolean }) {
+export function Gold({ hammered = true }: { hammered?: boolean }) {
   const map = useMemo(() => (hammered ? metalTexture("#d9aa2c") : undefined), [hammered]);
   return <meshStandardMaterial color={GOLD} map={map} metalness={0.68} roughness={0.34} envMapIntensity={1.4} emissive="#5e4500" emissiveIntensity={0.4} />;
 }
-function Bronze() {
+export function Bronze() {
   const map = useMemo(() => metalTexture("#a8672d"), []);
   return <meshStandardMaterial color={BRONZE} map={map} metalness={0.6} roughness={0.42} envMapIntensity={1.2} emissive="#3f2209" emissiveIntensity={0.3} />;
 }
-function Wood({ base = "#7a5230", repeat = [2, 1] as [number, number] }: { base?: string; repeat?: [number, number] }) {
+export function Wood({ base = "#7a5230", repeat = [2, 1] as [number, number] }: { base?: string; repeat?: [number, number] }) {
   const map = useMemo(() => woodTexture(base, repeat), [base, repeat]);
   return <meshStandardMaterial map={map} roughness={0.85} metalness={0} />;
 }
-function Stone({ repeat = [3, 2] as [number, number] }: { repeat?: [number, number] }) {
+export function Stone({ repeat = [3, 2] as [number, number] }: { repeat?: [number, number] }) {
   const map = useMemo(() => stoneTexture(repeat), [repeat]);
   return <meshStandardMaterial map={map} roughness={0.95} metalness={0} />;
 }
-function Linen({ repeat = [8, 2] as [number, number], color = "#ffffff" }: { repeat?: [number, number]; color?: string }) {
+export function Linen({ repeat = [8, 2] as [number, number], color = "#ffffff" }: { repeat?: [number, number]; color?: string }) {
   const map = useMemo(() => linenTexture(repeat), [repeat]);
   return <meshStandardMaterial map={map} color={color} roughness={1} side={DoubleSide} />;
 }
 
-const Ground = ({ size = 40 }: { size?: number }) => (
+export const Ground = ({ size = 40 }: { size?: number }) => (
   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}><planeGeometry args={[size, size]} /><meshStandardMaterial color="#d8c8a2" roughness={1} /></mesh>
 );
 
 // ---- helpers ----
-function Tube({ points, r = 0.03, children }: { points: V3[]; r?: number; children: React.ReactNode }) {
+export function Tube({ points, r = 0.03, children }: { points: V3[]; r?: number; children: React.ReactNode }) {
   const curve = useMemo(() => new CatmullRomCurve3(points.map((p) => new Vector3(...p))), [points]);
   return <mesh><tubeGeometry args={[curve, 24, r, 10, false]} />{children}</mesh>;
 }

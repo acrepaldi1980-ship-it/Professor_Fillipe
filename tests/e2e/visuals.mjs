@@ -65,7 +65,7 @@ try {
   await p.screenshot({ path: "/tmp/visuals-timeline.png" });
   // 3D models
   await p.click("[role=dialog] button:text('Fechar')");
-  say("library lists the 3 models", (await p.locator("section:has(h2:text('Modelos em 3D')) li").count()) === 3);
+  say("library lists the 15 models", (await p.locator("section:has(h2:text('Modelos em 3D')) li").count()) === 15);
   await p.click("button:text('A Arca da Aliança')");
   await p.waitForSelector("[role=dialog] canvas", { timeout: 20000 });
   await p.waitForTimeout(2500);
