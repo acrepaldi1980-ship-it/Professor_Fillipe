@@ -1,9 +1,9 @@
-// Ensaio do sermão (spec 8.7.5). One function for the whole feature (Vercel Hobby allows 12 functions per deployment):
-//   GET    /api/v1/rehearsals?session_id=  -> rehearsals of the outline, newest first (no transcript)
-//   GET    /api/v1/rehearsals?id=          -> one rehearsal with transcript (+ short-lived link to the kept audio, if any)
-//   POST   /api/v1/rehearsals              -> multipart { audio, session_id, keep? }: transcribe, measure, analyze, save. The audio is deleted
+// Ensaio do sermão (spec 8.7.5), served by the /api/v1/study/[...path] function (Vercel Hobby allows 12 functions per deployment):
+//   GET    /api/v1/study/rehearsals?session_id=  -> rehearsals of the outline, newest first (no transcript)
+//   GET    /api/v1/study/rehearsals?id=          -> one rehearsal with transcript (+ short-lived link to the kept audio, if any)
+//   POST   /api/v1/study/rehearsals             -> multipart { audio, session_id, keep? }: transcribe, measure, analyze, save. The audio is deleted
 //                                             after the analysis unless keep=1 (RF-M02-03).
-//   DELETE /api/v1/rehearsals?id=          -> removes the rehearsal and its kept audio
+//   DELETE /api/v1/study/rehearsals?id=          -> removes the rehearsal and its kept audio
 import { z } from "zod";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { loadConsents } from "@/lib/auth/profile";
@@ -15,12 +15,10 @@ import { getVerses } from "@/lib/knowledge/search";
 import { enforceRate, LIMITS } from "@/lib/security/rate-limit";
 import { stt } from "@/lib/voice";
 
-export const runtime = "nodejs";
-export const maxDuration = 60;
 const MAX_BYTES = 4_400_000; // Vercel functions accept bodies up to 4.5 MB
 const uuid = z.string().uuid();
 
-export async function GET(req: Request) {
+export async function listOrGet(req: Request) {
   try {
     const { user, db } = await requireUser(req);
     const url = new URL(req.url);
@@ -42,7 +40,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function analyze(req: Request) {
   const started = Date.now();
   try {
     const { user, db } = await requireUser(req);
@@ -102,7 +100,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
+export async function remove(req: Request) {
   try {
     const { user, db } = await requireUser(req);
     const id = new URL(req.url).searchParams.get("id") ?? "";

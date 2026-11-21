@@ -25,7 +25,7 @@ async function user(label, premium = true) {
   made.push(id);
   const u = { id, token: data.session.access_token };
   u.call = async (method, path, body) => { const r = await fetch(`${BASE}/api/v1${path}`, { method, headers: { Authorization: `Bearer ${u.token}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json().catch(() => ({})) }; };
-  u.post = async (audio, sessionId, keep) => { const f = new FormData(); f.set("audio", new Blob([audio], { type: "audio/webm" }), "r.webm"); f.set("session_id", sessionId); if (keep) f.set("keep", "1"); const t0 = Date.now(); let r; for (let i = 0; i < 3 && !r; i++) r = await fetch(`${BASE}/api/v1/rehearsals`, { method: "POST", headers: { Authorization: `Bearer ${u.token}` }, body: f }).catch(() => null); if (!r) return { status: 0, body: {}, ms: 0 }; return { status: r.status, body: await r.json().catch(() => ({})), ms: Date.now() - t0 }; };
+  u.post = async (audio, sessionId, keep) => { const f = new FormData(); f.set("audio", new Blob([audio], { type: "audio/webm" }), "r.webm"); f.set("session_id", sessionId); if (keep) f.set("keep", "1"); const t0 = Date.now(); let r; for (let i = 0; i < 3 && !r; i++) r = await fetch(`${BASE}/api/v1/study/rehearsals`, { method: "POST", headers: { Authorization: `Bearer ${u.token}` }, body: f }).catch(() => null); if (!r) return { status: 0, body: {}, ms: 0 }; return { status: r.status, body: await r.json().catch(() => ({})), ms: Date.now() - t0 }; };
   u.sb = createClient(url, key, { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${data.session.access_token}` } } });
   return u;
 }
@@ -103,25 +103,25 @@ try {
   // second rehearsal, keeping the audio
   const r2 = await a.post(audio2, sid, true);
   say("rehearsal 2: analyzed and the audio kept on request", r2.status === 201 && r2.body.has_audio === true);
-  const got = await a.call("GET", `/rehearsals?id=${r2.body.id}`);
+  const got = await a.call("GET", `/study/rehearsals?id=${r2.body.id}`);
   say("kept audio: a short-lived link is returned", typeof got.body.audio_link === "string" && got.body.audio_link.includes("rehearsals"));
   if (got.body.audio_link) { const au = await fetch(got.body.audio_link); say("kept audio: the link serves the recording", au.ok && Number(au.headers.get("content-length") ?? 0) > 1000); }
-  const list = await a.call("GET", `/rehearsals?session_id=${sid}`);
+  const list = await a.call("GET", `/study/rehearsals?session_id=${sid}`);
   say("history: both rehearsals listed, newest first, no transcript in the list", list.body.items?.length === 2 && list.body.items[0].id === r2.body.id && list.body.items[0].transcript === undefined);
   const m2 = r2.body.metrics ?? {};
   say("comparison data: second has fewer crutch words than the first", (m2.crutches ?? []).reduce((n, c) => n + (c.flagged ? c.count : 0), 0) <= (m.crutches ?? []).reduce((n, c) => n + (c.flagged ? c.count : 0), 0), `${JSON.stringify(m2.crutches)}`);
 
   // privacy between users
-  say("privacy: another user cannot open the rehearsal (404)", (await b.call("GET", `/rehearsals?id=${r2.body.id}`)).status === 404);
-  say("privacy: another user cannot list or delete it", (await b.call("GET", `/rehearsals?session_id=${sid}`)).body.items?.length === 0 && (await b.call("DELETE", `/rehearsals?id=${r2.body.id}`)).status === 404);
+  say("privacy: another user cannot open the rehearsal (404)", (await b.call("GET", `/study/rehearsals?id=${r2.body.id}`)).status === 404);
+  say("privacy: another user cannot list or delete it", (await b.call("GET", `/study/rehearsals?session_id=${sid}`)).body.items?.length === 0 && (await b.call("DELETE", `/study/rehearsals?id=${r2.body.id}`)).status === 404);
   const direct = await b.sb.from("rehearsals").select("id").eq("id", r2.body.id);
   say("privacy: RLS hides it from direct reads too", (direct.data ?? []).length === 0);
   const sbAudio = await b.sb.storage.from("rehearsals").download(`${a.id}/${r2.body.id}.webm`);
   say("privacy: other users cannot download the kept audio", !!sbAudio.error);
 
   // deletion
-  say("delete: removes the rehearsal and the kept audio", (await a.call("DELETE", `/rehearsals?id=${r2.body.id}`)).status === 200 && (await sql(`select count(*)::int n from storage.objects where bucket_id='rehearsals' and name like '${a.id}/%'`))[0].n === 0);
-  say("delete: it is gone", (await a.call("GET", `/rehearsals?id=${r2.body.id}`)).status === 404);
+  say("delete: removes the rehearsal and the kept audio", (await a.call("DELETE", `/study/rehearsals?id=${r2.body.id}`)).status === 200 && (await sql(`select count(*)::int n from storage.objects where bucket_id='rehearsals' and name like '${a.id}/%'`))[0].n === 0);
+  say("delete: it is gone", (await a.call("GET", `/study/rehearsals?id=${r2.body.id}`)).status === 404);
   // an outline without content cannot be rehearsed
   const sess2 = await a.call("POST", "/sessions", { mode: "sermon", context: { sermon_type: "expositivo", ref_or_theme: "Salmo 23" } });
   say("no outline yet: asks to fill the outline first (404)", (await a.post(audio1, sess2.body.id ?? sess2.body.sessionId)).status === 404);
