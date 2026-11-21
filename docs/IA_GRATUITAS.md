@@ -40,6 +40,8 @@ Trocar os modelos de um provedor sem mexer no código: `CEREBRAS_MODELS=modelo-1
 
 **Diagnóstico:** em *Admin > Métricas > IAs gratuitas em uso*, a linha "Em pausa agora" mostra o motivo exato (por exemplo `quota: ... prepayment credits are depleted` quando a chave do Gemini está em projeto pré-pago).
 
+**Cota da conta, não do modelo:** quando o erro é de cota diária, falta de crédito ou chave inválida, o roteador pausa **todos os modelos daquela chave** de uma vez (no OpenRouter, por exemplo, os modelos `:free` dividem uma cota diária pequena da conta; colocar US$ 10 de crédito no OpenRouter, uma única vez, libera 1000 requisições gratuitas por dia, segundo o próprio site).
+
 ## Como colocar as chaves em produção
 
 1. Crie a conta e a chave no provedor (links acima).

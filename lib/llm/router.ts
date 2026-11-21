@@ -100,7 +100,15 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
         if (n >= 3) { cd = Math.max(cd, 300); streaks.set(pick.id, 0); } // three failures in a row: park it for 5 minutes
       }
       console.log(JSON.stringify({ evt: "llm_fail", endpoint: pick.id, kind: err.kind, status: err.status, detail: err.message.slice(0, 120) }));
-      if (cd > 0) await store.setCooldown(pick.id, cd + Math.round(random() * 3), `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150)); // a little jitter so instances do not return together
+      const reason = `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150);
+      // A daily quota, no credit or a wrong key belongs to the whole account/key, not to one model: pause every endpoint that uses it,
+      // instead of spending a call on each sibling model just to learn the same thing.
+      const wholeKey = err.kind === "quota" || err.kind === "auth" || (err.kind === "other" && /api key not valid|invalid api key|unauthorized/i.test(err.message));
+      if (wholeKey && cd === 0) cd = 1800;
+      if (cd > 0) {
+        const targets = wholeKey ? endpoints.filter((e) => e.provider === pick.provider && e.keyIndex === pick.keyIndex) : [pick];
+        for (const t of targets) await store.setCooldown(t.id, cd + Math.round(random() * 3), reason); // a little jitter so instances do not return together
+      }
       if (err.kind === "bad_output" && ++bad >= 3) throw err;
     } finally {
       inflight.set(pick.id, Math.max(0, (inflight.get(pick.id) ?? 1) - 1));

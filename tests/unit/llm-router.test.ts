@@ -174,3 +174,22 @@ describe("budget and parking", () => {
     expect((await store.cooldowns()).has("bad/1")).toBe(true);
   });
 });
+
+describe("whole-key pause", () => {
+  it("a daily quota pauses every model of that provider key, not only the one that answered", async () => {
+    const store = new MemoryStore();
+    const e = [ep("or/a", { provider: "or", tier: 0 }), ep("or/b", { provider: "or", tier: 1 }), ep("other/c", { provider: "other", tier: 2 })];
+    const calls: string[] = [];
+    const r = await route(req(), { endpoints: () => e, store, call: async (x) => { calls.push(x.id); if (x.provider === "or") throw new LlmError("quota", 429, 0, "free-models-per-day"); return { out: {}, text: "" }; } });
+    expect(r.endpoint).toBe("other/c");
+    expect(calls).toEqual(["or/a", "other/c"]); // or/b was never tried
+    const cd = await store.cooldowns();
+    expect(cd.has("or/a") && cd.has("or/b")).toBe(true);
+  });
+  it("an invalid key (400) pauses all the models of that key", async () => {
+    const store = new MemoryStore();
+    const e = [ep("g/a", { provider: "g", tier: 0 }), ep("g/b", { provider: "g", tier: 1 }), ep("h/c", { provider: "h", tier: 2 })];
+    await route(req(), { endpoints: () => e, store, call: async (x) => { if (x.provider === "g") throw new LlmError("other", 400, 0, "API key not valid"); return { out: {}, text: "" }; } });
+    expect((await store.cooldowns()).has("g/b")).toBe(true);
+  });
+});
