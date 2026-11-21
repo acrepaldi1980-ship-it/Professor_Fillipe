@@ -29,6 +29,7 @@ function sectionContent(prompt) {
     case "overview": return "Resumo do texto." + changed;
     case "structure": return [{ title: "A ordem", refs: ["ACT.8.26-ACT.8.29"], summary: "Resumo." }, { title: "O encontro", refs: ["ACT.8.30-ACT.8.35"], summary: "Resumo." }, { title: "O batismo", refs: ["ACT.8.36-ACT.8.40"], summary: "Resumo." }];
     case "keywords": return ids(/\[(w\d+)\]/g).slice(0, 4).map((id) => ({ id, note: "O que a palavra acrescenta." }));
+    case "history": return ids(/\[(h\d+)\]/g).slice(0, 2).map((id) => ({ era: "Época", summary: "Como esta obra lê o texto.", excerpt: id }));
     case "traditions": return ids(/\[(e\d+)\]/g).slice(0, 2).map((id) => ({ tradition: "geral", reading: "Como esta obra lê o texto.", excerpt: id }));
     default: return "texto";
   }

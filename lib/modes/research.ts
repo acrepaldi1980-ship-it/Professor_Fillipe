@@ -7,7 +7,7 @@ import { findReferences, formatRefPt } from "../knowledge/refs-parser";
 import { refQuery } from "../knowledge/reference-db";
 import { getVerses, searchChunks } from "../knowledge/search";
 
-export interface Excerpt { id: string; workId: string; work: string; author: string; tradition: string; title: string; text: string }
+export interface Excerpt { id: string; workId: string; work: string; author: string; tradition: string; title: string; text: string; authors?: string[]; year?: number | null; url?: string | null; translators?: string[] | null }
 export interface WordRef { id: string; surface: string; translit: string | null; lemma: string | null; strong: string | null; gloss: string | null; lexicon?: string }
 export interface Research { refs: string[]; bible: string; words: WordRef[]; excerpts: Excerpt[]; text: string; at: number; topic: string }
 
@@ -16,7 +16,7 @@ const TTL = 15 * 60_000;
 
 export const LESSON_STEPS = ["context", "objective", "icebreaker", "points", "dynamic", "questions", "application", "memory_verse"];
 export const SERMON_STEPS = ["central_idea", "introduction", "division", "division", "division", "conclusion", "appeal"];
-export const DEEP_STEPS = ["overview", "context", "structure", "keywords", "traditions", "application", "crossrefs", "bibliography"];
+export const DEEP_STEPS = ["overview", "context", "structure", "keywords", "traditions", "history", "application", "crossrefs", "bibliography"];
 
 const pending = new Map<string, Promise<Research>>();
 
@@ -62,11 +62,11 @@ async function doGather(db: SupabaseClient, sessionId: string, mode: string, ctx
     const chunks = found.chunks.filter((c) => !["bible_text", "geodata", "lexicon"].includes(c.kind)).slice(0, 8);
     if (chunks.length) {
       const ids = [...new Set(chunks.map((c) => c.work_id))];
-      const { data: works } = await db.from("works").select("id, title, authors, tradition").in("id", ids);
-      const byId = new Map((works ?? []).map((w) => [w.id as string, w as { id: string; title: string; authors: string[] | null; tradition: string }]));
+      const { data: works } = await db.from("works").select("id, title, authors, tradition, pub_year, source_url, translators").in("id", ids);
+      const byId = new Map((works ?? []).map((w) => [w.id as string, w as { id: string; title: string; authors: string[] | null; tradition: string; pub_year: number | null; source_url: string | null; translators: string[] | null }]));
       excerpts = chunks.map((c, i) => {
         const w = byId.get(c.work_id);
-        return { id: `e${i + 1}`, workId: c.work_id, work: w?.title ?? c.work_id, author: (w?.authors ?? []).join(", "), tradition: w?.tradition ?? c.tradition, title: c.title_path ?? "", text: c.text.slice(0, 900) };
+        return { id: `e${i + 1}`, workId: c.work_id, work: w?.title ?? c.work_id, author: (w?.authors ?? []).join(", "), tradition: w?.tradition ?? c.tradition, title: c.title_path ?? "", text: c.text.slice(0, 900), authors: w?.authors ?? [], year: w?.pub_year ?? null, url: w?.source_url ?? null, translators: w?.translators ?? null };
       });
     }
   }
@@ -102,4 +102,37 @@ export function sourcesFor(r: Research, section: string): string {
   if (base === "traditions") return [cut(r.bible, 1200), excerpts(800)].filter(Boolean).join("\n\n");
   if (base === "keywords") return [cut(r.bible, 1800), words].filter(Boolean).join("\n\n");
   return [cut(r.bible, 4500), r.excerpts.length ? excerpts(260) : ""].filter(Boolean).join("\n\n");
+}
+
+/** History of interpretation: excerpts from the library grouped by era, so each period can be summarized from its own sources. */
+export const HISTORY_ERAS: { era: string; traditions: string[] }[] = [
+  { era: "Pais da Igreja", traditions: ["patristic"] },
+  { era: "Reformadores", traditions: ["reformed", "lutheran"] },
+  { era: "Tradições posteriores", traditions: ["baptist", "wesleyan", "pentecostal", "catholic", "dispensational", "jewish", "general"] },
+];
+const historyCache = new Map<string, { at: number; list: Excerpt[] }>();
+export async function gatherHistory(db: SupabaseClient, sessionId: string, ctx: Record<string, unknown>): Promise<Excerpt[]> {
+  const hit = historyCache.get(sessionId);
+  if (hit && Date.now() - hit.at < 15 * 60_000 && hit.list.length) return hit.list;
+  const topic = String(ctx.ref ?? ctx.ref_or_theme ?? ctx.topic ?? "");
+  if (!topic) return [];
+  const refs = findReferences(topic).flatMap((r) => r.refs).slice(0, 2);
+  const list: Excerpt[] = [];
+  for (const g of HISTORY_ERAS) {
+    const { data: ws } = await db.from("works").select("id, title, authors, tradition, pub_year, source_url, translators").in("tradition", g.traditions).eq("enabled", true).in("kind", ["commentary", "theology", "history", "study_notes"]).limit(400);
+    const byId = new Map((ws ?? []).map((w) => [w.id as string, w as { id: string; title: string; authors: string[] | null; tradition: string; pub_year: number | null; source_url: string | null; translators: string[] | null }]));
+    if (!byId.size) continue;
+    const found = await searchChunks(topic, { workIds: [...byId.keys()], maxTokens: 2200, maxBible: 0, maxChunks: 4, extraRefs: refs }).catch(() => ({ chunks: [], refs: [] as string[] }));
+    for (const c of found.chunks.filter((x) => byId.has(x.work_id)).slice(0, 2)) {
+      const w = byId.get(c.work_id)!;
+      list.push({ id: `h${list.length + 1}`, workId: c.work_id, work: w.title, author: (w.authors ?? []).join(", "), tradition: g.era, title: c.title_path ?? "", text: c.text.slice(0, 800), authors: w.authors ?? [], year: w.pub_year, url: w.source_url, translators: w.translators });
+    }
+  }
+  historyCache.set(sessionId, { at: Date.now(), list });
+  return list;
+}
+
+/** Sources for the history section: the excerpts grouped by era. */
+export function historySources(list: Excerpt[]): string {
+  return list.length ? "TRECHOS POR ÉPOCA (cada um com o id, a época e a obra):\n" + list.map((e) => `[${e.id}] (época: ${e.tradition}; obra: ${e.work}${e.author ? `, ${e.author}` : ""}${e.year ? `, ${e.year}` : ""}) ${e.text}`).join("\n---\n") : "";
 }

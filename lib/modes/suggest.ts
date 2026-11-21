@@ -6,6 +6,7 @@ import { BOOKS } from "../knowledge/books";
 import { completeJson } from "../llm/router";
 import { findReferences, formatRefPt } from "../knowledge/refs-parser";
 import { DeepStudy, LessonPlan, SermonOutline } from "./schema";
+import { abntReference } from "../knowledge/abnt";
 import type { Excerpt, WordRef } from "./research";
 
 export type SuggestMode = "lesson" | "sermon" | "deep";
@@ -23,6 +24,8 @@ export interface SuggestInput {
   /** Aprofundar: the original words and library excerpts the answer may refer to by id. */
   words?: WordRef[];
   excerpts?: Excerpt[];
+  /** Aprofundar history of interpretation: excerpts of the library by era. */
+  history?: Excerpt[];
 }
 export type JsonLlm = (system: string, user: string) => Promise<unknown>;
 
@@ -50,6 +53,7 @@ const DEEP_FORMAT: Record<string, string> = {
   structure: '{"content": [{"title": "...", "refs": ["ACT.8.26-ACT.8.29"], "summary": "..."}]} (3 a 6 partes, na ordem do texto)',
   keywords: '{"content": [{"id": "w3", "note": "o que essa palavra do original acrescenta, em 1 ou 2 frases"}]} (4 a 8 palavras, SOMENTE ids da lista de palavras)',
   traditions: '{"content": [{"tradition": "nome da tradição", "reading": "como essa tradição lê o texto, em 3 a 5 frases", "excerpt": "e2"}]} (use os trechos que tenham relação com o texto ou com o tema, ainda que parcial, sem declarar uma tradição vencedora; 1 a 4 itens; "excerpt" é o id do trecho usado e o "reading" só pode dizer o que esse trecho diz; devolva {"content": []} apenas se NENHUM trecho tiver relação)',
+  history: '{"content": [{"era": "Pais da Igreja", "summary": "como os intérpretes dessa época leem o texto, em 3 a 5 frases", "excerpt": "h1"}]} (uma entrada por época que tenha trecho; SOMENTE o que o trecho diz; "excerpt" é o id do trecho usado; sem declarar vencedor; {"content": []} se nenhum trecho tiver relação)',
   application: '{"content": "aplicação para a vida, 3 a 5 frases"}',
 };
 
@@ -173,6 +177,12 @@ async function suggestDeep(i: SuggestInput, llm: JsonLlm, exists: (verse: string
     const byId = new Map((i.excerpts ?? []).map((e) => [e.id, e]));
     const list = content.map((t: { tradition?: string; reading?: string; excerpt?: string }) => { const e = byId.get(String(t.excerpt)); return e && t.reading ? { tradition: String(t.tradition || e.tradition).slice(0, 60), reading: humanizeRefs(String(t.reading)).slice(0, 1200), work: `${e.work}${e.author ? `, ${e.author}` : ""}` } : null; }).filter(Boolean);
     if (!list.length) { console.log(JSON.stringify({ evt: "suggest_traditions_empty", excerpts: (i.excerpts ?? []).map((e) => `${e.tradition}|${e.work}|${e.title}`.slice(0, 90)), answered: content.length })); return null; }
+    content = list;
+  } else if (s === "history") {
+    if (!Array.isArray(content)) return null;
+    const byId = new Map((i.history ?? []).map((e) => [e.id, e]));
+    const list = content.map((h: { era?: string; summary?: string; excerpt?: string }) => { const e = byId.get(String(h.excerpt)); return e && h.summary ? { era: String(h.era || e.tradition).slice(0, 60), summary: humanizeRefs(String(h.summary)).slice(0, 1400), work: abntReference({ title: e.work, authors: e.authors, pub_year: e.year, source_url: e.url, translators: e.translators }).slice(0, 240) } : null; }).filter(Boolean);
+    if (!list.length) return null;
     content = list;
   } else if (s === "structure") {
     if (!Array.isArray(content)) return null;

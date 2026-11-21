@@ -165,9 +165,11 @@ export const DeepStudy = z.object({
   structure: z.array(z.object({ title: str, refs: z.array(z.string().max(40)).max(8).default([]), summary: str.default("") })).max(8).optional(),
   keywords: z.array(z.object({ surface: z.string().max(60), translit: z.string().max(60).nullish(), lemma: z.string().max(60).nullish(), strong: z.string().max(12).nullish(), gloss: z.string().max(120).nullish(), note: z.string().max(600).default("") })).max(10).optional(),
   traditions: z.array(z.object({ tradition: z.string().max(60), reading: z.string().max(1200), work: z.string().max(200).optional() })).max(6).optional(),
+  /** History of interpretation by era (church fathers, reformers, later traditions), each from a work of the library. */
+  history: z.array(z.object({ era: z.string().max(60), summary: z.string().max(1400), work: z.string().max(240).optional() })).max(6).optional(),
   crossrefs: z.array(z.string().max(40)).max(20).optional(),
   application: str.optional(),
-  bibliography: z.array(z.object({ work: z.string().max(240), tradition: z.string().max(60).optional() })).max(12).optional(),
+  bibliography: z.array(z.object({ work: z.string().max(600), tradition: z.string().max(60).optional() })).max(16).optional(),
 });
 export type DeepStudy = z.infer<typeof DeepStudy>;
 
@@ -178,6 +180,7 @@ export function deepGaps(d: DeepStudy): { key: string; text: string }[] {
   if (!d.structure?.length) g.push({ key: "structure", text: "Falta a estrutura do texto." });
   if (!d.keywords?.length) g.push({ key: "keywords", text: "Faltam as palavras-chave no original." });
   if (!d.traditions?.length) g.push({ key: "traditions", text: "Faltam as visões das tradições." });
+  if (!d.history?.length) g.push({ key: "history", text: "Falta a história da interpretação." });
   if (!d.application) g.push({ key: "application", text: "Falta a aplicação." });
   if (!d.crossrefs?.length) g.push({ key: "crossrefs", text: "Faltam as referências cruzadas." });
   if (!d.bibliography?.length) g.push({ key: "bibliography", text: "Falta a bibliografia." });

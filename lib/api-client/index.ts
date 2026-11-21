@@ -322,3 +322,13 @@ export const publishLesson = (classId: string, title: string, ref?: string, date
 export async function deleteLesson(id: string): Promise<void> { const r = await apiFetch(`/church/lessons?id=${encodeURIComponent(id)}`, { method: "DELETE" }); if (!r.ok) throw new Error(`api_error_${r.status}`); }
 export const getClassStats = (classId: string, lessonId?: string) => churchJson<ClassStats>(`/stats?classId=${encodeURIComponent(classId)}${lessonId ? `&lessonId=${encodeURIComponent(lessonId)}` : ""}`);
 export const startChurchCheckout = (churchId: string, cycle: "month" | "year", method: "pix" | "card" | "boleto") => churchJson<{ checkoutUrl: string; amount: number; plan: string }>("/checkout", { method: "POST", body: JSON.stringify({ churchId, cycle, method }) });
+
+// ---- Aprofundar avançado (Prompt 2.3) ----
+export interface MorphPt { pos: string; detail: string; text: string }
+export interface IlWord { ref: string; position: number; surface: string; lemma: string | null; strong: string | null; translit: string | null; gloss: string | null; morph: string | null; morphPt: MorphPt | null; lang: "grc" | "heb" }
+export const getInterlinear = (ref: string) => apiJson<{ ref: string; source: string; verses: { ref: string; words: IlWord[] }[] }>(`/bible/interlinear/${encodeURIComponent(ref)}`);
+export interface WordStudyData { strong: string; lemma: string | null; lang: "grc" | "heb"; occurrences: number; senses: { gloss: string; n: number }[]; entries: { source: string; definition: string }[]; sample: { ref: string; surface: string; gloss: string | null }[]; versions: string[]; renderings: { ref: string; texts: Record<string, string | null> }[]; source: string }
+export const getWordStudy = (strong: string, versions?: string[]) => apiJson<WordStudyData>(`/bible/word/${encodeURIComponent(strong)}${versions?.length ? `?versions=${versions.join(",")}` : ""}`);
+export interface CompareData { ref: string; versions: string[]; verses: { ref: string; base: { version: string; text: string }; others: { version: string; text: string | null; segments: { text: string; changed: boolean }[] | null }[] }[] }
+export const compareVersions = (ref: string, versions: string[]) => apiJson<CompareData>(`/bible/compare?ref=${encodeURIComponent(ref)}&versions=${versions.join(",")}`);
+export const explainVersions = (ref: string, versions: string[]) => apiJson<{ summary: string; points: { difference: string; reason: string }[]; source: string }>("/bible/compare/explain", { method: "POST", body: JSON.stringify({ ref, versions }) });

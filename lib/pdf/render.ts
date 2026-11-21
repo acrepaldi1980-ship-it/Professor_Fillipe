@@ -114,8 +114,9 @@ export function deepPdf(d: DeepStudy): Promise<Buffer> {
     if (d.structure?.length) { heading(doc, "Estrutura do texto"); d.structure.forEach((s, i) => { doc.font("Helvetica-Bold").text(`${i + 1}. ${s.title}`).font("Helvetica"); if (s.summary) doc.text(s.summary); if (s.refs?.length) doc.fillColor("#6B645A").text(s.refs.map(ref).join("; ")).fillColor("#2E2A24"); doc.moveDown(0.3); }); }
     if (d.keywords?.length) { heading(doc, "Palavras-chave no original"); d.keywords.forEach((k) => { doc.font("Helvetica-Bold").text(`${k.translit || k.surface}${k.strong ? ` (Strong ${k.strong})` : ""}`).font("Helvetica"); if (k.gloss) doc.fillColor("#6B645A").text(k.gloss).fillColor("#2E2A24"); if (k.note) doc.text(k.note); doc.moveDown(0.3); }); }
     if (d.traditions?.length) { heading(doc, "Como as tradições leem"); d.traditions.forEach((t) => { doc.font("Helvetica-Bold").text(t.tradition).font("Helvetica").text(t.reading); if (t.work) doc.fillColor("#6B645A").text(`Fonte: ${t.work}`).fillColor("#2E2A24"); doc.moveDown(0.3); }); }
+    if (d.history?.length) { heading(doc, "História da interpretação"); d.history.forEach((h) => { doc.font("Helvetica-Bold").text(h.era).font("Helvetica").text(h.summary); if (h.work) doc.fillColor("#6B645A").fontSize(9).text(`Fonte: ${h.work}`).fontSize(11.5).fillColor("#2E2A24"); doc.moveDown(0.3); }); }
     text("Aplicação", d.application);
     if (d.crossrefs?.length) { heading(doc, "Referências cruzadas"); doc.text(d.crossrefs.map(ref).join("; ")); doc.fillColor("#6B645A").fontSize(9).text("Fonte: Treasury of Scripture Knowledge (CC BY 4.0).").fontSize(11.5).fillColor("#2E2A24"); }
-    if (d.bibliography?.length) { heading(doc, "Bibliografia (obras do acervo usadas)"); d.bibliography.forEach((b) => doc.text(`• ${b.work}${b.tradition ? ` (${b.tradition})` : ""}`)); }
+    if (d.bibliography?.length) { heading(doc, "Bibliografia (ABNT NBR 6023)"); d.bibliography.forEach((b) => doc.text(b.work, { lineGap: 2 }).moveDown(0.4)); }
   });
 }

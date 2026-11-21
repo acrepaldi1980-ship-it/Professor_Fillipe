@@ -5,7 +5,8 @@ import { readLenses } from "../auth/preferences";
 import { addUsage } from "../entitlements/guard";
 import { getStore } from "../knowledge/db";
 import { DeepStudy, deepGaps, LessonPlan, lessonGapKeys, lessonGaps, SermonOutline, sermonGapKeys, sermonGaps } from "./schema";
-import { crossReferencesFor, gatherResearch, sourcesFor } from "./research";
+import { abntReference } from "../knowledge/abnt";
+import { crossReferencesFor, gatherHistory, gatherResearch, historySources, sourcesFor } from "./research";
 import { sermonTypeDefinition, seedDocument, type SessionMode } from "./server";
 import { callJsonLlm, isValidSection, suggestSection } from "./suggest";
 
@@ -37,15 +38,19 @@ export async function buildSection(db: SupabaseClient, userId: string, sm: Sessi
       const refs = await crossReferencesFor(research.refs);
       nextDoc = refs.length ? { ...doc, crossrefs: refs } : null;
     } else {
+      // ABNT list of every work the study used (excerpts and history), alphabetical
       const seen = new Map<string, { work: string; tradition?: string }>();
-      for (const e of research.excerpts) if (!seen.has(e.workId)) seen.set(e.workId, { work: `${e.work}${e.author ? `, ${e.author}` : ""}`, tradition: e.tradition });
-      nextDoc = seen.size ? { ...doc, bibliography: [...seen.values()] } : null;
+      const history = await gatherHistory(db, sm.id, sm.context).catch(() => []);
+      for (const e of [...research.excerpts, ...history]) if (!seen.has(e.workId)) seen.set(e.workId, { work: abntReference({ title: e.work, authors: e.authors, pub_year: e.year, source_url: e.url, translators: e.translators }), tradition: e.tradition });
+      const list = [...seen.values()].sort((a, b) => a.work.localeCompare(b.work, "pt-BR"));
+      nextDoc = list.length ? { ...doc, bibliography: list } : null;
     }
   } else {
     const typeDef = mode === "sermon" ? await sermonTypeDefinition(db, sm.context.sermon_type) : undefined;
+    const history = mode === "deep" && section === "history" ? await gatherHistory(db, sm.id, sm.context).catch(() => []) : undefined;
     try {
       const attempt = () => suggestSection(
-        { mode, context: sm.context, doc, section, sermonTypeDefinition: typeDef, sources: research ? sourcesFor(research, section) : "", instruction, words: research?.words, excerpts: research?.excerpts },
+        { mode, context: sm.context, doc, section, sermonTypeDefinition: typeDef, sources: history ? historySources(history) : research ? sourcesFor(research, section) : "", history, instruction, words: research?.words, excerpts: research?.excerpts },
         callJsonLlm,
         async (verse) => (await getStore().bibleVerses("por_blivre_2018", [verse], [])).length > 0,
       );

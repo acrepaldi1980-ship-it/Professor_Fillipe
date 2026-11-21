@@ -10,13 +10,13 @@ import { t } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 
 type Mode = "lesson" | "sermon" | "deep";
-const FULL: Record<Mode, number> = { lesson: 8, sermon: 5, deep: 8 };
+const FULL: Record<Mode, number> = { lesson: 8, sermon: 5, deep: 9 };
 const CHANGEABLE: Record<Mode, { key: string; label: string }[]> = {
   lesson: [["objective", "Objetivo"], ["icebreaker", "Quebra-gelo"], ["context", "Contexto"], ["points", "Pontos principais"], ["dynamic", "Dinâmica"], ["questions", "Perguntas"], ["application", "Aplicação"], ["memory_verse", "Versículo para memorizar"]].map(([key, label]) => ({ key, label })),
   sermon: [["central_idea", "Ideia central"], ["introduction", "Introdução"], ["division_replace:0", "Divisão 1"], ["division_replace:1", "Divisão 2"], ["division_replace:2", "Divisão 3"], ["conclusion", "Conclusão"], ["appeal", "Apelo"]].map(([key, label]) => ({ key, label })),
-  deep: [["overview", "Resumo"], ["context", "Contexto"], ["structure", "Estrutura"], ["keywords", "Palavras do original"], ["traditions", "Visões das tradições"], ["application", "Aplicação"]].map(([key, label]) => ({ key, label })),
+  deep: [["overview", "Resumo"], ["context", "Contexto"], ["structure", "Estrutura"], ["keywords", "Palavras do original"], ["traditions", "Visões das tradições"], ["history", "História da interpretação"], ["application", "Aplicação"]].map(([key, label]) => ({ key, label })),
 };
-const STEP_LABEL: Record<string, string> = { objective: "objetivo", icebreaker: "quebra-gelo", context: "contexto", points: "pontos principais", dynamic: "dinâmica", questions: "perguntas", application: "aplicação", memory_verse: "versículo", central_idea: "ideia central", introduction: "introdução", division: "divisões do texto", conclusion: "conclusão", appeal: "apelo", overview: "resumo", structure: "estrutura", keywords: "palavras no original", traditions: "visões das tradições", crossrefs: "referências cruzadas", bibliography: "bibliografia" };
+const STEP_LABEL: Record<string, string> = { objective: "objetivo", icebreaker: "quebra-gelo", context: "contexto", points: "pontos principais", dynamic: "dinâmica", questions: "perguntas", application: "aplicação", memory_verse: "versículo", central_idea: "ideia central", introduction: "introdução", division: "divisões do texto", conclusion: "conclusão", appeal: "apelo", overview: "resumo", structure: "estrutura", keywords: "palavras no original", traditions: "visões das tradições", history: "história da interpretação", crossrefs: "referências cruzadas", bibliography: "bibliografia" };
 const stepName = (k: string) => STEP_LABEL[k.split(":")[0]] ?? k;
 
 // Sections are written in stages; inside a stage they run AT THE SAME TIME (the server spreads them over the free AIs and merges the
@@ -24,7 +24,7 @@ const stepName = (k: string) => STEP_LABEL[k.split(":")[0]] ?? k;
 const STAGES: Record<Mode, string[][]> = {
   lesson: [["context", "objective"], ["points", "icebreaker"], ["dynamic", "questions", "application", "memory_verse"]],
   sermon: [["central_idea"], ["introduction", "division"], ["division", "conclusion"], ["division", "appeal"]],
-  deep: [["overview", "context", "keywords"], ["structure", "traditions", "crossrefs", "bibliography"], ["application"]],
+  deep: [["overview", "context", "keywords"], ["structure", "traditions", "history", "crossrefs"], ["application", "bibliography"]],
 };
 
 

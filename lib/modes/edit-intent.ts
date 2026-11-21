@@ -36,6 +36,7 @@ export function detectEdit(text: string, mode: string, divisionCount = 0): EditI
     if (/\bestrutura\b/.test(t)) return pick("structure", "a estrutura");
     if (/\b(palavras?|original|grego|hebraico|strong)\b/.test(t)) return pick("keywords", "as palavras do original");
     if (/\b(tradicao|tradicoes|visoes|visao|catolic\w*|reformad\w*|pentecostal\w*|ortodox\w*|batista\w*)\b/.test(t)) return pick("traditions", "as visões das tradições");
+    if (/\b(historia da interpretacao|historia|pais da igreja|reformadores|patristic\w*)\b/.test(t)) return pick("history", "a história da interpretação");
     if (/\baplicacao\b/.test(t)) return pick("application", "a aplicação");
   }
   return null;
