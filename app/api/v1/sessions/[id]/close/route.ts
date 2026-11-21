@@ -1,6 +1,7 @@
 // POST /api/v1/sessions/:id/close -> ends the session and, with enough conversation, writes the closing (RF-M09-01): the spoken summary,
 // the mind map and 3 to 7 review cards, plus the short summary used as long-term memory (8.5.4). A pastoral exchange is never stored,
 // so it is never summarized.
+import { track } from "@/lib/analytics/track";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { shortTaskLlm } from "@/lib/notes/llm";
 import { generateClosing } from "@/lib/review/closing";
@@ -33,6 +34,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const books = [...new Set(c.cards.map((k) => k.ref?.split(".")[0]).filter((x): x is string => !!x))];
     await db.from("notebook_items").delete().eq("session_id", id).eq("kind", "session");
     await db.from("notebook_items").insert({ user_id: user.id, session_id: id, kind: "session", title: session.topic || c.topics[0] || "Sessão de estudo", content: { summary: c.summary, mind_map: c.mind_map }, tags: c.topics, book_codes: books });
+    track(db, "session_closed", { cards: c.cards.length });
     return Response.json({ ok: true, closed: true, cards: c.cards.length });
   } catch (e) {
     return errorResponse(e);

@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { loadConsents } from "@/lib/auth/profile";
+import { track } from "@/lib/analytics/track";
 import { LENSES, readLenses, saveLenses } from "@/lib/auth/preferences";
 
 export const runtime = "nodejs";
@@ -42,6 +43,7 @@ export async function PUT(req: Request) {
       const { error } = await db.from("preferences").upsert(patch, { onConflict: "user_id" });
       if (error) throw new HttpError(500, "save_failed");
     }
+    track(db, "config_completed", { lenses: lenses?.length ?? 0 });
     return Response.json({ ok: true });
   } catch (e) {
     return errorResponse(e);

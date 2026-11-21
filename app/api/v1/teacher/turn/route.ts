@@ -9,6 +9,7 @@ import { createTurnDeps, teacherProvider } from "@/lib/teacher/deps";
 import { runTurn } from "@/lib/teacher/pipeline";
 import { INTENTS } from "@/lib/teacher/schema";
 import { findReferences } from "@/lib/knowledge/refs-parser";
+import { track } from "@/lib/analytics/track";
 import { loadAccess, loadUsage } from "@/lib/entitlements/server";
 import { checkLimit, overFairUse } from "@/lib/entitlements";
 import { addUsage, costBrl } from "@/lib/entitlements/guard";
@@ -92,6 +93,9 @@ export async function POST(req: Request) {
         void addUsage(db, "text_messages", 1);
         if (meta.tier === "deep") void addUsage(db, "deep_calls", 1);
         void addUsage(db, "cost_brl", costBrl(meta.llm));
+        track(db, "turn_completed", { latency_ms: meta.latencyMs, tier: meta.tier, cost_brl: costBrl(meta.llm), degraded: !!meta.degraded });
+        // Audit by sampling (spec 8.14): about 1% of the answers go to the reviewers, whatever the student thought of them.
+        if (messageId && Math.random() < (Number(process.env.AUDIT_SAMPLE_RATE) || 0.01)) void db.from("answer_flags").insert({ message_id: messageId, user_id: user.id, reason: "audit_sample" });
         // Never log the student's text (spec 13): only metrics.
         console.log(JSON.stringify({ evt: "turn", ...meta }));
         controller.enqueue(enc.encode(sse("structured", response)));

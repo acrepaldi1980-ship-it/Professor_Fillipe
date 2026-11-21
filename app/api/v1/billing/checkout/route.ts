@@ -1,6 +1,7 @@
 // POST /api/v1/billing/checkout { plan, cycle, method } -> { checkoutUrl, trial }: creates the subscription at the provider.
 import { z } from "zod";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
+import { track } from "@/lib/analytics/track";
 import { loadAccess } from "@/lib/entitlements/server";
 import { startCheckout } from "@/lib/payments/service";
 
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
     const access = await loadAccess(db, user.id);
     if (access.plan === parsed.data.plan) throw new HttpError(409, "already_subscribed");
     const r = await startCheckout(db, { userId: user.id, email: user.email ?? "", name: prof?.preferred_name || prof?.display_name || "Aluno", ...parsed.data });
+    track(db, "checkout_started", { plan: parsed.data.plan, cycle: parsed.data.cycle, trial: r.trial });
     return Response.json({ checkoutUrl: r.checkoutUrl, trial: r.trial, amount: r.amount });
   } catch (e) {
     return errorResponse(e);

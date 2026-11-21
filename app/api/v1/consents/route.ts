@@ -1,5 +1,6 @@
 // POST /api/v1/consents { kind, granted }: records a consent decision with the current terms version (RF-M02-01/02).
 import { z } from "zod";
+import { track } from "@/lib/analytics/track";
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { CONSENT_KINDS, recordConsent, TERMS_VERSION } from "@/lib/auth/profile";
 
@@ -12,6 +13,7 @@ export async function POST(req: Request) {
     const parsed = body.safeParse(await req.json().catch(() => null));
     if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
     await recordConsent(db, user.id, parsed.data.kind, parsed.data.granted, TERMS_VERSION);
+    if (parsed.data.kind === "sensitive_religious" && parsed.data.granted) track(db, "consent_sensitive_granted");
     return Response.json({ ok: true }, { status: 201 });
   } catch (e) {
     return errorResponse(e);

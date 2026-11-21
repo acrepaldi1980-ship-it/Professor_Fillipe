@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { encryptSensitive, loadConsents } from "@/lib/auth/profile";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
+import { track } from "@/lib/analytics/track";
 import { computeLevel } from "@/lib/onboarding/level";
 
 export const runtime = "nodejs";
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
     };
     const { error } = await db.from("profiles").upsert(patch, { onConflict: "user_id" });
     if (error) throw new HttpError(500, "interview_failed");
+    track(db, "interview_completed", { level });
     return Response.json({ score, level });
   } catch (e) {
     return errorResponse(e);

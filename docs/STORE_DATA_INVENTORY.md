@@ -51,3 +51,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Planos e cobrança (Prompt 1.11)
 - `subscriptions`, `entitlements`, `payment_events` e `usage_counters`: plano, situação, datas de cobrança, uso diário (mensagens, segundos de voz, ilustrações, custo estimado) por aluno. O pagamento em si (cartão, Pix, boleto) é tratado só pelo Asaas; o app não guarda dados de cartão. Nome e e-mail do aluno vão ao Asaas ao assinar. Compras nas lojas (Fase 2) gravarão em `entitlements`.
+
+## Administração e analytics (Prompt 1.12)
+- `analytics_events`: nome do evento, id do usuário e até alguns números/textos curtos (modo, nível, plano, latência). Nunca texto digitado. `audit_logs`: quem (administrador) fez o quê. `answer_flags`: a resposta sinalizada ou amostrada (1%) pode ser lida por revisores junto com a pergunta que a originou, sem o restante da conversa. Os revisores precisam estar cobertos pela política de privacidade como "equipe de qualidade".

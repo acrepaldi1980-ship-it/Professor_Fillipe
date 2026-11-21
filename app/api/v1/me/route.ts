@@ -1,5 +1,6 @@
 // GET /api/v1/me: profile + consent state. PUT /api/v1/me: create/update the profile (age rules enforced, RN-09).
 import { z } from "zod";
+import { track } from "@/lib/analytics/track";
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { loadConsents, loadProfile, saveProfile, TERMS_VERSION } from "@/lib/auth/profile";
 
@@ -41,7 +42,9 @@ export async function PUT(req: Request) {
     if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
     const { guardian_ack, ...input } = parsed.data;
     const consents = await loadConsents(db, user.id);
+    const existed = !!(await loadProfile(db, user.id))?.birth_date;
     await saveProfile(db, user.id, input, guardian_ack === true || !!consents.guardian_ack?.granted);
+    if (!existed && input.birth_date) track(db, "signup_completed");
     return Response.json({ ok: true });
   } catch (e) {
     return errorResponse(e);

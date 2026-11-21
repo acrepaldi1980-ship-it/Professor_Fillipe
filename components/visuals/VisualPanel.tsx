@@ -4,7 +4,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { getMapRoute, getTimeline } from "@/lib/api-client";
+import { getMapRoute, getTimeline, trackEvent } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import type { RouteDef } from "@/lib/visuals/route-data";
@@ -24,6 +24,7 @@ export function VisualPanel({ visual, durationMs, onClose, onOpenRef }: { visual
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    trackEvent("visual_opened", { kind: visual.kind });
     setFailed(false);
     if (visual.kind === "map") void getMapRoute(visual.map_id).then((r) => setRoute({ id: r.id, name: r.name, steps: r.steps.steps })).catch(() => setFailed(true));
     if (visual.kind === "timeline") void getTimeline(visual.timeline_id).then((r) => setTl({ name: r.name, events: r.events })).catch(() => setFailed(true));

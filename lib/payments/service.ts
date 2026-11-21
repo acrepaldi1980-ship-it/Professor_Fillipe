@@ -60,8 +60,10 @@ export async function applyEvent(ev: NormalizedEvent, provider: string, db: Supa
     : ev.type === "payment_overdue" ? { type: "payment_overdue", at: ev.at }
     : ev.type === "subscription_deleted" ? { type: "subscription_deleted", at: ev.at }
     : { type: "trial_started", at: ev.at };
+  const wasActive = sub.status === "active";
   sub = transition(sub, e);
   await saveSub(db, provider, ev.providerRef, row.user_id, row.plan_id, row.cycle, sub);
+  if (sub.status === "active" && !wasActive) void db.rpc("api_billing_track", { p_secret: billingSecret(), p_user: row.user_id, p_event: "subscription_activated", p_props: { plan: row.plan_id, cycle: row.cycle } });
   await syncEntitlement(db, provider, ev.providerRef, row.user_id, row.plan_id, sub, now);
   await db.rpc("api_billing_processed", { p_secret: billingSecret(), p_key: ev.key });
   return "applied";

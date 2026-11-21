@@ -1,4 +1,5 @@
 // GET -> the session's document as an A4 PDF (lesson plan or sermon outline).
+import { track } from "@/lib/analytics/track";
 import { requireFeature } from "@/lib/entitlements/guard";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { lessonPdf, sermonPdf } from "@/lib/pdf/render";
@@ -28,6 +29,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     } else {
       throw new HttpError(400, "mode_has_no_document");
     }
+    track(db, sm.mode === "lesson" ? "lesson_plan_exported" : "sermon_outline_exported");
     return new Response(new Uint8Array(pdf), { headers: { "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${name}"`, "Cache-Control": "no-store" } });
   } catch (e) {
     return errorResponse(e);

@@ -15,7 +15,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { isPlanBlock, addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, createSession, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -180,6 +180,7 @@ export default function StudyPage() {
   useEffect(() => {
     if (!sessionReady || !firstLesson.current || firstFired.current) return;
     firstFired.current = true;
+    trackEvent("first_lesson_started");
     if (themeRef.current) return void send(t("study.first.ask").replace("{topic}", themeRef.current));
     void getMe().then((m) => {
       const topic = m.profile?.first_topic;

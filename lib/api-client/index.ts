@@ -270,3 +270,25 @@ export const cancelMySubscription = () => apiJson<{ ok: boolean }>("/billing/can
 export const simulatePayment = (ref: string, event: "PAYMENT_CONFIRMED" | "PAYMENT_OVERDUE" | "SUBSCRIPTION_DELETED") => apiJson<{ ok: boolean; result: string }>("/billing/simulate", { method: "POST", body: JSON.stringify({ ref, event }) });
 export interface BillingAdmin { by_plan_status: { plan_id: string; status: string; n: number }[]; mrr_brl: number; canceled_30d: number; users: number; ai_cost_30d_brl: number; ai_cost_per_user: { user_id: string; cost: number; messages: number }[] }
 export const getBillingAdmin = () => apiJson<BillingAdmin>("/admin/billing");
+
+// ---- Analytics (client side events) and admin (Prompt 1.12) ----
+export function trackEvent(event: "visual_opened" | "first_lesson_started", props: Record<string, string | number | boolean> = {}): void {
+  void apiJson("/events", { method: "POST", body: JSON.stringify({ event, props }) }).catch(() => undefined);
+}
+
+export interface AdminWork { id: string; title: string; authors: string[]; kind: string; tradition: string; license: string; language: string; enabled: boolean; review_status: string; chunk_count: number }
+export const adminWorks = () => apiJson<{ works: AdminWork[] }>("/admin/works");
+export const adminSetWork = (id: string, enabled: boolean) => apiJson<{ ok: boolean }>("/admin/works", { method: "PATCH", body: JSON.stringify({ id, enabled }) });
+export interface AdminFlag { flag_id: string; message_id: string; reason: string | null; status: "open" | "correct" | "incorrect"; created_at: string; question: string | null; answer: string; citations: unknown; reviewer_note: string | null; audit_sample: boolean }
+export const adminFlags = (status = "open") => apiJson<{ flags: AdminFlag[] }>(`/admin/flags?status=${status}`);
+export const adminReviewFlag = (id: string, status: "open" | "correct" | "incorrect", note: string) => apiJson<{ ok: boolean }>("/admin/flags", { method: "PATCH", body: JSON.stringify({ id, status, note }) });
+export interface AdminUser { user_id: string; email: string; name: string | null; role: string; level: string | null; created_at: string; plan: string; sub_status: string | null; last_day: string | null; messages_30d: number }
+export const adminUsers = (q = "") => apiJson<{ users: AdminUser[] }>(`/admin/users?q=${encodeURIComponent(q)}`);
+export const adminPayments = (userId: string) => apiJson<{ payments: { at: string; provider: string; event_type: string; ref: string | null }[] }>(`/admin/users?payments=${userId}`);
+export const adminSetRole = (userId: string, role: "student" | "reviewer") => apiJson<{ ok: boolean }>("/admin/users", { method: "PATCH", body: JSON.stringify({ userId, role }) });
+export interface AdminMetrics { users: number; dau: number; mau: number; interview_completion: number | null; sessions_per_user_week: number; retention: { d1: number | null; d7: number | null; d30: number | null }; conversion_pct: number | null; voice_latency_ms: { median: number; p95: number } | null; answers_30d: number; flagged_rate_pct: number | null; flags_open: number; last_eval: { ran_at: string; summary: Record<string, number | string> } | null; events_7d: { event: string; n: number }[]; billing: BillingAdmin }
+export const adminMetrics = () => apiJson<AdminMetrics>("/admin/metrics");
+export interface AdminSettings { plans: { id: string; name: string; price_month: number | string; price_year: number | string | null; limits: Record<string, number | null>; features: Record<string, boolean | string | number>; active: boolean }[]; sermonTypes: { id: string; name: string; definition: string; enabled: boolean }[]; prompts: { layer: string; version: number; active: boolean; created_at: string; content: string }[] }
+export const adminSettings = () => apiJson<AdminSettings>("/admin/settings");
+export const adminSaveSetting = (body: Record<string, unknown>) => apiJson<{ ok: boolean; version?: number }>("/admin/settings", { method: "PUT", body: JSON.stringify(body) });
+export const adminAudit = () => apiJson<{ entries: { at: string; actor: string | null; action: string; target: string | null; details: unknown }[] }>("/admin/audit");

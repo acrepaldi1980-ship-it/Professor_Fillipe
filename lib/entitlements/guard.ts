@@ -1,5 +1,6 @@
 // Plan checks for the API routes that cost money or are reserved to a plan. They read ONLY lib/entitlements (never the payment provider).
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { track } from "../analytics/track";
 import { HttpError } from "../auth/server";
 import { can, checkLimit, type Access, type Feature, type LimitKind } from "./index";
 import { loadAccess, loadUsage } from "./server";
@@ -16,7 +17,10 @@ export async function requireFeature(db: SupabaseClient, userId: string, feature
 export async function enforceLimit(db: SupabaseClient, userId: string, kind: LimitKind): Promise<Access> {
   const [access, usage] = await Promise.all([loadAccess(db, userId), loadUsage(db, userId)]);
   const r = checkLimit(access, usage, kind);
-  if (!r.ok) throw new HttpError(429, "limit", { kind, limit: r.limit, used: r.used, plan: access.plan, upgrade: access.plan === "free" ? "plus" : "premium" });
+  if (!r.ok) {
+    track(db, "limit_reached", { kind, plan: access.plan });
+    throw new HttpError(429, "limit", { kind, limit: r.limit, used: r.used, plan: access.plan, upgrade: access.plan === "free" ? "plus" : "premium" });
+  }
   return access;
 }
 

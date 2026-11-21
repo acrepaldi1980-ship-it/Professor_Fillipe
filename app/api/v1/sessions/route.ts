@@ -1,5 +1,6 @@
 // POST /api/v1/sessions { mode, topic? } -> { sessionId } (spec 10.5).
 import { z } from "zod";
+import { track } from "@/lib/analytics/track";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { enforceLimit, requireFeature } from "@/lib/entitlements/guard";
 import { DeepContext, LessonContext, SermonContext } from "@/lib/modes/schema";
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
     if (parsed.data.mode === "deep") await enforceLimit(db, user.id, "deepen_month");
     const { data, error } = await db.from("sessions").insert({ user_id: user.id, mode: parsed.data.mode, topic, context }).select("id").single();
     if (error || !data) throw new HttpError(500, "session_failed");
+    track(db, "session_started", { mode: parsed.data.mode });
     return Response.json({ sessionId: data.id }, { status: 201 });
   } catch (e) {
     return errorResponse(e);

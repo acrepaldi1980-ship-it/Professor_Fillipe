@@ -1,6 +1,7 @@
 // POST /api/v1/review/grade { cardId, answer } -> the teacher grades the spoken answer (wrong, partial, right), gives a short reply and
 // the card is rescheduled with SM-2 (RF-M09-02/03). The expected answer is only returned together with the feedback.
 import { z } from "zod";
+import { track } from "@/lib/analytics/track";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { shortTaskLlm } from "@/lib/notes/llm";
 import { evaluateAnswer } from "@/lib/review/closing";
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
     const next = schedule({ ease: Number(card.ease), interval_days: card.interval_days, repetitions: card.repetitions }, grade, new Date());
     await db.from("review_cards").update({ ease: next.ease, interval_days: next.interval_days, repetitions: next.repetitions, due_at: next.due_at.toISOString(), last_grade: grade }).eq("id", card.id);
     await db.from("review_logs").insert({ card_id: card.id, user_id: user.id, grade });
+    track(db, "card_reviewed", { grade });
     return Response.json({ verdict: ev.verdict, feedback: ev.feedback, expected: card.answer, nextInDays: next.interval_days });
   } catch (e) {
     return errorResponse(e);

@@ -1,0 +1,40 @@
+"use client";
+
+// Dashboard indicators of spec 15.2.
+import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/Card";
+import { adminMetrics, type AdminMetrics } from "@/lib/api-client";
+import { t } from "@/lib/i18n";
+
+const pct = (v: number | null | undefined) => (v == null ? t("admin.metrics.none") : `${v}%`);
+const brl = (n: number) => `R$ ${Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const Stat = ({ label, value }: { label: string; value: string | number }) => <Card><div className="text-sm text-muted">{label}</div><div className="text-2xl">{value}</div></Card>;
+
+export default function MetricsAdmin() {
+  const [m, setM] = useState<AdminMetrics | null>(null);
+  const [err, setErr] = useState(false);
+  useEffect(() => { void adminMetrics().then(setM).catch(() => setErr(true)); }, []);
+  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (!m) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
+  const lat = m.voice_latency_ms;
+  return (
+    <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">
+      <h1 className="text-3xl">{t("admin.metrics.title")}</h1>
+      <div className="grid grid-cols-2 gap-3">
+        <Stat label={t("admin.metrics.dau")} value={m.dau} />
+        <Stat label={t("admin.metrics.mau")} value={m.mau} />
+        <Stat label={t("admin.metrics.interview")} value={pct(m.interview_completion)} />
+        <Stat label={t("admin.metrics.sessions")} value={m.sessions_per_user_week} />
+        <Stat label={t("admin.metrics.retention")} value={`${pct(m.retention.d1)} / ${pct(m.retention.d7)} / ${pct(m.retention.d30)}`} />
+        <Stat label={t("admin.metrics.conversion")} value={pct(m.conversion_pct)} />
+        <Stat label={t("admin.billing.mrr")} value={brl(m.billing.mrr_brl)} />
+        <Stat label={t("admin.billing.canceled")} value={m.billing.canceled_30d} />
+        <Stat label={t("admin.billing.cost")} value={brl(m.billing.ai_cost_30d_brl)} />
+        <Stat label={t("admin.metrics.latency")} value={lat ? `${Math.round(lat.median)} / ${Math.round(lat.p95)} ms` : t("admin.metrics.none")} />
+        <Stat label={t("admin.metrics.flagged")} value={`${pct(m.flagged_rate_pct)} (${m.flags_open})`} />
+        <Stat label={t("admin.metrics.eval")} value={m.last_eval ? Object.entries(m.last_eval.summary).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(" · ") : t("admin.metrics.none")} />
+      </div>
+      <Card><h2 className="mb-1 text-lg">{t("admin.metrics.events")}</h2><ul className="text-sm">{m.events_7d.map((e) => <li key={e.event} className="flex justify-between"><span>{e.event}</span><span>{e.n}</span></li>)}</ul></Card>
+    </main>
+  );
+}
