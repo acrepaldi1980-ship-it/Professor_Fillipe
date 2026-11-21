@@ -11,7 +11,7 @@ import { Modal } from "@/components/ui/Modal";
 import { getBibleVerses, getEnvironment, listEnvironments, type EnvListItem } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { EnvironmentPackage } from "@/lib/immersive/package";
-import { getPackage, getTour, PACKAGES, TOURS } from "@/lib/immersive/registry";
+import { getPackage, getTour, PUBLIC_TOURS } from "@/lib/immersive/registry";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
 const PanoView = dynamic(() => import("@/components/immersive/PanoView"), { ssr: false });
@@ -36,7 +36,7 @@ function ImmersiveScreen() {
   }, [params]);
   useEffect(() => {
     if (id === undefined || tourId) return;
-    if (!id) { void listEnvironments().then((l) => setList([...l, ...Object.values(PACKAGES).filter((c) => !l.some((e) => e.id === c.id)).map((c) => ({ id: c.id, title: c.title, era: c.era, size_bytes: 0, source: "code" as const }))])).catch(() => setError(t("imm.notfound"))); return; }
+    if (!id) { void listEnvironments().then(setList).catch(() => setError(t("imm.notfound"))); return; }
     const local = getPackage(id);
     if (local) { setPkg(local); return; }
     void getEnvironment(id).then((r) => { const p = EnvironmentPackage.safeParse(r.package); if (p.success) setPkg(p.data); else setError(t("imm.notfound")); }).catch(() => setError(t("imm.notfound")));
@@ -68,7 +68,7 @@ function ImmersiveScreen() {
         <h1 className="text-3xl">{t("home.imm")}</h1>
         <h2 className="text-xl">{t("imm.panos")}</h2>
         <p className="text-muted">{t("imm.panos.help")}</p>
-        <ul className="flex flex-col gap-2">{Object.values(TOURS).map((x) => <li key={x.id}><Link href={`/imersao?t=${x.id}`} className="block rounded-control border border-line bg-surface p-3" data-testid={`tour-${x.id}`}><strong>{x.title}</strong><span className="block text-sm text-muted">{x.era} · {x.scenes.length} {t("pano.places").toLowerCase()}</span></Link></li>)}</ul>
+        <ul className="flex flex-col gap-2">{PUBLIC_TOURS.map((x) => <li key={x.id}><Link href={`/imersao?t=${x.id}`} className="block rounded-control border border-line bg-surface p-3" data-testid={`tour-${x.id}`}><strong>{x.title}</strong><span className="block text-sm text-muted">{x.era} · {x.scenes.length} {t("pano.places").toLowerCase()}</span></Link></li>)}</ul>
         <h2 className="mt-3 text-xl">{t("imm.list.title")}</h2>
         <p className="text-muted">{t("imm.list.help")}</p>
         <ul className="flex flex-col gap-2">{list.map((e) => <li key={e.id}><Link href={`/imersao?e=${e.id}`} className="block rounded-control border border-line bg-surface p-3"><strong>{e.title}</strong><span className="block text-sm text-muted">{e.era}{e.size_bytes ? ` · ${(e.size_bytes / 1e6).toFixed(1)} MB` : ""}</span></Link></li>)}</ul>

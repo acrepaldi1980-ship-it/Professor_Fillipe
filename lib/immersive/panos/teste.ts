@@ -11,7 +11,7 @@ export const TEST_TOUR: PanoTour = PanoTour.parse({
   scenes: [
     { id: "entrada", title: "Entrada", image: "/panos/teste.jpg", credit, startYaw: 0,
       hotspots: [{ id: "porta", label: "A porta", text: "Um ponto de interesse de teste, para ver o texto e o versículo.", refs: ["JHN.10.9"], yaw: 45, pitch: 5 }],
-      links: [{ to: "patio", label: "Ir ao pátio", yaw: 90, pitch: -10, arriveYaw: 90 }],
+      links: [{ to: "patio", label: "Ir ao pátio", yaw: 70, pitch: -10, arriveYaw: 90 }],
       script: "Esta é a entrada do panorama de teste. Arraste para olhar em volta. Qual ponto você quer ver primeiro?" },
     { id: "patio", title: "Pátio", image: "/panos/teste.jpg", credit, startYaw: 180,
       hotspots: [{ id: "poco", label: "O poço", text: "Outro ponto de teste, para conferir a navegação entre fotos.", refs: [], yaw: -120, pitch: 0 }],

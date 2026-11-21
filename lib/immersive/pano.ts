@@ -19,6 +19,8 @@ export const PanoScene = z.object({
   image: z.string().min(1).max(300),
   /** Credit is mandatory: author, license and source of the photo. */
   credit: z.object({ author: z.string().min(2).max(120), license: z.string().min(2).max(60), source: z.string().min(2).max(300) }),
+  /** How much of the sphere the photo covers, in degrees. Without it: 2:1 images are full 360°×180° panoramas and any other photo is placed as a flat picture with the rest of the sphere blurred. */
+  coverage: z.object({ h: z.number().min(20).max(360), v: z.number().min(15).max(180) }).optional(),
   /** Where the visitor faces when arriving by default. */
   startYaw: yaw.default(0),
   hotspots: z.array(PanoHotspot).max(20).default([]),
@@ -92,4 +94,13 @@ export function project(yawDeg: number, pitchDeg: number, camYaw: number, camPit
   const x = (d[0] * r[0] + d[1] * r[1] + d[2] * r[2]) / (z * t * aspect);
   const y = (d[0] * u[0] + d[1] * u[1] + d[2] * u[2]) / (z * t);
   return { x: 0.5 + x / 2, y: 0.5 - y / 2 };
+}
+
+/** Horizontal and vertical coverage (degrees) of a photo in the sphere, from its pixel size and the declared coverage, if any. */
+export function coverageFor(width: number, height: number, declared?: { h: number; v: number }): { h: number; v: number; full: boolean } {
+  if (declared) return { ...declared, full: declared.h >= 359 && declared.v >= 179 };
+  const aspect = width / Math.max(1, height);
+  if (aspect >= 1.95 && aspect <= 2.05) return { h: 360, v: 180, full: true };
+  const v = aspect >= 1 ? 52 : 70; // a flat photo is shown about as big as the screen would show it: portrait photos taller
+  return { h: Math.min(150, Math.round(v * aspect)), v, full: false };
 }

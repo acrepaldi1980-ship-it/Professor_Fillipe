@@ -29,8 +29,16 @@ try {
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));
   await p.goto(`${BASE}/imersao`, { waitUntil: "networkidle" });
-  say("list: the 360° tour is offered", (await p.getByTestId("tour-panorama_teste").count()) === 1);
-  await p.getByTestId("tour-panorama_teste").click();
+  say("list: the real-photo tours are offered, the internal test tour is not", (await p.getByTestId("tour-galileia").count()) === 1 && (await p.getByTestId("tour-panorama_teste").count()) === 0);
+  await p.getByTestId("tour-galileia").click();
+  await p.waitForSelector("[data-testid=pano]", { timeout: 30000 });
+  await p.waitForTimeout(2000);
+  const gcredit = await p.getByTestId("pano-credit").innerText();
+  say("real photo tour opens with the credit of a real photographer", gcredit.includes("Berthold Werner") && gcredit.includes("1/4"), gcredit);
+  await p.getByTestId("pano-place-sepphoris").click();
+  await p.waitForTimeout(1500);
+  say("a place chip loads the next real photo", (await p.getByTestId("pano-credit").innerText()).includes("Yael Alef"));
+  await p.goto(`${BASE}/imersao?t=panorama_teste`, { waitUntil: "networkidle" });
   await p.waitForSelector("[data-testid=pano]", { timeout: 30000 });
   await p.waitForTimeout(2500);
   const credit = await p.getByTestId("pano-credit").innerText();

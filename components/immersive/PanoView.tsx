@@ -5,25 +5,49 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BackSide, LinearFilter, SRGBColorSpace, TextureLoader, type Texture } from "three";
+import { BackSide, CanvasTexture, LinearFilter, SRGBColorSpace, TextureLoader, type Texture } from "three";
 import { Button } from "@/components/ui/Button";
 import { closeSessionFull, createSession, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
-import { type PanoScene, type PanoTour, lookedAt, project, yawDiff } from "@/lib/immersive/pano";
+import { type PanoScene, type PanoTour, coverageFor, lookedAt, project, yawDiff } from "@/lib/immersive/pano";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import { speakText, stopSpeaking } from "@/lib/voice/client-speak";
 
 interface Cam { yaw: number; pitch: number; fov: number; vy: number; vp: number }
 const FOV_MIN = 35, FOV_MAX = 95;
+/** Turns the sphere so the center of the photo (u = 0.5) is at yaw 0 (checked on a test image with labels). */
+const SPHERE_TURN = -Math.PI / 2;
 
-function Sphere({ texture }: { texture: Texture | null }) {
+/** The photo on the sphere. A full 360° panorama covers it all; a flat photo is a patch on the sphere with the rest filled by a blurred, darkened copy of the same photo (so there is no black void). */
+function Sphere({ texture, coverage }: { texture: Texture | null; coverage: { h: number; v: number; full: boolean } }) {
+  const backdrop = useMemo(() => {
+    if (!texture || coverage.full) return null;
+    const img = texture.image as CanvasImageSource & { width: number; height: number };
+    const c = document.createElement("canvas"); c.width = 512; c.height = 256;
+    const ctx = c.getContext("2d");
+    if (!ctx) return null;
+    ctx.filter = "blur(14px) brightness(0.55) saturate(0.9)";
+    const k = Math.max(c.width / img.width, c.height / img.height);
+    ctx.drawImage(img, (c.width - img.width * k) / 2, (c.height - img.height * k) / 2, img.width * k, img.height * k);
+    const tx = new CanvasTexture(c); tx.colorSpace = SRGBColorSpace; return tx;
+  }, [texture, coverage.full]);
+  useEffect(() => () => backdrop?.dispose(), [backdrop]);
   if (!texture) return null;
+  const phiLen = (coverage.h * Math.PI) / 180, thetaLen = (coverage.v * Math.PI) / 180;
   return (
-    <mesh scale={[-1, 1, 1]}>
-      <sphereGeometry args={[50, 64, 40]} />
-      <meshBasicMaterial map={texture} side={BackSide} toneMapped={false} />
-    </mesh>
+    <>
+      {backdrop && (
+        <mesh scale={[-1, 1, 1]} rotation={[0, SPHERE_TURN, 0]}>
+          <sphereGeometry args={[58, 32, 20]} />
+          <meshBasicMaterial map={backdrop} side={BackSide} toneMapped={false} />
+        </mesh>
+      )}
+      <mesh scale={[-1, 1, 1]} rotation={[0, SPHERE_TURN, 0]}>
+        {coverage.full ? <sphereGeometry args={[50, 64, 40]} /> : <sphereGeometry args={[50, 48, 32, Math.PI - phiLen / 2, phiLen, Math.PI / 2 - thetaLen / 2, thetaLen]} />}
+        <meshBasicMaterial map={texture} side={BackSide} toneMapped={false} />
+      </mesh>
+    </>
   );
 }
 
@@ -68,6 +92,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
   const wrap = useRef<HTMLDivElement>(null);
   const pinEls = useRef<Record<string, HTMLElement | null>>({});
   const cache = useRef<Map<string, Texture>>(new Map());
+  const coverage = useMemo(() => { const im = texture?.image as { width?: number; height?: number } | undefined; return coverageFor(im?.width ?? 2, im?.height ?? 1, scene.coverage); }, [texture, scene.coverage]);
   const [gazeId, setGazeId] = useState<string | null>(null);
 
   const loadTexture = useCallback((url: string): Promise<Texture> => {
@@ -82,7 +107,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
   useEffect(() => {
     let alive = true;
     setLoading(true); setFailed(false);
-    loadTexture(scene.image).then((tx) => { if (!alive) return; setTexture(tx); setLoading(false); setFade(false); scene.links.forEach((l) => { const n = tour.scenes.find((s) => s.id === l.to); if (n) void loadTexture(n.image).catch(() => undefined); }); }).catch(() => { if (alive) { setFailed(true); setLoading(false); setFade(false); } });
+    loadTexture(scene.image).then((tx) => { if (!alive) return; setTexture(tx); { const im = tx.image as { width: number; height: number }; const cv = coverageFor(im.width, im.height, scene.coverage); cam.current.fov = cv.full ? 75 : Math.max(FOV_MIN, Math.min(75, cv.v * 1.12)); } setLoading(false); setFade(false); scene.links.forEach((l) => { const n = tour.scenes.find((s) => s.id === l.to); if (n) void loadTexture(n.image).catch(() => undefined); }); }).catch(() => { if (alive) { setFailed(true); setLoading(false); setFade(false); } });
     return () => { alive = false; };
   }, [scene, tour, loadTexture]);
   useEffect(() => () => { stopSpeaking(); cache.current.forEach((tx) => tx.dispose()); }, []);
@@ -195,7 +220,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
     <div ref={wrap} className="relative h-full w-full overflow-hidden bg-black" data-testid="pano" role="application" aria-label={`${tour.title}: ${scene.title}. ${t("pano.keys")}`}>
       <div className="absolute inset-0 touch-none cursor-grab active:cursor-grabbing" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onWheel={onWheel}>
         <Canvas dpr={[1, 2]} camera={{ fov: 75, near: 0.1, far: 200, position: [0, 0, 0] }} gl={{ antialias: true }} aria-hidden>
-          <Sphere texture={texture} />
+          <Sphere texture={texture} coverage={coverage} />
           <CameraRig cam={cam} />
         </Canvas>
       </div>

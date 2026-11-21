@@ -76,3 +76,17 @@ describe("projection of pins on the screen", () => {
     expect(b).toBeLessThan(a);
   });
 });
+
+import { coverageFor } from "@/lib/immersive/pano";
+describe("photo coverage", () => {
+  it("a 2:1 image is a full panorama; a flat photo covers only part of the sphere", () => {
+    expect(coverageFor(4096, 2048).full).toBe(true);
+    const flat = coverageFor(1100, 733);
+    expect(flat.full).toBe(false); expect(flat.h).toBeGreaterThan(flat.v); expect(flat.h).toBeLessThanOrEqual(150);
+    const portrait = coverageFor(825, 1100);
+    expect(portrait.h).toBeLessThan(portrait.v);
+  });
+  it("a declared coverage wins (a wide cylindrical panorama of 180°)", () => {
+    expect(coverageFor(8000, 1500, { h: 180, v: 34 })).toEqual({ h: 180, v: 34, full: false });
+  });
+});
