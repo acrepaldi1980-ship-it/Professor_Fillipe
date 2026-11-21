@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MindMapView } from "@/components/review/MindMapView";
 import { Avatar } from "@/components/teacher/Avatar";
+import { SessionFeedback } from "@/components/teacher/SessionFeedback";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { closeSessionFull, getClosing, type ClosingData } from "@/lib/api-client";
@@ -63,6 +64,7 @@ export default function ClosingPage() {
         <ul className="list-disc pl-5 text-sm">{data.cards.map((c) => <li key={c.id}>{c.question}</li>)}</ul>
         <div className="flex flex-wrap gap-2"><Link href="/revisao" className="inline-flex min-h-11 items-center rounded-control bg-primary px-4 text-primary-ink">{t("closing.review")}</Link><Link href="/caderno" className="inline-flex min-h-11 items-center rounded-control border border-line px-4">{t("closing.notebook")}</Link></div>
       </Card>
+      <SessionFeedback sessionId={new URLSearchParams(typeof window === "undefined" ? "" : window.location.search).get("s") ?? ""} />
     </main>
   );
 }

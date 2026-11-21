@@ -1,0 +1,55 @@
+# Avaliação de busca (2026-11-21)
+
+Acertos no top 5: 45/50 (90%). Meta: 85%.
+Reescrita em inglês: ligada.
+
+- PASS ret-01 Quem foi Barnabé?
+- PASS ret-02 O que é a Arca da Aliança?
+- PASS ret-03 O que era a Páscoa?
+- PASS ret-04 Quem foi o profeta Elias?
+- PASS ret-05 O que é o Pentecostes?
+- PASS ret-06 Quem foi o eunuco etíope?
+- PASS ret-07 O que eram os fariseus?
+- PASS ret-08 O que eram os saduceus?
+- PASS ret-09 Quem foi Melquisedeque?
+- PASS ret-10 O que era o tabernáculo?
+- PASS ret-11 Quem foi Estêvão, o primeiro mártir?
+- PASS ret-12 O que significa a circuncisão?
+- FAIL ret-13 O que é o sábado?  -> top: bible_por_blivre_2018:Bíblia Livre 2018 — Levít | easton_1897:Exodus | easton_1897:Exodus | easton_1897:Exodus | easton_1897:Exodus
+- PASS ret-14 Quem foi Lázaro?
+- PASS ret-15 O que era o Sinédrio?
+- PASS ret-16 O que foi o dilúvio de Noé?
+- PASS ret-17 Quem foi Pôncio Pilatos?
+- PASS ret-18 O que era o Templo de Jerusalém?
+- PASS ret-19 Quem foi Timóteo?
+- PASS ret-20 Quem foi Priscila e Áquila?
+- PASS ret-21 Como é a oração do Pai Nosso?
+- PASS ret-22 O que Jesus disse a Nicodemos sobre nascer de novo?
+- PASS ret-23 O que aconteceu no dia de Pentecostes em Atos 2?
+- FAIL ret-24 O que Paulo escreveu sobre o amor?  -> top: bible_por_blivre_2018:Bíblia Livre 2018 — 1 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 2 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 2 Tes | bible_por_blivre_2018:Bíblia Livre 2018 — 1 Cor | bible_por_blivre_2018:Bíblia Livre 2018 — 1 Joã
+- PASS ret-25 Qual é a parábola do filho pródigo?
+- PASS ret-26 Como foi o batismo de Jesus?
+- PASS ret-27 O que é o fruto do Espírito?
+- PASS ret-28 Quais são os dez mandamentos?
+- PASS ret-29 O que diz o Salmo 23?
+- PASS ret-30 Como Deus criou o mundo?
+- FAIL ret-31 Jesus como o bom pastor  -> top: easton_1897:Jesus | easton_1897:Jesus | easton_1897:John | easton_1897:John, First Epistle of | easton_1897:John, Gospel of
+- PASS ret-32 O que é a armadura de Deus?
+- PASS ret-33 O que são as bem-aventuranças?
+- PASS ret-34 Como Paulo se converteu no caminho de Damasco?
+- PASS ret-35 O que Jesus ensinou sobre perdoar setenta vezes sete?
+- PASS ret-36 Como Davi venceu Golias?
+- PASS ret-37 Qual é a grande comissão?
+- PASS ret-38 Quem foi Jó e o que ele sofreu?
+- PASS ret-39 O que diz Romanos 8:28?
+- PASS ret-40 Filipe e o eunuco no caminho de Gaza
+- PASS ret-41 Por que Jesus lavou os pés dos discípulos?
+- PASS ret-42 O que Tiago diz sobre fé e obras?
+- FAIL ret-43 Como foi a ressurreição de Jesus?  -> top: easton_1897:Jesus | easton_1897:Jesus | bible_por_blivre_2018:Bíblia Livre 2018 — João  | bible_por_blivre_2018:Bíblia Livre 2018 — Mateu | bible_por_blivre_2018:Bíblia Livre 2018 — Atos 
+- PASS ret-44 O que são os dons espirituais?
+- PASS ret-45 O que diz Hebreus 11 sobre a fé?
+- PASS ret-46 Por que João Batista chamou Jesus de Cordeiro de Deus?
+- PASS ret-47 Qual é a parábola do bom samaritano?
+- PASS ret-48 O que Jesus ensinou sobre o Sermão da Montanha?
+- FAIL ret-49 Quem foi Moisés e a sarça ardente?  -> top: easton_1897:Exodus | easton_1897:Exodus | easton_1897:Exodus, Book of | easton_1897:Moses | easton_1897:Moses
+- PASS ret-50 Como foi a travessia do Mar Vermelho?

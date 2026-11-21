@@ -26,6 +26,32 @@ export default function Landing() {
       <Link href="/login" className="inline-flex min-h-12 w-full items-center justify-center rounded-control bg-primary px-6 text-lg font-semibold text-primary-ink">
         {t("landing.cta")}
       </Link>
+      <Link href="/login" className="text-sm underline">{t("landing.login")}</Link>
+
+      <section aria-labelledby="how" className="flex w-full flex-col gap-2 text-left">
+        <h2 id="how" className="text-2xl">{t("landing.how.title")}</h2>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>{t("landing.how.1")}</li>
+          <li>{t("landing.how.2")}</li>
+          <li>{t("landing.how.3")}</li>
+        </ul>
+      </section>
+
+      {/* Space for the demo video the owner will record: replace this block by <video src="/demo.mp4" controls poster="/avatar/cena-atos-8.webp" /> */}
+      <div data-testid="demo-slot" className="grid aspect-video w-full place-items-center rounded-control border border-dashed border-line text-sm text-muted">{t("landing.demo")}</div>
+
+      <section aria-labelledby="plans" className="flex w-full flex-col gap-2 text-left">
+        <h2 id="plans" className="text-2xl">{t("landing.plans.title")}</h2>
+        <ul className="space-y-1">
+          <li>{t("landing.plans.free")}</li>
+          <li>{t("landing.plans.plus")}</li>
+          <li>{t("landing.plans.premium")}</li>
+        </ul>
+        <Link href="/planos" className="underline">{t("landing.plans.see")}</Link>
+      </section>
+
+      <Link href="/instalar" className="inline-flex min-h-12 w-full items-center justify-center rounded-control border border-line px-6 font-semibold">{t("landing.install")}</Link>
+      <p className="text-xs text-muted">{t("landing.ia")}</p>
       <p className="flex gap-4 text-sm text-muted">
         <Link href="/termos" className="underline">Termos</Link>
         <Link href="/privacidade" className="underline">Privacidade</Link>

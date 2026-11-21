@@ -11,6 +11,9 @@ const CRISIS_PATTERNS: RegExp[] = [
   /\b(meu|minha) (pai|m[aã]e|filho|filha|esposa|marido|irm[aã]o|irm[aã]|av[oô]|av[oó]|amigo|amiga|noivo|noiva)\b[^.?!]{0,40}\b(morreu|faleceu|partiu|se foi|foi embora de vez)\b/i,
   /\b(morreu|faleceu)\b[^.?!]{0,20}\b(meu|minha) (pai|m[aã]e|filho|filha|esposa|marido|irm[aã]o|irm[aã]|av[oô]|av[oó])\b/i,
   /\b(n[aã]o consigo parar de chorar|s[oó] choro|choro (todos os dias|o dia todo)|n[aã]o tenho for[cç]as para nada)\b/i,
+  /\b(vontade de viver|sentido (em|na) (viver|vida)|n[aã]o consigo mais viver|n[aã]o quero (mais )?(estar aqui|existir)|queria (sumir|desaparecer|n[aã]o existir))/i,
+  /\b(tomei|engoli) (todos|tudo|muitos|v[aá]rios)\b[^.?!]{0,30}\b(rem[eé]dios?|comprimidos?|p[ií]lulas?|medicamentos?)/i,
+  /\b(abusad[oa]|violentad[oa]|molestad[oa])\b|\b(me|nos) (amea[cç]a|agride|espanca)\b|amea[cç]a de morte|viol[eê]ncia (em|dentro de) casa|sofrendo viol[eê]ncia/i,
   /\b(fui (abusad|estuprad|agredid)|apanho|me bate|viol[eê]ncia dom[eé]stica|abuso sexual)\b/i,
 ];
 

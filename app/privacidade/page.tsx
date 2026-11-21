@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       <h2 className="text-xl">Situações de crise</h2>
       <p>Se você escrever sobre sofrimento intenso, o professor orienta você a procurar ajuda. Guardamos apenas que isso aconteceu (a data), sem o texto.</p>
       <h2 className="text-xl">Seus direitos</h2>
-      <p>Você pode acessar, corrigir, exportar, revogar consentimentos e excluir seus dados. Contato do encarregado de dados: a definir antes do lançamento.</p>
+      <p>Você pode acessar, corrigir, exportar, revogar consentimentos e excluir seus dados. Encarregado de dados (DPO): o responsável pelo aplicativo. O contato será publicado aqui antes da abertura ao público.</p>
       <p><Link href="/termos" className="underline">Termos de Uso</Link> · <Link href="/" className="underline">Voltar</Link></p>
     </main>
   );
