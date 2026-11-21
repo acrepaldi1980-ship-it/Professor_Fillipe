@@ -39,6 +39,7 @@ for (const it of ITEMS) {
     const res = await fetch(url, { headers: { "User-Agent": UA } }).catch(() => null);
     if (res?.ok) { buf = Buffer.from(await res.arrayBuffer()); break; }
     const ra = Number(res?.headers.get("retry-after")) || 60;
+    if (res?.status === 429) { console.log(`  ${it.id}: HTTP 429 (retry-after ${ra} s): stopping so the limit can clear; run the script again later`); save(); process.exit(2); } // never keep knocking while limited
     console.log(`  ${it.id}: HTTP ${res?.status ?? "err"}, waiting ${Math.min(ra, MAX_WAIT_S)} s as asked`);
     await sleep(Math.min(ra, MAX_WAIT_S) * 1000 + 5000);
   }
@@ -48,6 +49,6 @@ for (const it of ITEMS) {
   done.set(it.id, { ...textOf(it), image: `/arqueologia/${it.id}.jpg`, credit: { title: c.title.replace(/^File:/, ""), author: c.author, license: c.license, page: c.page } });
   save();
   console.log("OK  ", it.id, "|", c.license);
-  await sleep(25000);
+  await sleep(30000);
 }
 console.log(`${done.size}/${ITEMS.length} pieces with image`);
