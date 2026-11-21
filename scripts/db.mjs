@@ -8,7 +8,7 @@ const URL = `https://api.supabase.com/v1/projects/${REF}/database/query`;
 export async function sql(query) {
   const res = await fetch(URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(process.env.SUPABASE_ACCESS_TOKEN ? { Authorization: `Bearer ${process.env.SUPABASE_ACCESS_TOKEN}` } : {}) },
     body: JSON.stringify({ query }),
   });
   const body = await res.text();

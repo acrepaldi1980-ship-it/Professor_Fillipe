@@ -128,6 +128,11 @@ export async function deleteAccount(): Promise<void> {
   const res = await apiFetch("/account", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "EXCLUIR" }) });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
 }
+export async function exportMyData(): Promise<Blob> {
+  const res = await apiFetch("/account/export");
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return res.blob();
+}
 export const getConfig = () => apiJson<{ minVersion: string; flags: Record<string, boolean> }>("/config");
 
 export interface SourceWork {
@@ -286,7 +291,7 @@ export interface AdminUser { user_id: string; email: string; name: string | null
 export const adminUsers = (q = "") => apiJson<{ users: AdminUser[] }>(`/admin/users?q=${encodeURIComponent(q)}`);
 export const adminPayments = (userId: string) => apiJson<{ payments: { at: string; provider: string; event_type: string; ref: string | null }[] }>(`/admin/users?payments=${userId}`);
 export const adminSetRole = (userId: string, role: "student" | "reviewer") => apiJson<{ ok: boolean }>("/admin/users", { method: "PATCH", body: JSON.stringify({ userId, role }) });
-export interface AdminMetrics { users: number; dau: number; mau: number; interview_completion: number | null; sessions_per_user_week: number; retention: { d1: number | null; d7: number | null; d30: number | null }; conversion_pct: number | null; voice_latency_ms: { median: number; p95: number } | null; answers_30d: number; flagged_rate_pct: number | null; flags_open: number; last_eval: { ran_at: string; summary: Record<string, number | string> } | null; events_7d: { event: string; n: number }[]; billing: BillingAdmin }
+export interface AdminMetrics { users: number; dau: number; mau: number; interview_completion: number | null; sessions_per_user_week: number; retention: { d1: number | null; d7: number | null; d30: number | null }; conversion_pct: number | null; voice_latency_ms: { median: number; p95: number } | null; answers_30d: number; flagged_rate_pct: number | null; flags_open: number; last_eval: { ran_at: string; summary: Record<string, number | string> } | null; events_7d: { event: string; n: number }[]; billing: BillingAdmin; errors_24h?: { route: string; code: string; n: number; last_hour: string }[] }
 export const adminMetrics = () => apiJson<AdminMetrics>("/admin/metrics");
 export interface AdminSettings { plans: { id: string; name: string; price_month: number | string; price_year: number | string | null; limits: Record<string, number | null>; features: Record<string, boolean | string | number>; active: boolean }[]; sermonTypes: { id: string; name: string; definition: string; enabled: boolean }[]; prompts: { layer: string; version: number; active: boolean; created_at: string; content: string }[] }
 export const adminSettings = () => apiJson<AdminSettings>("/admin/settings");

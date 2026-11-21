@@ -1,6 +1,7 @@
 // Server-side auth for /api/v1 routes: the token comes in the Authorization header (never a cookie, spec 10.6.3).
 // Data is read and written with a Supabase client carrying the USER's token, so Row Level Security applies to every query.
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { reportError } from "../telemetry/log";
 
 export class HttpError extends Error {
   constructor(
@@ -51,8 +52,11 @@ export async function requireUser(req: Request): Promise<AuthedContext> {
 }
 
 export function errorResponse(e: unknown): Response {
-  if (e instanceof HttpError) return Response.json({ error: e.code, ...(e.extra ?? {}) }, { status: e.status });
-  console.error(JSON.stringify({ evt: "api_error", code: (e as Error).message?.slice(0, 80) }));
+  if (e instanceof HttpError) {
+    if (e.status >= 500) reportError("api", e.code, e.status);
+    return Response.json({ error: e.code, ...(e.extra ?? {}) }, { status: e.status, headers: e.status === 429 && typeof e.extra?.retryAfterSeconds === "number" ? { "Retry-After": String(e.extra.retryAfterSeconds) } : undefined });
+  }
+  reportError("api", (e as Error).message ?? "unknown", 500);
   return Response.json({ error: "internal_error" }, { status: 500 });
 }
 

@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   try {
     const { db } = await requireAdmin(req);
-    const [{ data: m, error }, { data: b }] = await Promise.all([db.rpc("api_admin_metrics"), db.rpc("api_admin_billing")]);
+    const [{ data: m, error }, { data: b }, { data: errs }] = await Promise.all([db.rpc("api_admin_metrics"), db.rpc("api_admin_billing"), db.rpc("api_admin_errors")]);
     if (error) throw new HttpError(500, "metrics_failed");
-    return Response.json({ ...(m as object), billing: b });
+    return Response.json({ ...(m as object), billing: b, errors_24h: errs ?? [] });
   } catch (e) {
     return errorResponse(e);
   }

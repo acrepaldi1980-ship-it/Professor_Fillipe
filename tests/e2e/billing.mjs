@@ -68,6 +68,7 @@ try {
   await p.waitForSelector("h2:text('Plus')");
   await p.locator("div:has(> h2:text('Plus')) button:text('Assinar')").click();
   await p.waitForURL(/\/checkout\/simulado/, { timeout: 20000 });
+  await p.waitForSelector("text=29,90", { timeout: 20000 }).catch(() => {});
   say("checkout: opens the (test) payment page with the amount", (await p.locator("text=29,90").count()) > 0);
   const before = await sql(`select status from subscriptions where user_id='${id}'`);
   say("checkout: before paying there is no access yet (placeholder subscription)", before.length === 1 && before[0].status === "expired" && (await api("/notebook/export?id=all")).status === 403);

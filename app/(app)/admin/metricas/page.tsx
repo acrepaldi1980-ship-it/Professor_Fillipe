@@ -34,6 +34,10 @@ export default function MetricsAdmin() {
         <Stat label={t("admin.metrics.flagged")} value={`${pct(m.flagged_rate_pct)} (${m.flags_open})`} />
         <Stat label={t("admin.metrics.eval")} value={m.last_eval ? Object.entries(m.last_eval.summary).slice(0, 2).map(([k, v]) => `${k}: ${v}`).join(" · ") : t("admin.metrics.none")} />
       </div>
+      <Card>
+        <h2 className="mb-1 text-lg">{t("admin.metrics.errors")}</h2>
+        {(m.errors_24h ?? []).length === 0 ? <p className="text-sm text-muted">{t("admin.metrics.errors.none")}</p> : <ul className="text-sm">{(m.errors_24h ?? []).map((e) => <li key={e.route + e.code} className="flex justify-between"><span>{e.route} · {e.code}</span><span>{e.n}</span></li>)}</ul>}
+      </Card>
       <Card><h2 className="mb-1 text-lg">{t("admin.metrics.events")}</h2><ul className="text-sm">{m.events_7d.map((e) => <li key={e.event} className="flex justify-between"><span>{e.event}</span><span>{e.n}</span></li>)}</ul></Card>
     </main>
   );

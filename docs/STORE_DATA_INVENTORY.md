@@ -54,3 +54,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Administração e analytics (Prompt 1.12)
 - `analytics_events`: nome do evento, id do usuário e até alguns números/textos curtos (modo, nível, plano, latência). Nunca texto digitado. `audit_logs`: quem (administrador) fez o quê. `answer_flags`: a resposta sinalizada ou amostrada (1%) pode ser lida por revisores junto com a pergunta que a originou, sem o restante da conversa. Os revisores precisam estar cobertos pela política de privacidade como "equipe de qualidade".
+
+## Segurança e LGPD (Prompt 1.13)
+- `rate_limits`: chave (usuário ou hash do IP) e contagem por janela; apagada sozinha em 1 dia. `app_errors`: rota, código curto e contagem por hora, sem texto de usuário. Exportação dos dados do aluno: arquivo JSON gerado na hora e salvo pelo aluno (`lib/platform` files); nada fica no servidor. Backup diário dos dados de usuário com retenção de 30 dias (artefato privado do GitHub).

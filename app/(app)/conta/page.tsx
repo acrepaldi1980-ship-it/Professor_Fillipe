@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Field } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
-import { deleteAccount, getLenses, getMe, saveConsent, saveLensesApi, type MeResponse } from "@/lib/api-client";
+import { deleteAccount, exportMyData, getLenses, getMe, saveConsent, saveLensesApi, type MeResponse } from "@/lib/api-client";
 import Link from "next/link";
 import { signOut } from "@/lib/auth/client";
 import { t } from "@/lib/i18n";
@@ -46,6 +46,18 @@ export default function AccountPage() {
   async function toggleReligious() {
     await saveConsent("sensitive_religious", !religious);
     setMe(await getMe());
+  }
+
+  async function download() {
+    setBusy(true);
+    setError(false);
+    try {
+      const blob = await exportMyData();
+      await getPlatform().files.save("meus-dados-professor-filipe.json", blob);
+    } catch {
+      setError(true);
+    }
+    setBusy(false);
   }
 
   async function logout() {
@@ -163,6 +175,12 @@ export default function AccountPage() {
           {me.profile.role === "admin" && <Link href="/admin/biblioteca" className="rounded-control border border-line p-3"><strong>{t("account.admin.library")}</strong><span className="block text-sm text-muted">{t("account.admin.library.help")}</span></Link>}
         </Card>
       )}
+
+      <Card className="flex flex-col gap-2">
+        <h2 className="text-lg">{t("account.export")}</h2>
+        <p className="text-sm text-muted">{t("account.export.help")}</p>
+        <Button type="button" variant="ghost" disabled={busy} onClick={() => void download()}>{t("account.export")}</Button>
+      </Card>
 
       <Button type="button" variant="ghost" onClick={() => void logout()}>{t("account.logout")}</Button>
       <Button type="button" variant="danger" onClick={() => setConfirming(true)}>{t("account.delete")}</Button>

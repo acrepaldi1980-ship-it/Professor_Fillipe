@@ -11,6 +11,7 @@ import { repairWorkCitations, verifyCitations } from "./citations";
 import { findUngroundedNames, groundingNotice } from "./grounding";
 import { ensureClosingQuestion } from "./speech";
 import { normalizeRaw } from "./normalize";
+import { injectionResponse, leaksPrompt, screenInput } from "../security/injection";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -125,6 +126,17 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     };
   }
 
+  // 1b) Obvious injection attempts get a fixed reply without calling the model (RA-21).
+  const attack = screenInput(input.text);
+  if (attack) {
+    const response = injectionResponse(attack, student.preferred_name);
+    return {
+      response,
+      retrieved: [],
+      meta: { ...baseMeta, intent: "ask", tier: "none", pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0 },
+    };
+  }
+
   // 2) Intent and 3) references cited by the student.
   const intent = classify(input.text, input.intent);
   const mentioned = extractRefs(input.text);
@@ -233,6 +245,8 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   // 8) Memory (only what was said, never crisis text).
   // Visuals: only catalog ids reach the screen (max 2 per turn).
+  // An answer that copies the internal instructions is replaced by the fixed reply.
+  if (leaksPrompt(`${ver.response.speech} ${ver.response.display_markdown ?? ""}`)) ver = { ...ver, response: injectionResponse("reveal_prompt", student.preferred_name) };
   const response = { ...ver.response, speech: ensureClosingQuestion(ver.response.speech), visuals: sanitizeVisuals(ver.response.visuals as never) as typeof ver.response.visuals };
   memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
 

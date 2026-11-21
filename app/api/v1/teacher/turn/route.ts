@@ -2,6 +2,7 @@
 // Requires login. Events: `structured` (the validated contract), `done` (metrics), `error`.
 // Persistence: the conversation is saved in `messages`; for a pastoral crisis NO text is stored, only the event (spec 8.5.8).
 import { z } from "zod";
+import { clientKey, enforceRate, LIMITS } from "@/lib/security/rate-limit";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { studentForPrompt } from "@/lib/auth/profile";
 import { loadBibleSettings } from "@/lib/auth/preferences";
@@ -30,6 +31,8 @@ export async function POST(req: Request) {
   let ctx;
   try {
     ctx = await requireUser(req);
+    await enforceRate(ctx.db, `u:${ctx.user.id}:turn`, LIMITS.turn);
+    await enforceRate(ctx.db, clientKey(req) + ":turn", { limit: 60, windowSeconds: 60 });
   } catch (e) {
     return errorResponse(e);
   }

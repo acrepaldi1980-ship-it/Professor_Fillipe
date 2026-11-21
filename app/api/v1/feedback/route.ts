@@ -1,6 +1,7 @@
 // POST /api/v1/feedback { rating 1-5, comment?, sessionRef? } (prototype). Stores no conversation text.
 import { z } from "zod";
 import { anonClient } from "@/lib/auth/server";
+import { clientKey, enforceRate } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 const body = z.object({
@@ -10,6 +11,11 @@ const body = z.object({
 });
 
 export async function POST(req: Request) {
+  try {
+    await enforceRate(anonClient(), clientKey(req) + ":feedback", { limit: 5, windowSeconds: 600 });
+  } catch {
+    return Response.json({ error: "rate_limited" }, { status: 429 });
+  }
   const parsed = body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
   const { rating, comment, sessionRef } = parsed.data;

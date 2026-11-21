@@ -2,6 +2,7 @@
 // Login required (it spends money per call); a small in-memory cache avoids paying twice for repeated sentences.
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { enforceRate, LIMITS } from "@/lib/security/rate-limit";
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { addUsage, enforceLimit } from "@/lib/entitlements/guard";
 import { ttsChain } from "@/lib/voice";
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   let ctx;
   try {
     ctx = await requireUser(req);
+    await enforceRate(ctx.db, `u:${ctx.user.id}:voice`, LIMITS.voice);
     await enforceLimit(ctx.db, ctx.user.id, "voice_minutes_day");
   } catch (e) {
     return errorResponse(e);
