@@ -45,19 +45,34 @@ export async function deepSources(ref: unknown): Promise<string | undefined> {
   }
 }
 
+/** What the setup already tells us, so the document is never empty at the start (stored edits always win over it). */
+export function seedDocument(mode: string, ctx: Record<string, unknown>): Record<string, unknown> {
+  const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+  if (mode === "lesson") {
+    const ref = str(ctx.ref);
+    return { ...(str(ctx.topic) ? { title: str(ctx.topic) } : {}), ...(ref ? { base_text: ref } : {}) };
+  }
+  if (mode === "sermon") {
+    const rt = str(ctx.ref_or_theme);
+    const isRef = !!rt && findReferences(rt).some((r) => r.refs.length > 0);
+    return { ...(str(ctx.sermon_type) ? { type: str(ctx.sermon_type) } : {}), ...(rt ? (isRef ? { base_text: rt } : { title: rt }) : {}) };
+  }
+  return {};
+}
+
 /** Writes the mode_payload of the turn into the session's document. Returns what changed (for the interface). */
 export async function applyModePayload(db: SupabaseClient, userId: string, session: SessionMode, response: TeacherResponse, userText: string): Promise<"lesson" | "sermon" | null> {
   if (!response.mode_payload) return null;
   if (session.mode === "lesson") {
     const { data: row } = await db.from("lesson_plans").select("id, data").eq("session_id", session.id).maybeSingle();
-    const next = applyLessonPayload(LessonPlan.parse(row?.data ?? {}), response.mode_payload);
+    const next = applyLessonPayload(LessonPlan.parse({ ...seedDocument("lesson", session.context), ...((row?.data as object | undefined) ?? {}) }), response.mode_payload);
     if (!next) return null;
     await db.from("lesson_plans").upsert({ ...(row ? { id: row.id } : {}), user_id: userId, session_id: session.id, data: next }, { onConflict: "id" });
     return "lesson";
   }
   if (session.mode === "sermon") {
     const { data: row } = await db.from("sermon_outlines").select("id, data").eq("session_id", session.id).maybeSingle();
-    const next = applySermonPayload(SermonOutline.parse(row?.data ?? {}), response.mode_payload, userText);
+    const next = applySermonPayload(SermonOutline.parse({ ...seedDocument("sermon", session.context), ...((row?.data as object | undefined) ?? {}) }), response.mode_payload, userText);
     if (!next) return null;
     const type = typeof session.context.sermon_type === "string" ? session.context.sermon_type : null;
     const typeId = type ? (await db.from("sermon_types").select("id").eq("name", type).maybeSingle()).data?.id : undefined;

@@ -301,6 +301,8 @@
   "doc.pdf": "Baixar PDF",
   "doc.empty": "Ainda vazio. O professor vai preenchendo conforme vocês conversam.",
   "doc.gaps": "O que ainda falta",
+  "doc.gap.suggest": "Pedir sugestão",
+  "doc.gap.ask": "Sugira e já coloque no documento: {gap}.",
   "doc.complete": "Nada faltando. Revise e baixe o PDF.",
   "doc.field.title": "Título",
   "doc.field.base_text": "Texto-base",

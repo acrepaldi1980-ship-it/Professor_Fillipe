@@ -11,8 +11,10 @@ export function groqModels(): string[] {
 }
 
 export class GroqTeacherLlm implements TeacherLlm {
-  async generate({ system, messages }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
+  async generate(args: Parameters<TeacherLlm["generate"]>[0], round = 0): Promise<unknown> {
+    const { system, messages } = args;
     let lastStatus = 0;
+    let retryAfter = 0;
     let lastDetail = "";
     for (const model of groqModels()) {
       const doFetch = () =>
@@ -44,6 +46,7 @@ export class GroqTeacherLlm implements TeacherLlm {
         res = await doFetch();
       }
       lastStatus = res.status;
+      if (res.status === 429) retryAfter = Math.max(retryAfter, Number(res.headers.get("retry-after")) || 0);
       if (!res.ok) lastDetail = await res.clone().text().then((t) => { try { const e = JSON.parse(t).error; return `${e?.code ?? e?.type ?? ""} ${String(e?.message ?? "").replace(/organization `[^`]+`/, "org").slice(0, 70)}`; } catch { return ""; } }).catch(() => "");
       if (res.status === 413) throw new Error("llm_failed_413"); // request too large: the pipeline shrinks the context and retries
       if (res.status === 429 || res.status === 400 || res.status === 404) continue; // limit, tool-call failure or model gone: next model
@@ -56,6 +59,11 @@ export class GroqTeacherLlm implements TeacherLlm {
       } catch {
         continue;
       }
+    }
+    // every model hit its per-minute limit: wait the time Groq asks (at most 8 s) and go round once more instead of failing the turn
+    if (lastStatus === 429 && round === 0) {
+      await new Promise((r) => setTimeout(r, Math.min(8, Math.max(3, retryAfter)) * 1000));
+      return this.generate(args, 1);
     }
     throw new Error(`llm_failed_${lastStatus || "empty"}${lastDetail ? ": " + lastDetail.trim() : ""}`);
   }

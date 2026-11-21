@@ -25,7 +25,7 @@ const FIELDS: Field[] = [
 const label = (k: string) => t(`doc.field.${k}` as "doc.field.title");
 const showRef = (r: string) => (/^[0-9A-Z]{3}\.\d+/.test(r) ? formatRefPt(r) : r);
 
-export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; mode: "lesson" | "sermon"; refreshKey: number }) {
+export function DocPanel({ sessionId, mode, refreshKey, onAsk }: { sessionId: string; mode: "lesson" | "sermon"; refreshKey: number; onAsk?: (text: string) => void }) {
   const [doc, setDoc] = useState<Doc>({});
   const [gaps, setGaps] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
@@ -119,7 +119,7 @@ export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; m
       })}
       <section className="border-t border-line pt-2">
         <h3 className="text-sm font-semibold">{t("doc.gaps")}</h3>
-        {gaps.length ? <ul className="list-disc pl-5 text-sm text-muted">{gaps.map((g) => <li key={g}>{g}</li>)}</ul> : <p className="text-sm text-muted">{t("doc.complete")}</p>}
+        {gaps.length ? <ul className="list-disc pl-5 text-sm text-muted">{gaps.map((g) => <li key={g}>{g}{onAsk && <> <button type="button" className="underline text-primary" onClick={() => onAsk(t("doc.gap.ask").replace("{gap}", g.replace(/\.$/, "")))}>{t("doc.gap.suggest")}</button></>}</li>)}</ul> : <p className="text-sm text-muted">{t("doc.complete")}</p>}
       </section>
       {error && <p role="alert" className="text-sm text-danger-ink">{t("consent.error")}</p>}
     </aside>

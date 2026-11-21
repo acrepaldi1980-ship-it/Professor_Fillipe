@@ -2,7 +2,7 @@
 // PUT {data} -> the student edits the document by hand (validated against the mode's schema).
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { LessonPlan, lessonGaps, SermonOutline, sermonGaps } from "@/lib/modes/schema";
-import { loadSessionMode } from "@/lib/modes/server";
+import { loadSessionMode, seedDocument } from "@/lib/modes/server";
 
 export const runtime = "nodejs";
 
@@ -14,12 +14,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (!sm) throw new HttpError(404, "session_not_found");
     if (sm.mode === "lesson") {
       const { data } = await db.from("lesson_plans").select("data").eq("session_id", id).maybeSingle();
-      const doc = LessonPlan.parse(data?.data ?? {});
+      const doc = LessonPlan.parse({ ...seedDocument("lesson", sm.context), ...(data?.data ?? {}) });
       return Response.json({ mode: sm.mode, context: sm.context, doc, gaps: lessonGaps(doc) });
     }
     if (sm.mode === "sermon") {
       const { data } = await db.from("sermon_outlines").select("data").eq("session_id", id).maybeSingle();
-      const doc = SermonOutline.parse(data?.data ?? {});
+      const doc = SermonOutline.parse({ ...seedDocument("sermon", sm.context), ...(data?.data ?? {}) });
       return Response.json({ mode: sm.mode, context: sm.context, doc, gaps: sermonGaps(doc) });
     }
     return Response.json({ mode: sm.mode, context: sm.context, doc: null, gaps: [] });
