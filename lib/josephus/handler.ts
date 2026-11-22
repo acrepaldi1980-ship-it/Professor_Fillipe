@@ -3,7 +3,7 @@
 //   GET /study/josephus/:work/:book/:chapter    -> the numbered sections of one chapter (Whiston's translation) with the neighbors and the Bible parallels
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { refQuery } from "@/lib/knowledge/reference-db";
-import { BIO, BOOKS, bookInfo, PARALLELS } from "./books";
+import { BIO, BOOKS, bookInfo, CONTROVERSIES, PARALLELS } from "./books";
 import { cite, WORKS, type WorkKey } from "./structure";
 
 type ChapterRow = { work: WorkKey; book: number; chapter: number; title: string; title_pt: string | null; sections: number; translated: number };
@@ -40,7 +40,7 @@ export async function josephusGet(req: Request, work?: string, book?: string, ch
     const i = list.findIndex((r) => r.book === b && r.chapter === c);
     const ref = (r?: ChapterRow) => (r ? { work: r.work, book: r.book, chapter: r.chapter, label: cite(r.work, r.book, r.chapter, 1).replace(/\.1$/, "").replace(/ 1$/, "") } : null);
     const parallels = PARALLELS.filter((p) => p.work === work && p.book === b && p.chapter === c).map((p) => ({ n: p.n, cite: cite(work, b, c, p.n), refs: p.refs }));
-    return Response.json({ work, book: b, chapter: c, title: list[i]?.title_pt ?? list[i]?.title ?? "", titleEn: list[i]?.title ?? "", info: bookInfo(work, b) ?? null, sections, prev: ref(list[i - 1]), next: ref(list[i + 1]), parallels, credit: "Texto de domínio público: Flávio Josefo, tradução inglesa de William Whiston (1737), via Project Gutenberg. A versão em português é uma tradução automática feita a partir dela para este aplicativo." });
+    return Response.json({ work, book: b, chapter: c, title: list[i]?.title_pt ?? list[i]?.title ?? "", titleEn: list[i]?.title ?? "", info: bookInfo(work, b) ?? null, sections, prev: ref(list[i - 1]), next: ref(list[i + 1]), parallels, controversies: CONTROVERSIES.filter((x) => x.work === work && x.book === b && x.chapter === c).map((x) => ({ n: x.n, cite: cite(work, b, c, x.n), title: x.title, text: x.text })), credit: "Texto de domínio público: Flávio Josefo, tradução inglesa de William Whiston (1737), via Project Gutenberg. A versão em português é uma tradução automática feita a partir dela para este aplicativo." });
   } catch (e) {
     return errorResponse(e);
   }

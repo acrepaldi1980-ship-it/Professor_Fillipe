@@ -75,3 +75,24 @@ export function parseJfb(raw: string): Entry[] {
   flush();
   return out;
 }
+
+/** Works whose headings are lines like "Chapter III.--Title" or "Book II" at the same indent as the text (Nicene and Post-Nicene Fathers, Schaff). */
+export function parseChaptered(raw: string): Entry[] {
+  const text = raw.replace(/\r/g, "");
+  const cut = text.search(/\n\s*References\s*\n\s*\n?\s*1\.\s+(?:file:|https?:)/);
+  const lines = (cut > 0 ? text.slice(0, cut) : text).split("\n").filter((l) => !SEP.test(l) && !NOISE.test(l) && !/^\s*\d+\.\s+(?:file:|https?:)/.test(l));
+  const out: Entry[] = [];
+  let book = "", head: string[] = [], buf: string[] = [], inHead = false;
+  const flush = () => { const b = buf.join(" ").replace(/\[\d+\]/g, "").replace(/\s+/g, " ").trim(); if (b.length > 80) out.push({ heading: [book, head.join(" ").replace(/\s+/g, " ").trim()].filter(Boolean).join(" > "), body: b }); buf = []; };
+  for (const l of lines) {
+    const t = l.trim();
+    if (!t) { inHead = false; continue; }
+    const bk = /^(?:BOOK|Book)\s+([IVXL]+|\d+)\b\.?\s*(.*)$/.exec(t);
+    if (bk && t.length < 90 && indentOf(l) <= 4) { flush(); book = `Book ${bk[1]}${bk[2] ? ` ${bk[2]}` : ""}`.trim(); head = []; inHead = false; continue; }
+    if (/^Chapter\s+[IVXLC\d]+\b/.test(t) && indentOf(l) <= 4) { flush(); head = [t]; inHead = true; continue; }
+    if (inHead && t.length < 140) { head.push(t); continue; }
+    buf.push(t);
+  }
+  flush();
+  return out;
+}

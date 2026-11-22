@@ -58,6 +58,7 @@ export default function JosephusPage() {
               <Link href={`/estudo?jos=${chap.work}.${chap.book}.${chap.chapter}`} className="rounded-control bg-primary px-3 py-2 text-white">{t("jos.ask")}</Link>
               {chap.parallels.flatMap((p) => p.refs.slice(0, 3).map((r) => <button key={`${p.n}${r}`} type="button" className="rounded-full border border-line bg-surface px-3 py-1" title={p.cite} onClick={() => void openVerse(r)}>{p.cite} ↔ {formatRefPt(r)}</button>))}
             </div>
+            {chap.controversies.map((k) => <aside key={k.cite} role="note" className="rounded-control border border-line bg-surface p-3 text-[15px]"><strong>{k.title}</strong> <span className="text-muted">({k.cite})</span><p className="mt-1">{k.text}</p></aside>)}
             <div className="flex flex-col gap-3 text-[17px] leading-relaxed">{chap.sections.map((s) => <p key={s.n} id={`s${s.n}`} lang={original || !s.text_pt ? "en" : "pt-BR"}><sup className="mr-1 font-semibold text-muted">{s.n}</sup>{original ? s.text : (s.text_pt ?? s.text)}</p>)}</div>
             <nav className="flex justify-between gap-2" aria-label="capítulos">
               {chap.prev ? <Link className="rounded-control border border-line bg-surface px-3 py-2" href={href(chap.prev.work, chap.prev.book, chap.prev.chapter)} onClick={go(chap.prev.work, chap.prev.book, chap.prev.chapter)}>← {t("jos.prev")}</Link> : <span />}

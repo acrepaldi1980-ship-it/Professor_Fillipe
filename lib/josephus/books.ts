@@ -102,3 +102,20 @@ export function parseCite(c: string): { work: WorkKey; book: number; chapter: nu
   if (w === "Ap.") return { work: "apion", book: Number(a), chapter: 1, n: b ? Number(b) : undefined };
   return { work: w === "Ant." ? "ant" : "war", book: Number(a), chapter: Number(b ?? 1), n: d ? Number(d) : undefined };
 }
+
+/** Passages where scholars disagree about authenticity or about the transmission of the text: the app says so and never gives one reading as the consensus. */
+export interface Controversy { work: WorkKey; book: number; chapter: number; n: number; title: string; text: string }
+export const CONTROVERSIES: Controversy[] = [
+  {
+    work: "ant", book: 18, chapter: 3, n: 3, title: "O Testimonium Flavianum: texto discutido",
+    text: "Este é o trecho mais discutido de Josefo. Ele chegou até nós por manuscritos gregos medievais (os mais antigos, do século XI), copiados por cristãos. Quase nenhum estudioso o aceita exatamente como está: (1) alguns o consideram autêntico, com poucas alterações; (2) outros o consideram inteiramente acrescentado por cristãos depois de Josefo; (3) a maioria entende que há um núcleo escrito por Josefo (a menção a Jesus, sua condenação por Pilatos e a existência dos seguidores) com frases acrescentadas por copistas cristãos, como “se é lícito chamá-lo de homem”, “ele era o Cristo” e a afirmação de que apareceu vivo no terceiro dia. Indícios: Orígenes, no século III, diz que Josefo não acreditava que Jesus fosse o Cristo, o que não combina com o texto atual; a primeira citação do trecho tal como o lemos é de Eusébio, no século IV; uma versão em árabe (citada por Agápio, no século X) traz uma redação mais contida (“ele foi considerado o Cristo”). Em resumo: é um testemunho possível, mas o texto original é incerto, e por isso o professor o apresenta como discutido, nunca como prova decisiva.",
+  },
+  {
+    work: "ant", book: 20, chapter: 9, n: 1, title: "A menção a Tiago: aceita por muitos, mas discutida",
+    text: "Josefo conta que o sumo sacerdote Ananus fez julgar “o irmão de Jesus, chamado Cristo, de nome Tiago”, e que ele foi apedrejado (por volta de 62 d.C.). Muitos estudiosos consideram essa menção autêntica, porque é breve, não tem tom cristão e Orígenes a cita no século III. Alguns, porém, suspeitam de acréscimo ou de alteração da expressão “chamado Cristo”. Quem é esse “Jesus” e se “irmão” significa irmão de sangue é outra discussão, que as tradições cristãs leem de modos diferentes (irmãos, meios-irmãos ou primos). O professor apresenta os pontos de vista sem declarar vencedor.",
+  },
+  {
+    work: "ant", book: 18, chapter: 5, n: 2, title: "João Batista em Josefo",
+    text: "Esta passagem sobre João Batista é aceita como autêntica pela maioria dos estudiosos. Ela difere dos Evangelhos em pontos como o motivo da prisão (Josefo fala do temor de Herodes Antipas diante da influência de João; os Evangelhos falam também da crítica ao casamento de Herodes) e o lugar da morte (a fortaleza de Maqueronte). São acentos diferentes, que os estudiosos explicam de modos diferentes.",
+  },
+];

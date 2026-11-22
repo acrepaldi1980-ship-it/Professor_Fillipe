@@ -6,7 +6,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { approxTokens, splitEntry } from "../../lib/knowledge/chunking";
-import { colonCites, groupShort, parseCcel, parseJfb } from "../../lib/knowledge/ccel-text";
+import { colonCites, groupShort, parseCcel, parseChaptered, parseJfb } from "../../lib/knowledge/ccel-text";
 import { getEmbeddingProvider } from "../../lib/knowledge/embeddings";
 import { checkLicense } from "../../lib/knowledge/licenses";
 import { modernizeCitations } from "../../lib/knowledge/old-citations";
@@ -28,6 +28,7 @@ export const WORKS: Record<string, Work> = {
   mhc6: W("mhc6", "h/henry/mhc6", "Matthew Henry, Commentary on the Whole Bible, vol. 6 (Acts-Revelation)", ["Matthew Henry", "Joseph Tong"], [1714, 1726], 1721, "commentary", "reformed"),
   jfb: W("jfb", "j/jamieson/jfb", "Jamieson, Fausset and Brown, Commentary Critical and Explanatory on the Whole Bible", ["Robert Jamieson", "A. R. Fausset", "David Brown"], [1880, 1910, 1897], 1871, "commentary", "general"),
   wesley: W("wesley", "w/wesley/notes", "John Wesley, Explanatory Notes upon the Old and New Testaments", ["John Wesley"], [1791], 1754, "commentary", "wesleyan"),
+  eusebius: W("eusebius", "s/schaff/npnf201", "Eusebius of Caesarea, Church History, Life of Constantine and Oration (Nicene and Post-Nicene Fathers II.1, McGiffert and Richardson, 1890)", ["Eusebius of Caesarea", "Arthur Cushman McGiffert", "Ernest Cushing Richardson"], [339, 1933, 1939], 1890, "history", "patristic"),
   edersheim1: W("edersheim1", "e/edersheim/lifetimes", "Alfred Edersheim, The Life and Times of Jesus the Messiah", ["Alfred Edersheim"], [1889], 1883, "history", "general"),
   edersheim2: W("edersheim2", "e/edersheim/temple", "Alfred Edersheim, The Temple: Its Ministry and Services", ["Alfred Edersheim"], [1889], 1874, "history", "general"),
   edersheim3: W("edersheim3", "e/edersheim/sketches", "Alfred Edersheim, Sketches of Jewish Social Life", ["Alfred Edersheim"], [1889], 1876, "history", "jewish"),
@@ -63,7 +64,7 @@ async function main() {
     const gate = checkLicense({ license: "public_domain", pub_year: w.pubYear, author_death_years: w.deaths }, 2026);
     if (!gate.ok) { console.log(`${w.id}: license gate says no (${gate.reason}); not ingested`); continue; }
     const raw = await download(w);
-    let entries = key === "jfb" ? parseJfb(raw) : parseCcel(raw);
+    let entries = key === "jfb" ? parseJfb(raw) : key === "eusebius" ? parseChaptered(raw) : parseCcel(raw);
     if (w.dict) entries = groupShort(entries);
     const chunks: { id: string; title: string; text: string; refs: string[] }[] = [];
     entries.forEach((e, i) => {
