@@ -2,39 +2,17 @@
 
 // The illustrated book of one life: cover, lifeline, chapters (picture + text + narration + passage), family diagram, route diagram, crossing lives and lessons.
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { getBibleVerses, speakSentence } from "@/lib/api-client";
+import { useNarrator } from "@/components/useNarrator";
+import { getBibleVerses } from "@/lib/api-client";
 import { ERAS, type Character } from "@/lib/characters/schema";
 import { defaultBibleVersion, t, type MessageKey } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
-import { getPlatform } from "@/lib/platform";
-import { splitSentences } from "@/lib/voice/speech-text";
-import { speakQueue } from "@/lib/voice/speak-queue";
 import { hash, SceneArt } from "./SceneArt";
 
 const STAGE_COLORS = ["#b9772f", "#6f7a3a", "#7d4a6e", "#3f6f86", "#8a4a3a", "#5a6f4a", "#9a6a2a", "#4a5a8a"];
-
-/** Reads a text aloud with the server voice, one sentence after another without gaps; the device voice is the fallback. */
-function useNarrator() {
-  const [playing, setPlaying] = useState<string | null>(null);
-  const run = useRef(0);
-  const stop = useCallback(() => { run.current++; getPlatform().audioPlayer.stop(); getPlatform().speech.cancel(); setPlaying(null); }, []);
-  useEffect(() => stop, [stop]);
-  const play = useCallback(async (id: string, text: string) => {
-    const my = ++run.current;
-    getPlatform().audioPlayer.stop(); getPlatform().speech.cancel();
-    setPlaying(id);
-    const sentences = splitSentences(text);
-    try {
-      const r = await speakQueue(sentences, { fetchAudio: (s) => speakSentence(s), player: getPlatform().audioPlayer, isCurrent: () => my === run.current });
-      if (r.failedAt !== null && getPlatform().speech.isSupported()) for (let i = r.failedAt; i < sentences.length && my === run.current; i++) await getPlatform().speech.speak(sentences[i], {});
-    } catch { /* silent: the text is always on the page */ }
-    if (my === run.current) setPlaying(null);
-  }, []);
-  return { playing, play, stop };
-}
 
 function Lifeline({ c, onJump }: { c: Character; onJump: (i: number) => void }) {
   const stages = useMemo(() => [...new Set(c.chapters.map((x) => x.stage))], [c]);

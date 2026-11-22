@@ -4,12 +4,14 @@
 //   GET/POST/DELETE /api/v1/study/rehearsals  (Ensaio do sermão)
 //   GET/POST/DELETE /api/v1/study/environments  (ambientes imersivos publicados pelo admin)
 //   GET /api/v1/study/characters[/:id]  (Vida dos Personagens)
+//   GET /api/v1/study/josephus[/:work/:book/:chapter]  (Flávio Josefo)
 //   GET /api/v1/study/paths[/:id], POST /api/v1/study/paths/start|day, GET /api/v1/study/streak  (trilhas e sequência de estudo)
 import { GET as compare } from "@/lib/knowledge/study-routes/compare";
 import { POST as explain } from "@/lib/knowledge/study-routes/explain";
 import { GET as interlinear } from "@/lib/knowledge/study-routes/interlinear";
 import { GET as word } from "@/lib/knowledge/study-routes/word";
 import { charactersGet } from "@/lib/characters/handler";
+import { josephusGet } from "@/lib/josephus/handler";
 import { envDelete, envGet, envPost } from "@/lib/immersive/handler";
 import { pathsGet, pathsPost, streakGet } from "@/lib/engagement/handler";
 import { referralClaim, referralGet } from "@/lib/engagement/referral";
@@ -30,6 +32,7 @@ export async function GET(req: Request, ctx: Ctx) {
   if (kind === "rehearsals" && !arg) return listOrGet(req);
   if (kind === "paths") return pathsGet(req, arg);
   if (kind === "characters") return charactersGet(req, arg);
+  if (kind === "josephus") { const p = (await ctx.params).path; return josephusGet(req, p[1], p[2], p[3]); }
   if (kind === "streak" && !arg) return streakGet(req);
   if (kind === "referral" && !arg) return referralGet(req);
   if (kind === "environments" && !arg) return envGet(req);

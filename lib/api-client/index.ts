@@ -82,7 +82,7 @@ export async function teacherTurn(
 }
 
 async function teacherTurnOnce(
-  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
+  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
   onDone?: (meta: TurnMeta) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
@@ -463,3 +463,12 @@ export type CharacterDetail = { kind: "curated"; character: CharacterLife; graph
 export const listCharacters = (o: { q?: string; era?: string; page?: number } = {}) =>
   apiJson<{ total: number; page: number; pageSize: number; characters: CharacterSummary[] }>(`/study/characters?${new URLSearchParams({ q: o.q ?? "", ...(o.era ? { era: o.era } : {}), page: String(o.page ?? 0) })}`);
 export const getCharacter = (id: string) => apiJson<CharacterDetail>(`/study/characters/${encodeURIComponent(id)}`);
+
+// ---- Flávio Josefo (módulo M20) ----
+export type JosephusWork = "ant" | "war" | "life" | "apion";
+export interface JosephusKey { cite: string; why: string; ref?: string }
+export interface JosephusBook { book: number; title: string; span: string; summary: string; key: JosephusKey[]; chapters: { chapter: number; title: string; sections: number }[] }
+export interface JosephusToc { bio: { name: string; hebrew: string; years: string; lines: string[]; note: string }; works: { key: JosephusWork; title: string; cite: string; books: JosephusBook[] }[] }
+export interface JosephusChapter { work: JosephusWork; book: number; chapter: number; title: string; info: { title: string; span: string; summary: string } | null; sections: { n: number; text: string }[]; prev: { work: JosephusWork; book: number; chapter: number; label: string } | null; next: { work: JosephusWork; book: number; chapter: number; label: string } | null; parallels: { n: number; cite: string; refs: string[] }[]; credit: string }
+export const getJosephus = () => apiJson<JosephusToc>("/study/josephus");
+export const getJosephusChapter = (w: JosephusWork, b: number, c: number) => apiJson<JosephusChapter>(`/study/josephus/${w}/${b}/${c}`);

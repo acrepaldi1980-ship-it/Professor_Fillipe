@@ -1,7 +1,8 @@
 // SQL against the Neon reference database over HTTPS (Neon's SQL-over-HTTP endpoint; works through the proxy).
 // Uses NEON_OWNER_URL from .env.local (admin credential, local only; never deployed).
-const url = process.env.NEON_OWNER_URL;
-if (!url) throw new Error("NEON_OWNER_URL is not set (load .env.local)");
+// NEON_SHARD=2 sends everything to the second library database (NEON_OWNER_URL_2), and so on; without it, the main one.
+const url = process.env.NEON_SHARD ? process.env[`NEON_OWNER_URL_${process.env.NEON_SHARD}`] : process.env.NEON_OWNER_URL;
+if (!url) throw new Error("NEON_OWNER_URL (or NEON_OWNER_URL_<shard>) is not set (load .env.local)");
 const host = new URL(url).host;
 
 /** Runs one statement (use $1.. params) and returns the rows as objects. */

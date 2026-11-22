@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M20 Flávio Josefo | Os 30 livros de Josefo (Whiston), leitor por capítulo, resumos, paralelos com a Bíblia e estudo guiado pelo professor (8.20) |
 | M19 Vida dos Personagens | Livro ilustrado da vida de cada personagem bíblico, do nascimento à morte, com linha da vida, narração, família e rota (8.19) |
 | M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Arte final do Anderson (19/11/2026): personagem 3D estilizado em quatro poses (boas-vindas, ensinando, parabéns, refletindo) com transições e vídeo de saudação |
 
@@ -938,6 +939,14 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Cronologia:** datas aproximadas seguem a cronologia conservadora moderna (D-07) e vêm marcadas.
 - **Dados:** vidas curadas em `lib/characters/data/*.ts` (validadas com Zod ao carregar); fichas automáticas lidas de `kg_entities` e `kg_relations`. API: `GET /api/v1/study/characters` e `/study/characters/:id`. Telas: `/personagens` (lista e livro). 
 - **Pendências:** tradução das descrições do grafo para o português; revisão pelo consultor; as demais vidas das camadas 1 e 2.
+
+### 8.20 M20 — Flávio Josefo em profundidade (P0, pedido do dono em 22/11/2026)
+
+- **Objetivo:** ter dentro do app **os 30 livros de Josefo** e explorá-los em profundidade com o professor: *Antiguidades Judaicas* (20 livros), *A Guerra dos Judeus* (7), *Vida* (1) e *Contra Apião* (2), na tradução inglesa de William Whiston (1737, domínio público, via Project Gutenberg).
+- **Leitura:** tela `/josefo` com a biografia, as quatro obras, a página de cada livro (resumo em português, passagens famosas) e o leitor por capítulo, com as seções numeradas como os estudiosos citam (*Ant.* 18.3.3). Cada trecho tem os **paralelos com a Bíblia** (por exemplo, *Ant.* 20.9.1 e Mateus 13:55 sobre Tiago, irmão de Jesus) e o botão **Explicar com o professor**.
+- **Professor:** o modo de estudo recebe o capítulo aberto (`/estudo?jos=obra.livro.capítulo`); o servidor monta o contexto a partir do banco (nunca do texto do cliente): o trecho, os paralelos e as regras. O texto de Josefo está **no acervo de busca** com a divisão citável.
+- **Regra (RA-21):** o professor **apresenta** Josefo como fonte e não fala como ele (“Josefo escreve que…”), cita sempre a obra e a divisão e lembra que ele escrevia como judeu a serviço de Roma. **[DECISÃO pendente]:** se o dono quiser uma voz de Josefo em primeira pessoa, é preciso mudar RA-21 e RA-02 e aprovar antes.
+- **Limites:** o texto está em inglês (não há tradução portuguesa livre); o professor explica em português. As notas de Whiston não entram no texto.
 
 ## 9. Modelo de dados
 

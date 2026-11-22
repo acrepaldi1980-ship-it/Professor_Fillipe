@@ -1,5 +1,6 @@
 // Hybrid search (spec 8.10.4): exact references + semantic + keyword, fused with RRF in SQL (search_chunks),
 // then re-ranked by authority layer (8.10.6) and trimmed to a prompt budget.
+import { englishQuery } from "./glossary";
 import { getLibraryStore, type LibraryStore } from "./library-store";
 import { getStore, type KnowledgeStore } from "./db";
 import { getEmbeddingProvider, type EmbeddingProvider } from "./embeddings";
@@ -158,6 +159,9 @@ export async function searchChunks(
   const library = deps.library === undefined ? (deps.store ? undefined : getLibraryStore()) : (deps.library ?? undefined);
   const emb = memoEmbed(deps.embeddings ?? getEmbeddingProvider());
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
+  // a safe English phrasing from the glossary, so the library (mostly English) is found even when the model that rewrites questions is down
+  const auto = queries[0] ? englishQuery(queries[0]) : null;
+  if (auto && !queries.includes(auto)) queries.push(auto);
   const per = opts.perSignal ?? 24;
   const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
   const hit = cacheKey ? searchCache.get(cacheKey) : undefined;

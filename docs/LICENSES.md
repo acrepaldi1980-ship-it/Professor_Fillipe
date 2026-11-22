@@ -324,3 +324,21 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 | Textos das curiosidades e das peças | Nossos, a partir da Bíblia e dos artigos de referência citados em cada ficha | Próprio | Revisão do conselho teológico pendente antes do beta público |
 
 | Biblioteca `qrcode` (QR Code do convite da turma) | npm `qrcode` | MIT | Gera o QR Code no aparelho do responsável, sem enviar dados a terceiros |
+
+## jos_ant, jos_war, jos_life, jos_apion — Flávio Josefo (Whiston)
+- Autor(es) / tradutores e anos de morte: Flávio Josefo (c. 100 d.C.); William Whiston (tradutor, 1752)
+- Edição e ano de publicação: tradução inglesa de 1737 (Antiguidades, Guerra, Vida e Contra Apião)
+- Licença: public_domain (passa na regra 8.10.9: publicação anterior ao corte dos EUA e tradutor falecido antes do corte do Brasil)
+- Crédito exigido (texto exato): "Texto de domínio público: Flávio Josefo (séc. I), tradução inglesa de William Whiston (1737; Whiston faleceu em 1752). Fonte: Project Gutenberg, ebook nº 2848 / 2850 / 2846 / 2849."
+- Fonte (URL): https://www.gutenberg.org/ebooks/2848 (Antiguidades), /2850 (Guerra), /2846 (Vida), /2849 (Contra Apião)
+- Data da coleta: 2026-11-22
+- Hash SHA-256 do arquivo: registrado em `works.file_hash`
+- Observações: substituem a ingestão antiga, que cortava as obras em 800 trechos (Antiguidades e Guerra saíam incompletas). As notas de rodapé de Whiston ("N (return) [...]") não entram no texto. `scripts/ingest/josephus.ts`. O discurso "Aos gregos sobre o Hades" (ebook nº 2847) foi retirado do acervo: a autoria de Josefo é contestada.
+
+## ws_cathen — The Catholic Encyclopedia (1907–1914), via Wikisource
+- Autor(es) / tradutores e anos de morte: obra coletiva; editores C. G. Herbermann (1925), E. A. Pace (1938), C. B. Pallen (1929), T. J. Shahan (1932), J. J. Wynne (1951)
+- Edição e ano de publicação: 1907–1914 (volumes digitalizados na Wikisource como "Catholic Encyclopedia (1913)")
+- Licença: public_domain (obra coletiva publicada antes de 1931; editores falecidos até 1951, antes do corte do Brasil); a transcrição da Wikisource está sob CC BY-SA 4.0 (crédito mantido)
+- Crédito exigido (texto exato): "Obra coletiva de domínio público (publicada em 1907–1914; editores falecidos até 1951). Texto da Wikisource (https://en.wikisource.org/wiki/Catholic_Encyclopedia_(1913)), transcrição sob CC BY-SA 4.0. Reflete a tradição católica de 1913."
+- Fonte (URL): https://en.wikisource.org/wiki/Catholic_Encyclopedia_(1913)
+- Observações: entram só os verbetes que citam pelo menos 3 passagens bíblicas (`scripts/ingest/library-wikisource.ts`); rotulada como tradição católica, para respeitar RA-11 e RA-14.
