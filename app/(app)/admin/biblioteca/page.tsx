@@ -24,7 +24,7 @@ export default function LibraryAdminPage() {
   useEffect(() => {
     void getLibraryAdminReport().then(setReport).catch((e: Error) => setError(e.message === "api_error_403" ? t("admin.forbidden") : t("admin.error")));
   }, []);
-  if (error) return <main className="p-6"><p role="alert">{error}</p></main>;
+  if (error) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{error}</p></main>;
   if (!report) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
   const chunksTotal = report.libraryChunks.reduce((s, c) => s + c.n, 0);
   return (

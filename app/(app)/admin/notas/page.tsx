@@ -40,7 +40,7 @@ export default function NotesAdminPage() {
     await load();
   };
 
-  if (error) return <main className="p-6"><p role="alert">{error}</p></main>;
+  if (error) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{error}</p></main>;
 
   if (open) {
     const n = open.note;
