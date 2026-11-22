@@ -981,5 +981,6 @@
   "imm.caption": "Reconstrução visual baseada nas descrições bíblicas. O que não tem medida ou característica expressa nas Escrituras foi representado por aproximação artística.",
   "imm.basis.escritura": "Texto bíblico",
   "imm.basis.historia": "Fundamento histórico",
-  "imm.basis.reconstrucao": "Reconstrução artística"
+  "imm.basis.reconstrucao": "Reconstrução artística",
+  "imm.preliminary": "Versão preliminar"
 }

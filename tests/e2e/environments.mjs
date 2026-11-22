@@ -75,7 +75,7 @@ try {
   const pub = await admin.post(PKG(), "published", {});
   say("publish: republishing without sending the file again keeps the stored model (201)", pub.status === 201);
   const list = (await student.get("/study/environments")).body.environments;
-  say("publish: students see built-in and uploaded environments, with sizes", list.some((e) => e.id === "campo_de_teste" && e.source === "code") && list.some((e) => e.id === "cenario_a" && e.source === "upload" && e.size_bytes > 0));
+  say("publish: students see built-in and uploaded environments, with sizes", list.some((e) => e.id === "tabernaculo" && e.source === "code") && list.some((e) => e.id === "cenario_a" && e.source === "upload" && e.size_bytes > 0));
   const pk = (await student.get("/study/environments?id=cenario_a")).body.package;
   say("publish: a student gets the package with the model address (no new app version)", pk?.zones?.[0]?.model?.url?.includes("environments") && pk.hotspots.length === 1);
   const file = await fetch(pk.zones[0].model.url);
@@ -139,7 +139,7 @@ try {
   await sp.goto(`${BASE}/imersao`, { waitUntil: "networkidle" });
   await sp.waitForSelector("text=Ambientes imersivos", { timeout: 20000 });
   const names = await sp.locator("main ul li").allInnerTexts();
-  say("student: the catalog lists the published environments", names.some((x) => x.includes("Cenário de teste do admin")) && names.some((x) => x.includes("Criado na tela") || x.includes("Meu ambiente")) && names.some((x) => x.includes("Pátio de teste")));
+  say("student: the catalog lists the published environments", names.some((x) => x.includes("Cenário de teste do admin")) && names.some((x) => x.includes("Criado na tela") || x.includes("Meu ambiente")) && names.some((x) => x.includes("O Tabernáculo")));
   say("student: nothing is downloaded while only browsing the list", glbRequests.length === 0);
   await sp.goto(`${BASE}/imersao?e=cenario_a`, { waitUntil: "networkidle" });
   await sp.waitForSelector("text=Entrar no ambiente", { timeout: 20000 });

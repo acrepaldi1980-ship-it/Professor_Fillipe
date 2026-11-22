@@ -9,7 +9,7 @@ import { anonClient, errorResponse, HttpError, requireAdmin } from "@/lib/auth/s
 import { violatesRa20 } from "@/lib/visuals/model-meta";
 import { checkGlb, LIMITS, type GlbReport } from "./glb-check";
 import { EnvironmentPackage } from "./package";
-import { PACKAGES } from "./registry";
+import { PACKAGES, PUBLIC_PACKAGES } from "./registry";
 
 const CODE_SCENES = new Set(["test_yard", "test_altar", "glb"]);
 const Meta = z.object({ package: z.unknown(), status: z.enum(["draft", "published"]).default("draft") });
@@ -35,7 +35,7 @@ export async function envGet(req: Request) {
     }
     const { data } = await anonClient().from("environments").select("id, title, size_bytes, data").eq("status", "published").order("title");
     const uploaded = (data ?? []).map((r) => ({ id: r.id as string, title: r.title as string, era: (r.data as { era?: string }).era ?? "", size_bytes: r.size_bytes as number, source: "upload" as const }));
-    const code = Object.values(PACKAGES).map((p) => ({ id: p.id, title: p.title, era: p.era, size_bytes: 0, source: "code" as const }));
+    const code = PUBLIC_PACKAGES.map((p) => ({ id: p.id, title: p.title, era: p.era, size_bytes: 0, source: "code" as const }));
     return Response.json({ environments: [...code, ...uploaded] }, { headers: { "Cache-Control": "public, max-age=300" } });
   } catch (e) {
     return errorResponse(e);
