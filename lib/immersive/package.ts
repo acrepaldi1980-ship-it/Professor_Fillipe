@@ -9,9 +9,33 @@ const ref = z.string().regex(/^[0-9A-Z]{3}\.\d+(\.\d+)?(-[0-9A-Z]{3}\.\d+(\.\d+)
 const id = z.string().regex(/^[a-z][a-z0-9_]{1,39}$/);
 
 export const Collider = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("box"), min: v2, max: v2 }),
-  z.object({ type: z.literal("circle"), c: v2, r: z.number().positive() }),
+  /** `floor`: the collider only exists for a visitor standing on that floor (see Floor); without it, on every floor. */
+  z.object({ type: z.literal("box"), min: v2, max: v2, floor: z.string().max(40).optional() }),
+  z.object({ type: z.literal("circle"), c: v2, r: z.number().positive(), floor: z.string().max(40).optional() }),
 ]);
+
+/**
+ * Where the visitor can stand and how high: a rectangle with a height at each end (a deck has y0 = y1, a ramp climbs along `axis`).
+ * Decks stacked at the same x/z are told apart by the visitor's current height: the floor whose height is closest wins, so a ramp lets him go up.
+ */
+export const Floor = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9_]{1,39}$/),
+  min: v2,
+  max: v2,
+  y0: z.number().min(-20).max(40),
+  y1: z.number().min(-20).max(40),
+  /** The ramp rises from y0 (at the min side of this axis) to y1 (at the max side). */
+  axis: z.enum(["x", "z"]).default("z"),
+});
+
+/** Sky and distance of an environment (the desert tabernacle and a flooded plain do not look alike). */
+export const Sky = z.object({
+  background: z.string().default("#bcd9ea"),
+  fog: z.string().default("#e9d9b4"),
+  fogNear: z.number().default(30),
+  fogFar: z.number().default(80),
+  far: z.number().min(50).max(600).default(120),
+});
 
 export const Zone = z.object({
   id,
@@ -24,7 +48,7 @@ export const Zone = z.object({
   /** The zone is built when the visitor is closer than `load` meters to its centre and released when farther than `unload` (hysteresis). */
   load: z.number().positive(),
   unload: z.number().positive(),
-  colliders: z.array(Collider).max(200).default([]),
+  colliders: z.array(Collider).max(400).default([]),
 });
 
 export const Hotspot = z.object({
@@ -37,7 +61,9 @@ export const Hotspot = z.object({
   basis: z.enum(["escritura", "historia", "reconstrucao"]).optional(),
   at: v3,
   /** Distance in meters at which the visitor can open it. */
-  radius: z.number().positive().max(12).default(2.5),
+  radius: z.number().positive().max(40).default(2.5),
+  /** On which floor it can be opened (a deck of the ark); without it, on any. */
+  floor: z.string().max(40).optional(),
 });
 
 export const Sound = z.discriminatedUnion("kind", [
@@ -51,6 +77,8 @@ export const Station = z.object({
   at: v2,
   /** Where the visitor looks when the station starts (x, z). */
   look: v2,
+  /** The floor the guide takes him to (a deck of the ark); without it he keeps his height. */
+  floor: z.string().max(40).optional(),
   /** What the guide says here (short, ends with a question: RA-06). */
   script: z.string().min(10).max(700),
   refs: z.array(ref).max(6).default([]),
@@ -70,6 +98,8 @@ export const EnvironmentPackage = z.object({
   /** Walkable limit: the visitor cannot leave this rectangle. */
   bounds: z.object({ min: v2, max: v2 }),
   zones: z.array(Zone).min(1).max(12),
+  floors: z.array(Floor).max(30).default([]),
+  sky: Sky.optional(),
   hotspots: z.array(Hotspot).max(60).default([]),
   sounds: z.array(Sound).max(20).default([]),
   stations: z.array(Station).max(20).default([]),
@@ -90,4 +120,6 @@ export type EnvironmentPackage = z.infer<typeof EnvironmentPackage>;
 export type Zone = z.infer<typeof Zone>;
 export type Hotspot = z.infer<typeof Hotspot>;
 export type Collider = z.infer<typeof Collider>;
+export type Floor = z.infer<typeof Floor>;
+export type Sky = z.infer<typeof Sky>;
 export type Station = z.infer<typeof Station>;

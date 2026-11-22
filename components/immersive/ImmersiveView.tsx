@@ -12,7 +12,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { Button } from "@/components/ui/Button";
 import { closeSessionFull, createSession, getBibleVerses, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
-import { activeZones, collidersOf, detailFor, keysToStick, move, nearestHotspot, spawnIsFree, worldDirection, yawToward, type V2 } from "@/lib/immersive/movement";
+import { activeZones, collidersOf, detailFor, floorAt, floorHeight, keysToStick, move, nearestHotspot, spawnIsFree, worldDirection, yawToward, type V2 } from "@/lib/immersive/movement";
 import type { EnvironmentPackage, Hotspot, Station } from "@/lib/immersive/package";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -20,10 +20,11 @@ import { speakText, stopSpeaking } from "@/lib/voice/client-speak";
 import { panelModel } from "@/lib/immersive/vr";
 import { Joystick } from "./Joystick";
 import { VrLayer, XR, xrStore, type VrInput } from "./VrLayer";
+import { ARK_SCENES } from "./scenes-arca";
 import { TABERNACLE_SCENES } from "./scenes-tabernaculo";
 import { TEST_SCENES } from "./scenes-test";
 
-const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES, ...TABERNACLE_SCENES };
+const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES, ...TABERNACLE_SCENES, ...ARK_SCENES };
 /** A zone that is a GLB file: downloaded only when the visitor gets near (the zone is mounted by the Rig), released when far. */
 function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
   const gltf = useGLTF(url);
@@ -33,7 +34,7 @@ function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
 }
 const LOOK_SPEED = 0.0035; // radians per pixel
 
-interface Input { keys: Set<string>; stick: V2; lookX: number; lookY: number; teleport: { at: V2; yaw?: number } | null; turn: number }
+interface Input { keys: Set<string>; stick: V2; lookX: number; lookY: number; teleport: { at: V2; yaw?: number; floor?: string } | null; turn: number }
 interface Snapshot { pos: V2; yaw: number; zones: string[]; hotspot: string | null; fps: number }
 
 /** Runs inside the Canvas: moves the camera, loads zones, finds the nearest hotspot, feeds the sound and measures the frame rate. */
@@ -42,6 +43,8 @@ function Rig({ pkg, input, pos, origin, onSnapshot, onQuality }: { pkg: Environm
   const inXr = useXR((s) => !!s.session);
   const yaw = useRef(pkg.spawnYaw);
   const pitch = useRef(0);
+  const height = useRef(0);
+  const floorId = useRef<string | null>(null);
   const zones = useRef<Set<string>>(activeZones(pkg.zones, pkg.spawn as V2, new Set()));
   const acc = useRef({ t: 0, frames: 0, low: 0 });
   const [, setTick] = useState(0);
@@ -51,20 +54,24 @@ function Rig({ pkg, input, pos, origin, onSnapshot, onQuality }: { pkg: Environm
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.1);
     const i = input.current;
-    if (i.teleport) { pos.current = [...i.teleport.at] as V2; if (i.teleport.yaw !== undefined) yaw.current = i.teleport.yaw; pitch.current = 0; i.teleport = null; }
+    if (i.teleport) { pos.current = [...i.teleport.at] as V2; if (i.teleport.floor) { const tf = pkg.floors.find((f) => f.id === i.teleport!.floor); if (tf) height.current = floorHeight(tf, pos.current); } if (i.teleport.yaw !== undefined) yaw.current = i.teleport.yaw; pitch.current = 0; i.teleport = null; }
     if (i.turn) { yaw.current += i.turn; i.turn = 0; }
     yaw.current -= i.lookX * LOOK_SPEED; pitch.current = Math.max(-1.2, Math.min(1.2, pitch.current - i.lookY * LOOK_SPEED));
     i.lookX = 0; i.lookY = 0;
     const kb = keysToStick(i.keys);
     const stick: V2 = [Math.max(-1, Math.min(1, kb[0] + i.stick[0])), Math.max(-1, Math.min(1, kb[1] + i.stick[1]))];
     const dir = worldDirection(stick, yaw.current);
-    const colliders = collidersOf(pkg.zones, zones.current);
+    // floors: standing on a deck or a ramp sets the height of the eyes (smoothly) and which colliders count
+    const fl = floorAt(pkg.floors, pos.current, height.current);
+    floorId.current = fl.id;
+    height.current += (fl.y - height.current) * Math.min(1, dt * 9);
+    const colliders = collidersOf(pkg.zones, zones.current, fl.id);
     pos.current = move(pos.current, [dir[0] * pkg.speed * dt, dir[1] * pkg.speed * dt], pkg.radius, colliders, pkg.bounds as { min: V2; max: V2 });
     if (inXr && origin.current) { // in the headset the head belongs to the visitor: we only move the origin (the floor under their feet)
       origin.current.position.set(pos.current[0], 0, pos.current[1]);
       origin.current.rotation.set(0, yaw.current, 0);
     } else {
-      camera.position.set(pos.current[0], pkg.eye, pos.current[1]);
+      camera.position.set(pos.current[0], pkg.eye + height.current, pos.current[1]);
       camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
     }
 
@@ -79,8 +86,8 @@ function Rig({ pkg, input, pos, origin, onSnapshot, onQuality }: { pkg: Environm
       const fps = a.frames / a.t;
       a.low = fps < 28 ? a.low + a.t : Math.max(0, a.low - a.t);
       if (a.low > 3) { a.low = 0; onQuality(); } // 3 seconds under 28 fps: lower the quality
-      ambience.setListener([pos.current[0], pkg.eye, pos.current[1]], yaw.current);
-      onSnapshot({ pos: [...pos.current] as V2, yaw: yaw.current, zones: [...next], hotspot: nearestHotspot(pkg.hotspots, pos.current, next)?.id ?? null, fps });
+      ambience.setListener([pos.current[0], pkg.eye + height.current, pos.current[1]], yaw.current);
+      onSnapshot({ pos: [...pos.current] as V2, yaw: yaw.current, zones: [...next], hotspot: nearestHotspot(pkg.hotspots, pos.current, next, floorId.current)?.id ?? null, fps });
       a.t = 0; a.frames = 0;
       setTick((n) => n + 1);
     }
@@ -88,8 +95,8 @@ function Rig({ pkg, input, pos, origin, onSnapshot, onQuality }: { pkg: Environm
 
   return (
     <>
-      <color attach="background" args={["#bcd9ea"]} />
-      <fog attach="fog" args={["#e9d9b4", 30, 80]} />
+      <color attach="background" args={[pkg.sky?.background ?? "#bcd9ea"]} />
+      <fog attach="fog" args={[pkg.sky?.fog ?? "#e9d9b4", pkg.sky?.fogNear ?? 30, pkg.sky?.fogFar ?? 80]} />
       <ambientLight intensity={0.7} />
       <directionalLight position={[20, 30, 10]} intensity={2} />
       {pkg.zones.filter((z) => active.has(z.id)).map((z) => {
@@ -183,7 +190,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
     if (!s) return;
     stopSpeaking(); setSpeaking(false);
     setStation(i);
-    input.current.teleport = { at: s.at as V2, yaw: yawToward(s.at as V2, s.look as V2) };
+    input.current.teleport = { at: s.at as V2, yaw: yawToward(s.at as V2, s.look as V2), floor: s.floor };
   }
   goToRef.current = goTo;
   async function sendQuestion(raw: string) {
@@ -251,7 +258,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
     <div ref={wrap} className="relative h-full w-full overflow-hidden bg-[#f1dfb9]" data-testid="immersive" role="application" aria-label={`${pkg.title}. ${t("imm.keys")}`}>
       <div className="absolute inset-0 touch-none" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
         onClick={(e) => { if (!touch && started && e.target instanceof HTMLCanvasElement) void e.target.requestPointerLock?.(); }}>
-        <Canvas dpr={[1, dpr]} camera={{ fov: 70, near: 0.1, far: 120, position: [pkg.spawn[0], pkg.eye, pkg.spawn[1]] }} gl={{ antialias: dpr > 1.2, powerPreference: "high-performance" }} aria-hidden>
+        <Canvas dpr={[1, dpr]} camera={{ fov: 70, near: 0.1, far: pkg.sky?.far ?? 120, position: [pkg.spawn[0], pkg.eye, pkg.spawn[1]] }} gl={{ antialias: dpr > 1.2, powerPreference: "high-performance" }} aria-hidden>
           {xrStore ? (
             <XR store={xrStore}>
               <Rig pkg={pkg} input={input} pos={pos} origin={origin} onSnapshot={setSnap} onQuality={() => setDpr((d) => (d > 1 ? 1 : d))} />

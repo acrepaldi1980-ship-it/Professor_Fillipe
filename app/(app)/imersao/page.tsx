@@ -71,7 +71,7 @@ function ImmersiveScreen() {
         <ul className="flex flex-col gap-2">{PUBLIC_TOURS.map((x) => <li key={x.id}><Link href={`/imersao?t=${x.id}`} className="block rounded-control border border-line bg-surface p-3" data-testid={`tour-${x.id}`}><strong>{x.title}</strong><span className="block text-sm text-muted">{x.era} · {x.scenes.length} {t("pano.places").toLowerCase()}</span></Link></li>)}</ul>
         <h2 className="mt-3 text-xl">{t("imm.list.title")}</h2>
         <p className="text-muted">{t("imm.list.help")}</p>
-        <ul className="flex flex-col gap-2">{list.map((e) => <li key={e.id}><Link href={`/imersao?e=${e.id}`} className="block rounded-control border border-line bg-surface p-3"><strong>{e.title}</strong>{e.id === "tabernaculo" && <span className="ml-2 rounded bg-black/10 px-2 py-0.5 text-xs">{t("imm.preliminary")}</span>}<span className="block text-sm text-muted">{e.era}{e.size_bytes ? ` · ${(e.size_bytes / 1e6).toFixed(1)} MB` : ""}</span></Link></li>)}</ul>
+        <ul className="flex flex-col gap-2">{list.map((e) => <li key={e.id}><Link href={`/imersao?e=${e.id}`} className="block rounded-control border border-line bg-surface p-3"><strong>{e.title}</strong>{["tabernaculo", "arca_de_noe"].includes(e.id) && <span className="ml-2 rounded bg-black/10 px-2 py-0.5 text-xs">{t("imm.preliminary")}</span>}<span className="block text-sm text-muted">{e.era}{e.size_bytes ? ` · ${(e.size_bytes / 1e6).toFixed(1)} MB` : ""}</span></Link></li>)}</ul>
       </main>
     );
   }

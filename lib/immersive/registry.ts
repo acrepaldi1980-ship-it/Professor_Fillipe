@@ -1,12 +1,13 @@
 // Environment packages available to the immersive screen (Prompt 3.1). A new environment is one more line here.
+import { ARK_PACKAGE } from "./packages/arca";
 import { TABERNACLE_PACKAGE } from "./packages/tabernaculo";
 import { TEST_PACKAGE } from "./packages/test";
 import type { EnvironmentPackage } from "./package";
 
-export const PACKAGES: Record<string, EnvironmentPackage> = { [TABERNACLE_PACKAGE.id]: TABERNACLE_PACKAGE, [TEST_PACKAGE.id]: TEST_PACKAGE };
+export const PACKAGES: Record<string, EnvironmentPackage> = { [TABERNACLE_PACKAGE.id]: TABERNACLE_PACKAGE, [ARK_PACKAGE.id]: ARK_PACKAGE, [TEST_PACKAGE.id]: TEST_PACKAGE };
 export const getPackage = (id: string) => PACKAGES[id];
 /** 3D environments offered to students (the test yard stays internal). */
-export const PUBLIC_PACKAGES: EnvironmentPackage[] = [TABERNACLE_PACKAGE];
+export const PUBLIC_PACKAGES: EnvironmentPackage[] = [TABERNACLE_PACKAGE, ARK_PACKAGE];
 
 // 360° photo tours (Prompt 3.5b). A new tour is one more line here (or an upload in the admin tool, later).
 import { ARCHAEOLOGY_TOURS } from "./panos/arqueologia";

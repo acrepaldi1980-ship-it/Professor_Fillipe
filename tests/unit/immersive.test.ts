@@ -99,3 +99,28 @@ describe("environment package", () => {
     expect(EnvironmentPackage.safeParse({ ...base, zones: [zone], sheet: { summary: "Um resumo com mais de vinte letras.", sources: [] } }).success).toBe(false);
   });
 });
+
+import { floorAt, floorHeight } from "@/lib/immersive/movement";
+describe("floors, decks and ramps", () => {
+  const floors = [
+    { id: "ground", min: [-50, -50] as [number, number], max: [50, 50] as [number, number], y0: 0, y1: 0, axis: "z" as const },
+    { id: "deck2", min: [-10, -50] as [number, number], max: [10, 40] as [number, number], y0: 4.5, y1: 4.5, axis: "z" as const },
+    { id: "ramp", min: [-9, 40] as [number, number], max: [-5, 50] as [number, number], y0: 4.5, y1: 9, axis: "z" as const },
+  ];
+  it("a ramp rises along its axis, a deck is flat", () => {
+    expect(floorHeight(floors[2], [-7, 40])).toBeCloseTo(4.5); expect(floorHeight(floors[2], [-7, 45])).toBeCloseTo(6.75); expect(floorHeight(floors[2], [-7, 50])).toBeCloseTo(9);
+    expect(floorHeight(floors[1], [0, 0])).toBe(4.5);
+  });
+  it("stacked floors: he stands on the highest one he can step up to (a deck overhead is out of reach)", () => {
+    expect(floorAt(floors, [0, 0], 0).id).toBe("ground");
+    expect(floorAt(floors, [0, 0], 4.5).id).toBe("deck2");
+    expect(floorAt(floors, [0, 0], 3).id).toBe("ground"); // between the two: he drops to the floor below
+    expect(floorAt(floors, [0, 0], 4).id).toBe("deck2"); // within a step of the deck: up
+  });
+  it("walking up a ramp keeps following it", () => {
+    let y = 4.5;
+    for (let z = 41; z <= 50; z += 0.5) { const f = floorAt(floors, [-7, z], y); expect(f.id).toBe("ramp"); y = f.y; }
+    expect(y).toBeCloseTo(9);
+  });
+  it("without floors the height is 0 and nothing changes", () => { expect(floorAt([], [3, 3], 0)).toEqual({ id: null, y: 0 }); });
+});
