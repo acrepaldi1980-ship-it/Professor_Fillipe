@@ -21,10 +21,12 @@ import { panelModel } from "@/lib/immersive/vr";
 import { Joystick } from "./Joystick";
 import { VrLayer, XR, xrStore, type VrInput } from "./VrLayer";
 import { ARK_SCENES } from "./scenes-arca";
+import { JERUSALEM_SCENES } from "./scenes-jerusalem";
+import { TEMPLE_SCENES } from "./scenes-templo";
 import { TABERNACLE_SCENES } from "./scenes-tabernaculo";
 import { TEST_SCENES } from "./scenes-test";
 
-const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES, ...TABERNACLE_SCENES, ...ARK_SCENES };
+const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES, ...TABERNACLE_SCENES, ...ARK_SCENES, ...TEMPLE_SCENES, ...JERUSALEM_SCENES };
 /** A zone that is a GLB file: downloaded only when the visitor gets near (the zone is mounted by the Rig), released when far. */
 function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
   const gltf = useGLTF(url);
