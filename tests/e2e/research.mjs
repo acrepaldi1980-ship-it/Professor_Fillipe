@@ -40,6 +40,7 @@ try {
   await p.fill("input", "Atos 8:26-40");
   await p.click("button[type=submit]");
   await p.waitForSelector("[data-testid=research-bar]", { timeout: 30000 });
+  await p.waitForFunction(() => [...document.querySelectorAll("[role=status]")].some((e) => /etapa|Documento pronto/.test(e.textContent ?? "")), null, { timeout: 30000 }).catch(() => {});
   say("deep: the research starts by itself and shows progress", (await p.locator("[role=status]:has-text('etapa')").count()) > 0 || (await p.locator("[role=status]:has-text('Documento pronto')").count()) > 0);
   await p.waitForSelector("text=Documento pronto", { timeout: 240000 }).catch(() => {});
   await p.waitForFunction(() => [...document.querySelectorAll("aside[aria-label='Estudo aprofundado'] h3")].some((h) => h.textContent === "Aplicação"), null, { timeout: 90000 }).catch(() => {});

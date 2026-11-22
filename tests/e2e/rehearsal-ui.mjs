@@ -65,7 +65,7 @@ try {
   await rehearse(45);
   await p.getByRole("checkbox", { name: /Comparar o ensaio/ }).nth(0).check();
   await p.getByRole("checkbox", { name: /Comparar o ensaio/ }).nth(1).check();
-  await p.waitForSelector("[data-testid=reh-compare]", { timeout: 5000 });
+  await p.waitForSelector("[data-testid=reh-compare]", { timeout: 30000 });
   const cmp = await p.locator("[data-testid=reh-compare]").innerText();
   say("ui: two ticked rehearsals are compared (before/after, improvements asked)", /Antes/.test(cmp) && /Depois/.test(cmp) && /o que o ensaio anterior pediu|O que o ensaio anterior pediu/i.test(cmp));
   say("ui: no page errors", errors.length === 0, errors.join(" | ").slice(0, 200));

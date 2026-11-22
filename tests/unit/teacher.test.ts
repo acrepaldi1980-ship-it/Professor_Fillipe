@@ -221,3 +221,21 @@ describe("runTurn", () => {
     expect(d.calls).toBe(2);
   });
 });
+
+describe("a slow or failing library search does not fail the turn", () => {
+  it("retries once and succeeds when the first search is canceled by the database", async () => {
+    const d = deps([good()]);
+    let n = 0;
+    d.search = async () => { if (n++ === 0) throw new Error("search_failed: canceling statement due to statement timeout"); return { chunks: [chunk("easton_1897:1")], refs: [] }; };
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(n).toBe(2);
+    expect(out.response.speech.length).toBeGreaterThan(0);
+  });
+  it("answers without library excerpts when the search keeps failing (no invented citation survives)", async () => {
+    const d = deps([good()]);
+    d.search = async () => { throw new Error("search_failed: connection reset"); };
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(out.response.citations.filter((c) => c.type === "work")).toHaveLength(0);
+    expect(out.response.speech.length).toBeGreaterThan(0);
+  });
+});

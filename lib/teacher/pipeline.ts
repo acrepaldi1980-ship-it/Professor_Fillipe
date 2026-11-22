@@ -110,6 +110,14 @@ function fallbackResponse(name: string): TeacherResponse {
   };
 }
 
+/** The database sometimes cancels a slow search (statement timeout) or drops a request: try once more, and if it still fails answer without library excerpts
+ *  (the teacher then says plainly that it did not find the content in the sources: RA-09) instead of failing the whole turn. */
+async function searchResilient(run: () => Promise<{ chunks: Retrieved[]; refs: string[] }>): Promise<{ chunks: Retrieved[]; refs: string[] }> {
+  try { return await run(); } catch { /* retry below */ }
+  await new Promise((r) => setTimeout(r, 400));
+  try { return await run(); } catch { return { chunks: [], refs: [] }; }
+}
+
 export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnResult> {
   const t0 = Date.now();
   const student = input.student ?? DEFAULT_STUDENT;
@@ -150,7 +158,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const wantedVerses = [...mentioned, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
   const [{ chunks }, verses, layers] = await Promise.all([
-    deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined }),
+    searchResilient(() => deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
     wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
     deps.loadLayers ? deps.loadLayers().catch(() => null) : Promise.resolve(null),
   ]);
