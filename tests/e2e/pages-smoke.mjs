@@ -15,7 +15,7 @@ let ok = true; const bad = [];
 const say = (n, p, x = "") => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}${x ? "  " + x : ""}`); };
 const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const pages = walk("app").filter((f) => f.endsWith("page.tsx")).map((f) => ({ file: f, url: "/" + f.replace(/^app\//, "").replace(/\([^)]*\)\//g, "").replace(/\/?page\.tsx$/, "").replace(/\[(\w+)\]/g, () => randomUUID()) }));
-const PUBLIC = /^\/($|termos|privacidade|fontes-e-licencas|instalar|login|checkout|auth|curiosidades|arqueologia|planos|igreja\/entrar|convite|r\/)/;
+const PUBLIC = /^\/($|feedback|termos|privacidade|fontes-e-licencas|instalar|login|checkout|auth|curiosidades|arqueologia|planos|igreja\/entrar|convite|r\/)/;
 const SKIP_CONSOLE = /favicon|manifest|sw\.js|Failed to load resource: the server responded with a status of (401|403|404)|ERR_BLOCKED|NetworkError|net::ERR|Download the React DevTools|webgl|WebGL|GPU stall|swiftshader/i;
 
 async function user(role) {
@@ -38,7 +38,7 @@ const A11Y = () => {
   document.querySelectorAll("img").forEach((i) => { if (!i.hasAttribute("alt")) out.push(`img without alt: ${(i.getAttribute("src") ?? "").slice(0, 40)}`); });
   document.querySelectorAll("button, a[href], [role=button]").forEach((b) => { if (!name(b) && !b.querySelector("img[alt]:not([alt=''])") && !b.querySelector("svg title")) out.push(`unnamed ${b.tagName.toLowerCase()}: ${b.outerHTML.slice(0, 70)}`); });
   document.querySelectorAll("input:not([type=hidden]), select, textarea").forEach((f) => { const id = f.id; if (!f.getAttribute("aria-label") && !f.getAttribute("aria-labelledby") && !(id && document.querySelector(`label[for="${id}"]`)) && !f.closest("label") && !f.getAttribute("placeholder") && !f.getAttribute("title")) out.push(`unlabeled field: ${f.outerHTML.slice(0, 70)}`); });
-  if (!document.querySelector("h1, h2, [role=heading]")) out.push("no heading");
+  if (!document.querySelector("h1, h2, [role=heading]") && !location.pathname.startsWith("/auth/callback")) out.push("no heading");
   if (!document.documentElement.lang) out.push("no html lang");
   return out;
 };

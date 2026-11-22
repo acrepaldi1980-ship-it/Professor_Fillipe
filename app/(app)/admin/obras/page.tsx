@@ -13,7 +13,7 @@ export default function WorksAdmin() {
   const load = () => adminWorks().then((r) => setWorks(r.works)).catch(() => setErr(true));
   useEffect(() => { void load(); }, []);
   const shown = useMemo(() => (works ?? []).filter((w) => !q || `${w.title} ${w.authors.join(" ")} ${w.kind} ${w.tradition} ${w.license}`.toLowerCase().includes(q.toLowerCase())).slice(0, 200), [works, q]);
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   if (!works) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">

@@ -17,7 +17,7 @@ export default function AdminHub() {
   const [role, setRole] = useState<string | null>(null);
   useEffect(() => { void getMe().then((m) => setRole(m.profile?.role ?? "student")).catch(() => setRole("student")); }, []);
   if (!role) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
-  if (role !== "admin" && role !== "reviewer") return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (role !== "admin" && role !== "reviewer") return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">
       <h1 className="text-3xl">{t("admin.hub.title")}</h1>

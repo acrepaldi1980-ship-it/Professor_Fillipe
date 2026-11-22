@@ -48,7 +48,7 @@ export default function ClosingPage() {
   }
 
   if (state === "loading") return <main className="grid min-h-dvh place-items-center p-6"><div className="flex flex-col items-center gap-3 text-center"><Avatar state="thinking" size={88} /><p role="status" className="text-muted">{t("closing.loading")}</p></div></main>;
-  if (state === "none" || !data) return <main className="mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center"><Avatar state="happy" size={88} /><p>{t("closing.none")}</p><Link className="underline" href="/inicio">{t("closing.home")}</Link></main>;
+  if (state === "none" || !data) return <main className="mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center"><Avatar state="happy" size={88} /><h1 className="text-xl">{t("closing.none")}</h1><Link className="underline" href="/inicio">{t("closing.home")}</Link></main>;
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-24">
       <div className="flex items-center gap-3 pt-2"><Avatar state={speaking ? "speaking" : "happy"} size={64} /><h1 className="text-2xl">{t("closing.title")}</h1></div>

@@ -14,7 +14,7 @@ export default function UsersAdmin() {
   const [tick, setTick] = useState(0);
   const load = () => setTick((n) => n + 1);
   useEffect(() => { const h = setTimeout(() => void adminUsers(q).then((r) => setUsers(r.users)).catch(() => setErr(true)), 250); return () => clearTimeout(h); }, [q, tick]);
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">
       <h1 className="text-3xl">{t("admin.users.title")}</h1>

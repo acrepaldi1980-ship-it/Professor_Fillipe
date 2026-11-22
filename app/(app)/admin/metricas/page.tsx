@@ -14,7 +14,7 @@ export default function MetricsAdmin() {
   const [m, setM] = useState<AdminMetrics | null>(null);
   const [err, setErr] = useState(false);
   useEffect(() => { void adminMetrics().then(setM).catch(() => setErr(true)); }, []);
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   if (!m) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
   const lat = m.voice_latency_ms;
   return (

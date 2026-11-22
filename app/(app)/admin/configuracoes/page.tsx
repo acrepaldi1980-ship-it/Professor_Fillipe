@@ -18,7 +18,7 @@ export default function SettingsAdmin() {
   const load = () => adminSettings().then(setS).catch(() => setErr(true));
   useEffect(() => { void load(); }, []);
   const save = async (body: Record<string, unknown>) => { try { await adminSaveSetting(body); setMsg(t("admin.settings.saved")); await load(); } catch { setMsg(t("consent.error")); } };
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   if (!s) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-4 p-4 pb-24">

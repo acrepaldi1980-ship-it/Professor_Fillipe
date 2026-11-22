@@ -100,7 +100,7 @@ export default function EnvironmentsAdminPage() {
   async function remove(id: string) { if (!window.confirm(t("env.confirm"))) return; try { await deleteEnvironment(id); load(); } catch { setMsg({ kind: "err", text: t("a3d.err.generic") }); } }
 
   if (!role) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
-  if (role !== "admin") return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (role !== "admin") return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   const f = "min-h-10 w-full rounded-control border border-line bg-bg px-3 py-2";
   const set = (k: keyof Form) => (e: { target: { value: string } }) => setForm((s) => ({ ...s, [k]: e.target.value }));
   return (

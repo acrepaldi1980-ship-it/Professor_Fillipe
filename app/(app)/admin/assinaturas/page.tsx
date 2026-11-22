@@ -12,7 +12,7 @@ export default function BillingAdminPage() {
   const [d, setD] = useState<BillingAdmin | null>(null);
   const [err, setErr] = useState(false);
   useEffect(() => { void getBillingAdmin().then(setD).catch(() => setErr(true)); }, []);
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   if (!d) return <main className="p-6"><p className="text-muted">{t("common.loading")}</p></main>;
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">

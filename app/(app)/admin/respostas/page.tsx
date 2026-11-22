@@ -14,7 +14,7 @@ export default function FlagsAdmin() {
   const [err, setErr] = useState(false);
   const load = (s = status) => adminFlags(s).then((r) => setFlags(r.flags)).catch(() => setErr(true));
   useEffect(() => { void adminFlags(status).then((r) => setFlags(r.flags)).catch(() => setErr(true)); }, [status]);
-  if (err) return <main className="p-6"><p role="alert">{t("admin.forbidden")}</p></main>;
+  if (err) return <main className="p-6"><h1 className="text-2xl">{t("admin.hub.title")}</h1><p role="alert">{t("admin.forbidden")}</p></main>;
   const decide = (f: AdminFlag, s: "correct" | "incorrect") => adminReviewFlag(f.flag_id, s, notes[f.flag_id] ?? f.reviewer_note ?? "").then(() => load());
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-3 p-4 pb-24">

@@ -5,7 +5,6 @@ import { join } from "node:path";
 
 const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const tests = [...walk("tests")].filter((f) => /\.(mjs|ts)$/.test(f)).map((f) => ({ f, t: readFileSync(f, "utf8") }));
-const lib = [...walk("lib")].filter((f) => /\.test\./.test(f));
 const routes = walk("app/api").filter((f) => f.endsWith("route.ts")).map((f) => f.replace("app/api/v1/", "").replace("/route.ts", ""));
 const study = readFileSync("app/api/v1/study/[...path]/route.ts", "utf8");
 for (const m of study.matchAll(/kind === "(\w[\w-]*)"|p\[0\] === "(\w[\w-]*)"/g)) routes.push(`study/${m[1] ?? m[2]}`);
