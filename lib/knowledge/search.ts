@@ -40,6 +40,8 @@ export interface SearchOptions {
   perSignal?: number;
   /** Filled with the milliseconds of each stage (diagnostics: where does a slow question spend its time?). */
   trace?: Record<string, number>;
+  /** Second attempt after an empty result (cold databases): the budgets are 2.5 times longer. Set by searchChunks itself. */
+  patient?: boolean;
   /** English keywords for the question, still being produced by a model: the search starts without them and adds them if they arrive in time. */
   extraQuery?: Promise<string | null>;
   /** Words of the question (and its English keywords): a dictionary entry titled with one of them gets a boost. */
@@ -161,13 +163,14 @@ export async function searchChunks(
   const hit = cacheKey ? searchCache.get(cacheKey) : undefined;
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) { if (opts.trace) opts.trace.cache = 1; return hit.value; }
   const T0 = Date.now();
+  const k = opts.patient ? 2.5 : 1;
   const mark = (name: string) => { if (opts.trace) opts.trace[name] = Math.max(opts.trace[name] ?? 0, Date.now() - T0); };
 
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
   const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
   let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
-  const titlePromise = (store.titleChunks && terms.length ? within(store.titleChunks(terms), TITLES_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])).then((r) => { mark("titles"); return r; });
+  const titlePromise = (store.titleChunks && terms.length ? within(store.titleChunks(terms), TITLES_BUDGET_MS * k, [] as Row[]) : Promise.resolve([] as Row[])).then((r) => { mark("titles"); return r; });
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
@@ -182,8 +185,8 @@ export async function searchChunks(
     // id list is slow there, so it is skipped unless there is a non-library id to look for.
     const mainIds = ids.filter((id) => !id.startsWith("pg_"));
     const [main, lib] = await Promise.all([
-      mainIds.length ? within(store.searchChunks({ ...args, workIds: mainIds }), 2500, [] as Row[]) : Promise.resolve([] as Row[]),
-      library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[]),
+      mainIds.length ? within(store.searchChunks({ ...args, workIds: mainIds }), 2500 * k, [] as Row[]) : Promise.resolve([] as Row[]),
+      library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS * k, [] as Row[]) : Promise.resolve([] as Row[]),
     ]);
     return [...main, ...lib].map((r) => ({ ...r, signals: [...r.signals, signal] }));
   };
@@ -196,7 +199,7 @@ export async function searchChunks(
     const vec = await emb.embedQuery(q);
     mark(`embed${i}`);
     const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
-    const [main, lib] = await Promise.all([within(store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), MAIN_BUDGET_MS, [] as Row[]), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+    const [main, lib] = await Promise.all([within(store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), MAIN_BUDGET_MS * k, [] as Row[]), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
     return [...main, ...lib];
   };
   // The English keywords come from a model call that can take seconds: the search does not wait for it, it uses them only if they arrive in time.
@@ -220,7 +223,10 @@ export async function searchChunks(
   }
   mark("fetched");
   const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
-  if (cacheKey) {
+  // Nothing came back: a cold database or embedding model timed out (the first question after idle time). Try once more, patiently, now that they are warm;
+  // an empty answer must never reach the teacher as "no sources" when the sources exist.
+  if (!value.chunks.length && !opts.patient && !deps.store) return searchChunks(query, { ...opts, patient: true }, deps);
+  if (cacheKey && value.chunks.length) {
     searchCache.set(cacheKey, { at: Date.now(), value });
     if (searchCache.size > 60) searchCache.delete(searchCache.keys().next().value as string);
   }

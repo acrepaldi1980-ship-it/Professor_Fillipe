@@ -24,7 +24,7 @@ try {
     const e = /event: error\ndata: (.+)/.exec(text)?.[1];
     console.log(`\n# ${q}  (${Math.round((Date.now() - t0) / 100) / 10}s)`);
     if (s) { const r = JSON.parse(s); console.log("FALA:", r.speech, "\nCITACOES:", r.citations.length); }
-    if (d) { const m = JSON.parse(d); console.log("META:", JSON.stringify({ retrievedChunks: m.retrievedChunks, retrievalMs: m.retrievalMs, llmMs: m.llmMs, words: m.words, degraded: m.degraded ?? false, llm: m.llm, rewrites: m.speechRewrites, retries: m.schemaRetries, reason: m.degradedReason, removedCitations: m.removedCitations })); }
+    if (d) { const m = JSON.parse(d); console.log("META:", JSON.stringify({ retrievedChunks: m.retrievedChunks, retrievalMs: m.retrievalMs, llmMs: m.llmMs, words: m.words, degraded: m.degraded ?? false, llm: m.llm, rewrites: m.speechRewrites, trace: m.trace, retries: m.schemaRetries, reason: m.degradedReason, removedCitations: m.removedCitations })); }
     if (e) console.log("ERRO:", e);
   }
 } catch (err) { console.log("ERROR", err.message); }
