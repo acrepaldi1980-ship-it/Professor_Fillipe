@@ -68,6 +68,14 @@ function CameraRig({ cam }: { cam: React.MutableRefObject<Cam> }) {
   return null;
 }
 
+/** The photo source: a link labeled with the site (long file URLs would crowd the screen), or plain text. */
+function CreditSource({ source }: { source: string }) {
+  if (!/^https?:\/\//.test(source)) return <>{source}</>;
+  let label = source;
+  try { const h = new URL(source).hostname; label = h === "commons.wikimedia.org" ? "Wikimedia Commons" : h; } catch { /* keep the raw text */ }
+  return <a href={source} target="_blank" rel="noreferrer" className="underline">{label}</a>;
+}
+
 export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour; initial?: string; onOpenRef?(ref: string): void }) {
   const router = useRouter();
   const first = tour.scenes.find((s) => s.id === initial) ?? tour.scenes.find((s) => s.id === tour.start) ?? tour.scenes[0];
@@ -265,7 +273,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
             ))}
           </div>
         </div>
-        <p className="text-[11px] text-white/80" data-testid="pano-credit">{t("pano.credit")}: {scene.credit.author} · {scene.credit.license} · {scene.credit.source} · {index + 1}/{tour.scenes.length}</p>
+        <p className="text-[11px] text-white/80" data-testid="pano-credit">{t("pano.credit")}: {scene.credit.author} · {scene.credit.license} · <CreditSource source={scene.credit.source} /> · {index + 1}/{tour.scenes.length}</p>
       </div>
 
       {open && (
