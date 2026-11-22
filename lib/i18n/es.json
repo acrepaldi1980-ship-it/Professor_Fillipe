@@ -975,5 +975,7 @@
   "pano.credit": "Foto",
   "pano.credits": "Créditos de las fotos",
   "imm.panos": "Fotos 360° reales",
-  "imm.panos.help": "Fotografías panorámicas de lugares reales, con navegación por puntos."
+  "imm.panos.help": "Fotografías panorámicas de lugares reales, con navegación por puntos.",
+  "pano.guided": "▶ Recorrido guiado",
+  "pano.guided.stop": "■ Detener recorrido"
 }

@@ -95,6 +95,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
   const [speaking, setSpeaking] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [hint, setHint] = useState(true);
+  const [guided, setGuided] = useState(false);
   const sessionId = useRef<string | null>(null);
   const cam = useRef<Cam>({ yaw: first.startYaw, pitch: 0, fov: 75, vy: 0, vp: 0 });
   const wrap = useRef<HTMLDivElement>(null);
@@ -221,8 +222,16 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
     const id = sessionId.current;
     if (id) { try { await closeSessionFull(id); } catch { /* the closing screen retries */ } router.push(`/fechamento?s=${id}`); } else router.back();
   }
-  const gaze = useMemo(() => scene.hotspots.find((h) => h.id === gazeId) ?? null, [scene, gazeId]);
   const index = tour.scenes.findIndex((s) => s.id === scene.id);
+  // guided tour: on each arrival the teacher says the scene script, then waits (every script ends with a question: the student answers or moves on)
+  useEffect(() => {
+    if (!guided || loading || failed || !scene.script) return;
+    const id = window.setTimeout(() => { void say(scene.script!); }, 500);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guided, loading, failed, scene.id]);
+  const nextScene = tour.scenes[index + 1];
+  const gaze = useMemo(() => scene.hotspots.find((h) => h.id === gazeId) ?? null, [scene, gazeId]);
 
   return (
     <div ref={wrap} className="relative h-full w-full overflow-hidden bg-black" data-testid="pano" role="application" aria-label={`${tour.title}: ${scene.title}. ${t("pano.keys")}`}>
@@ -266,6 +275,8 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
       {/* places: tap to go (works with one finger, no walking needed) */}
       <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 bg-gradient-to-t from-black/70 to-transparent p-2 pt-8">
         <div className="flex items-center gap-2">
+          <button type="button" data-testid="pano-guided" aria-pressed={guided} onClick={() => { setGuided((g) => { if (g) { stopSpeaking(); setSpeaking(false); } return !g; }); setHint(false); }} className={`min-h-9 shrink-0 rounded-control px-3 text-sm ${guided ? "bg-primary font-semibold text-primary-ink" : "bg-white/25 text-white"}`}>{guided ? t("pano.guided.stop") : t("pano.guided")}</button>
+          {guided && nextScene && <button type="button" data-testid="pano-next" onClick={() => go(nextScene.id)} className="min-h-9 shrink-0 rounded-control bg-white px-3 text-sm font-semibold text-black">{t("imm.next")} ›</button>}
           {scene.script && <button type="button" data-testid="pano-listen" disabled={speaking} onClick={() => void say(scene.script!)} className="min-h-9 shrink-0 rounded-control bg-white/25 px-3 text-sm text-white">{speaking ? "…" : t("imm.listen")}</button>}
           <div className="flex gap-1 overflow-x-auto" role="tablist" aria-label={t("pano.places")}>
             {tour.scenes.map((s, i) => (

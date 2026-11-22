@@ -74,6 +74,13 @@ try {
   await p.getByTestId("pano-place-entrada").click();
   await p.waitForTimeout(1500);
   say("the place chips jump anywhere", (await p.getByTestId("pano-credit").innerText()).includes("1/2"));
+  await p.getByTestId("pano-guided").click();
+  await p.waitForTimeout(800);
+  say("guided tour shows the next-place button", (await p.getByTestId("pano-next").count()) === 1);
+  await p.getByTestId("pano-next").click();
+  await p.waitForTimeout(1500);
+  say("and it moves to the next place", (await p.getByTestId("pano-credit").innerText()).includes("2/2"));
+  await p.getByTestId("pano-guided").click();
   await p.getByRole("button", { name: "Ficha histórica" }).click();
   say("sheet lists the credit of every photo", (await p.getByTestId("pano-sheet").innerText()).includes("Créditos das fotos"));
   say("no page errors", errors.length === 0, errors.join(" | "));
