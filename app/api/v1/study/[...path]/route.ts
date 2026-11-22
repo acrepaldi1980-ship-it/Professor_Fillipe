@@ -31,7 +31,7 @@ export async function GET(req: Request, ctx: Ctx) {
   if (kind === "word" && arg) return word(req, { params: Promise.resolve({ strong: arg }) });
   if (kind === "rehearsals" && !arg) return listOrGet(req);
   if (kind === "paths") return pathsGet(req, arg);
-  if (kind === "characters") return charactersGet(req, arg);
+  if (kind === "characters") return charactersGet(req, arg && (await ctx.params).path[2] ? `${arg}/${(await ctx.params).path[2]}` : arg);
   if (kind === "josephus") { const p = (await ctx.params).path; return josephusGet(req, p[1], p[2], p[3]); }
   if (kind === "streak" && !arg) return streakGet(req);
   if (kind === "referral" && !arg) return referralGet(req);

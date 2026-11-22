@@ -30,10 +30,17 @@ try {
   await p.waitForSelector("text=Para pensar", { timeout: 40000 });
   say("book: 19 illustrated chapters from birth to death", (await p.locator("section[aria-labelledby]").count()) === 19);
   say("book: every chapter has a picture", (await p.locator("section[aria-labelledby] svg").count()) === 19);
-  say("book: lifeline, family and route diagrams", (await p.locator("svg[aria-label='A linha da vida']").count()) === 1 && (await p.locator("svg[aria-label='A família']").count()) === 1 && (await p.locator("svg[aria-label='Por onde andou']").count()) === 1);
+  say("book: lifeline, family and route diagrams", (await p.locator("svg[aria-label='A linha da vida']").count()) === 1 && (await p.locator("svg[aria-label='Árvore genealógica']").count()) === 1 && (await p.locator("svg[aria-label='Por onde andou']").count()) === 1);
   await p.getByRole("button", { name: /Gênesis 12:1-5/ }).click(); await p.waitForTimeout(2500);
   say("passage opens with the Bible text", (await p.getByText("Sai da tua terra").count()) > 0);
   await p.keyboard.press("Escape");
+  await p.getByRole("img", { name: "Árvore genealógica" }).scrollIntoViewIfNeeded();
+  await p.waitForTimeout(3000);
+  const boxes = await p.locator("svg[aria-label='Árvore genealógica'] a").count();
+  say("family tree: Abraham's tree has many people, each opens a life", boxes >= 8, `${boxes} people`);
+  await p.goto(`${BASE}/personagens?id=davi`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("svg[aria-label='Árvore genealógica'] a", { timeout: 40000 });
+  say("family tree: David has ancestors and a legend with the generations", (await p.getByText(/gerações/).count()) > 0);
   await p.goto(`${BASE}/personagens?id=kg:aaron_1`, { waitUntil: "domcontentloaded" });
   await p.waitForSelector("text=Passagens onde aparece", { timeout: 40000 });
   say("card: a person without a curated life has a card with relations and passages", (await p.getByText("Parentescos e participações").count()) > 0);

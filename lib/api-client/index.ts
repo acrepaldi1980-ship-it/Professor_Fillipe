@@ -472,3 +472,6 @@ export interface JosephusToc { bio: { name: string; hebrew: string; years: strin
 export interface JosephusChapter { work: JosephusWork; book: number; chapter: number; title: string; info: { title: string; span: string; summary: string } | null; sections: { n: number; text: string }[]; prev: { work: JosephusWork; book: number; chapter: number; label: string } | null; next: { work: JosephusWork; book: number; chapter: number; label: string } | null; parallels: { n: number; cite: string; refs: string[] }[]; credit: string }
 export const getJosephus = () => apiJson<JosephusToc>("/study/josephus");
 export const getJosephusChapter = (w: JosephusWork, b: number, c: number) => apiJson<JosephusChapter>(`/study/josephus/${w}/${b}/${c}`);
+
+export interface FamilyTreeData { focus: string; nodes: { id: string; name: string; period: string | null; gen: number }[]; edges: { parent: string; child: string; refs: string[] }[]; partners: { a: string; b: string; refs: string[] }[]; siblings: { id: string; refs: string[] }[]; truncated: boolean }
+export const getFamilyTree = (id: string) => apiJson<FamilyTreeData>(`/study/characters/${encodeURIComponent(id)}/tree`);

@@ -3,6 +3,7 @@
 //   GET /study/characters/:id             -> a curated life (illustrated chapters) or an automatic card of the graph (id "kg:<graph id>")
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { refQuery } from "@/lib/knowledge/reference-db";
+import { familyTree } from "./family";
 import { CURATED, curatedKgIds, getCurated, summarize, type CharacterSummary } from "./index";
 
 const PAGE = 60;
@@ -14,7 +15,7 @@ type Row = { id: string; name_en: string; name_pt: string | null; period: string
 export async function charactersGet(req: Request, id?: string) {
   try {
     await requireUser(req);
-    if (id) return await detail(decodeURIComponent(id));
+    if (id) { const [cid, sub] = id.split("/"); if (sub === "tree") { const c = getCurated(decodeURIComponent(cid)); const kg = c ? c.kgId : decodeURIComponent(cid).startsWith("kg:") ? `person:${decodeURIComponent(cid).slice(3)}` : undefined; if (!kg) return Response.json({ error: "not_found" }, { status: 404 }); return Response.json(await familyTree(kg)); } return await detail(decodeURIComponent(id)); }
     const url = new URL(req.url);
     const q = (url.searchParams.get("q") ?? "").trim().slice(0, 60).toLowerCase();
     const era = url.searchParams.get("era");

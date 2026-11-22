@@ -1049,5 +1049,14 @@
   "jos.error": "Não foi possível carregar agora. Tente de novo.",
   "jos.preface": "Prefácio",
   "jos.sections": "{n} seções",
-  "jos.source": "Josefo é uma fonte, não uma voz: o professor o apresenta, cita a obra e a divisão, e lembra que ele escrevia como judeu a serviço de Roma."
+  "jos.source": "Josefo é uma fonte, não uma voz: o professor o apresenta, cita a obra e a divisão, e lembra que ele escrevia como judeu a serviço de Roma.",
+  "tree.title": "Árvore genealógica",
+  "tree.none": "A Bíblia traz poucos dados sobre a família desta pessoa: não há pais, filhos ou irmãos registrados que dê para desenhar.",
+  "tree.legend": "{n} pessoas em {g} gerações. Toque numa pessoa para abrir a vida dela. Linha contínua: pai ou mãe e filho; linha tracejada com ⚭: casal.",
+  "tree.truncated": "A árvore é muito grande e foi limitada às gerações mais próximas.",
+  "tree.parents": "Pais",
+  "tree.siblings": "Irmãos",
+  "tree.partners": "Cônjuges e companheiros",
+  "tree.children": "Filhos",
+  "tree.grandchildren": "Netos"
 }

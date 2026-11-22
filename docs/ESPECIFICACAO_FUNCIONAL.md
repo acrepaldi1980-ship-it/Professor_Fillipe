@@ -938,6 +938,7 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Fontes (RA-09):** cada capítulo cita uma passagem conferida contra a Bíblia (`scripts/check-characters.mts`). O que a Bíblia não registra (por exemplo, a morte de Maria e a de Paulo) é dito no texto; tradições aparecem marcadas.
 - **Cronologia:** datas aproximadas seguem a cronologia conservadora moderna (D-07) e vêm marcadas.
 - **Dados:** vidas curadas em `lib/characters/data/*.ts` (validadas com Zod ao carregar); fichas automáticas lidas de `kg_entities` e `kg_relations`. API: `GET /api/v1/study/characters` e `/study/characters/:id`. Telas: `/personagens` (lista e livro). 
+- **Árvore genealógica (22/11/2026):** cada personagem (curado ou ficha) tem a árvore completa do grafo bíblico: ancestrais (até 14 gerações), descendentes (até 5), irmãos e cônjuges ou companheiros (quem divide um filho), com a passagem de cada vínculo; desenho com caixas clicáveis, abre centrado na pessoa; lista abaixo com pais, irmãos, cônjuges, filhos e netos. API `GET /study/characters/:id/tree`.
 - **Pendências:** tradução das descrições do grafo para o português; revisão pelo consultor; as demais vidas das camadas 1 e 2.
 
 ### 8.20 M20 — Flávio Josefo em profundidade (P0, pedido do dono em 22/11/2026)

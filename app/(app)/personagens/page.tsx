@@ -4,6 +4,7 @@
 // The open person travels in the query string (?id=) so the screen stays exportable for Capacitor.
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { FamilyTree } from "@/components/characters/FamilyTree";
 import { LifeBook } from "@/components/characters/LifeBook";
 import { hash, SceneArt } from "@/components/characters/SceneArt";
 import { Button } from "@/components/ui/Button";
@@ -41,6 +42,7 @@ function GraphCard({ d, onVerse }: { d: Extract<CharacterDetail, { kind: "card" 
       <header className="relative overflow-hidden rounded-2xl text-white" style={{ background: d.color }}><SceneArt spec={autoScene(d.id)} seed={hash(d.id)} className="block h-44 w-full" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4"><h1 className="font-serif text-3xl font-bold">{name}</h1>{e.period && <p className="opacity-90">{e.period.replace(" a ", " a ")} (a.C.)</p>}{e.aliases && e.aliases.length > 0 && <p className="text-sm opacity-90">{e.aliases.slice(0, 4).join(" · ")}</p>}</div></header>
       <p className="rounded-control border border-line bg-surface p-3 text-sm">{t("char.soon")}</p>
       {e.description && <p className="text-[16px] leading-relaxed">{shorten(e.description)}</p>}
+      <section><h2 className="font-serif text-xl font-bold">{t("tree.title")}</h2><div className="mt-2"><FamilyTree characterId={d.id} color={d.color} onVerse={onVerse} /></div></section>
       {rels.size > 0 && <section><h2 className="font-serif text-xl font-bold">{t("char.relations")}</h2><ul className="mt-2 flex flex-col gap-1">{[...rels].map(([k, names]) => <li key={k}><span className="font-semibold">{k === "child" ? "filho(a) de" : t(`char.rel.${k}` as MessageKey)}</span>: {names.slice(0, 12).join(", ")}</li>)}</ul></section>}
       {e.refs && e.refs.length > 0 && <section><h2 className="font-serif text-xl font-bold">{t("char.verses")}</h2><div className="mt-2 flex flex-wrap gap-2">{e.refs.slice(0, 30).map((r) => <button key={r} type="button" className="rounded-full border border-line bg-surface px-3 py-1" onClick={() => onVerse(r)}>{formatRefPt(r)}</button>)}</div></section>}
       <p className="text-xs text-muted">{t("char.source")}</p>

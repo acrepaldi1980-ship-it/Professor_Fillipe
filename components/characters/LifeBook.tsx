@@ -10,6 +10,7 @@ import { getBibleVerses } from "@/lib/api-client";
 import { ERAS, type Character } from "@/lib/characters/schema";
 import { defaultBibleVersion, t, type MessageKey } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
+import { FamilyTree } from "./FamilyTree";
 import { hash, SceneArt } from "./SceneArt";
 
 const STAGE_COLORS = ["#b9772f", "#6f7a3a", "#7d4a6e", "#3f6f86", "#8a4a3a", "#5a6f4a", "#9a6a2a", "#4a5a8a"];
@@ -131,7 +132,7 @@ export function LifeBook({ c, related }: { c: Character; related: { id: string; 
         </section>
       ))}
 
-      <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.family")}</h2><Family c={c} /></section>
+      <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("tree.title")}</h2>{c.kgId ? <FamilyTree characterId={c.id} color={c.color} onVerse={(r) => void openVerse(r)} /> : <Family c={c} />}</section>
       <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.map")}</h2><Route c={c} /></section>
       {related.length > 0 && <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.crosses")}</h2><div className="flex flex-wrap gap-2">{related.map((r) => <Link key={r.id} href={`/personagens?id=${r.id}`} className="rounded-full border border-line bg-surface px-3 py-1.5">{r.name}</Link>)}</div></section>}
       {c.lessons.length > 0 && <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.lessons")}</h2><ul className="flex flex-col gap-2">{c.lessons.map((l) => <li key={l.ref} className="rounded-control border border-line bg-surface p-3">{l.text} <button type="button" className="underline" onClick={() => void openVerse(l.ref)}>{formatRefPt(l.ref)}</button></li>)}</ul></section>}
