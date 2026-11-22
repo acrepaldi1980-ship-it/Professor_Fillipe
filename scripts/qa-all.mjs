@@ -7,7 +7,8 @@ import { sql } from "./db.mjs";
 const args = process.argv.slice(2);
 const only = args.includes("--only") ? args[args.indexOf("--only") + 1].split(",") : null;
 const env = { ...process.env, NODE_OPTIONS: "--use-env-proxy", GLOBAL_NM: spawnSync("npm", ["root", "-g"], { encoding: "utf8" }).stdout.trim(), MOCK_URL: "http://localhost:4010", APP_URL: "http://localhost:3100",
-  LLM_ONLY: "mock", LLM_EXTRA: JSON.stringify([{ id: "mock", baseUrl: "http://localhost:4010/v1", keyEnv: "HOME", models: [{ name: "mock-model", tier: 1, tools: true }] }]) };
+  // four mock endpoints, like several free providers in production: documents are built in parallel and need the capacity
+  LLM_ONLY: "mock1,mock2,mock3,mock4", LLM_EXTRA: JSON.stringify([1, 2, 3, 4].map((i) => ({ id: `mock${i}`, baseUrl: "http://localhost:4010/v1", keyEnv: "HOME", models: [{ name: "mock-model", tier: 1, tools: true }] }))) };
 const sh = (cmd, a, o = {}) => spawnSync(cmd, a, { encoding: "utf8", env, ...o });
 const results = [];
 const step = (name, fn) => { const t = Date.now(); let ok = false, note = ""; try { const r = fn(); ok = r.ok; note = r.note ?? ""; } catch (e) { note = String(e).slice(0, 200); } results.push({ name, ok, note, s: Math.round((Date.now() - t) / 1000) }); console.log(`${ok ? "PASS" : "FAIL"}  ${name}  ${note}`); };

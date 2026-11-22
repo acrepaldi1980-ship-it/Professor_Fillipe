@@ -9,7 +9,7 @@ const { chromium } = require("playwright");
 const REF = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
 const BASE = process.env.APP_URL ?? "http://localhost:3100";
 let ok = true;
-const say = (n, p) => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}`); };
+const say = (n, p, x = "") => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}${!p && x ? "  >> " + String(x).slice(0, 400) : ""}`); };
 const email = `rs-${Date.now()}@example.test`, password = `Tt!${randomUUID()}`, id = randomUUID();
 const browser = await chromium.launch();
 try {
@@ -23,6 +23,7 @@ try {
   const p = await ctx.newPage();
   const errors = [];
   p.on("pageerror", (e) => errors.push(String(e)));
+  p.on("response", async (r) => { if (/suggest/.test(r.url())) { const req = r.request().postData() ?? ""; if (r.status() >= 400 || /application/.test(req)) console.log("   SUGGEST", r.status(), req.slice(0, 60), (await r.text().catch(() => "")).slice(0, 300)); } });
   await p.goto(`${BASE}/termos`, { waitUntil: "networkidle" });
   await p.evaluate(async ({ key, value }) => {
     await new Promise((res, rej) => {
@@ -41,8 +42,9 @@ try {
   await p.waitForSelector("[data-testid=research-bar]", { timeout: 30000 });
   say("deep: the research starts by itself and shows progress", (await p.locator("[role=status]:has-text('etapa')").count()) > 0 || (await p.locator("[role=status]:has-text('Documento pronto')").count()) > 0);
   await p.waitForSelector("text=Documento pronto", { timeout: 240000 }).catch(() => {});
+  await p.waitForFunction(() => [...document.querySelectorAll("aside[aria-label='Estudo aprofundado'] h3")].some((h) => h.textContent === "Aplicação"), null, { timeout: 90000 }).catch(() => {});
   const secs = await p.locator("aside[aria-label='Estudo aprofundado'] h3").allTextContents();
-  say(`deep: the study is delivered with its sections (${secs.length})`, ["Resumo do texto", "Contexto histórico e literário", "Estrutura do texto", "Palavras-chave no original", "Aplicação", "Referências cruzadas"].every((h) => secs.includes(h)));
+  say(`deep: the study is delivered with its sections (${secs.length})`, ["Resumo do texto", "Contexto histórico e literário", "Estrutura do texto", "Palavras-chave no original", "Aplicação", "Referências cruzadas"].every((h) => secs.includes(h)), "have: " + secs.join(" | "));
   const sid = (await sql(`select id from sessions where user_id='${id}' and mode='deep' order by created_at desc limit 1`))[0].id;
   const deep = (await sql(`select data from deep_studies where session_id='${sid}'`))[0]?.data ?? {};
   say("deep: every key word comes from the original-language data (Strong number present)", (deep.keywords ?? []).length >= 3 && deep.keywords.every((k) => !!k.strong));
@@ -72,6 +74,7 @@ try {
     await p.click("button[type=submit]");
     await p.waitForSelector("[data-testid=research-bar]", { timeout: 30000 });
     await p.waitForSelector("text=Documento pronto", { timeout: 240000 }).catch(() => {});
+    await p.waitForFunction((w) => { const t = [...document.querySelectorAll("aside h3")].map((h) => h.textContent).join("|"); return w.every((x) => t.includes(x)) && document.body.innerText.includes("Nada faltando"); }, want, { timeout: 90000 }).catch(() => {});
     const h3 = (await p.locator("aside h3").allTextContents()).join("|");
     const complete = want.every((w) => h3.includes(w)) && (await p.locator("text=Nada faltando").count()) > 0;
     if (!complete) console.log("   remaining:", (await p.locator("aside section:has(h3:text('O que ainda falta')) li").allTextContents()).join(" | "), "| headings:", h3);

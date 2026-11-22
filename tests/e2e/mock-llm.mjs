@@ -5,8 +5,7 @@ import { createServer } from "node:http";
 
 // A richer answer when the student asks about Filipe (the user-functions test checks a real-looking answer: a name, a verse button and a closing question).
 function teacherFor(messages) {
-  const last = [...(messages ?? [])].reverse().find((m) => m.role === "user");
-  const text = typeof last?.content === "string" ? last.content : JSON.stringify(last?.content ?? "");
+  const text = (messages ?? []).filter((m) => m.role === "user").map((m) => (typeof m.content === "string" ? m.content : JSON.stringify(m.content))).join("\n");
   if (!/Filipe/.test(text)) return baseTeacher;
   const speech = "Filipe foi um dos sete escolhidos para servir em Jerusalém e depois levou o evangelho a Samaria, como conta Atos 8. Em Atos 8:26-40 ele explica o profeta Isaías a um oficial etíope no caminho. O que você já sabia sobre esse encontro?";
   const more = " O texto mostra que Filipe obedeceu ao chamado de Deus, foi ao encontro do etíope e perguntou se ele entendia o que lia, a pergunta do nosso slogan.";

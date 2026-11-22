@@ -29,7 +29,12 @@ export function DeepPanel({ sessionId, refreshKey, onOpenRef }: { sessionId: str
     const mine = ++seq.current;
     void getSessionDocument(sessionId).then((r) => { if (mine === seq.current) setDoc((r.doc ?? {}) as Study); }).catch(() => undefined);
   }, [sessionId, refreshKey]);
-  const onResearch = useCallback((r: SuggestResult) => { ++seq.current; setDoc((r.doc ?? {}) as Study); }, []);
+  // Parallel sections answer in any order: an older answer must not replace a newer document, so every answer triggers a fresh read of the stored one.
+  const onResearch = useCallback((r: SuggestResult) => {
+    const mine = ++seq.current;
+    setDoc((cur) => ({ ...cur, ...((r.doc ?? {}) as Study) }));
+    void getSessionDocument(sessionId).then((d) => { if (mine === seq.current) setDoc((d.doc ?? {}) as Study); }).catch(() => undefined);
+  }, [sessionId]);
   const chip = (r: string) => <button key={r} type="button" className="rounded-control border border-line px-2 py-1 text-xs underline" onClick={() => onOpenRef?.(r.split("-")[0])}>{formatRefPt(r)}</button>;
 
   return (

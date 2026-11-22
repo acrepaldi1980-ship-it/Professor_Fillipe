@@ -11,7 +11,7 @@ const { chromium } = require("playwright");
 const REF = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
 const BASE = process.env.APP_URL ?? "http://localhost:3100";
 let ok = true;
-const say = (n, p) => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}`); };
+const say = (n, p, x = "") => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}${!p && x ? "  >> " + String(x).slice(0, 300) : ""}`); };
 const email = `uf-${Date.now()}@example.test`, password = `Tt!${randomUUID()}`, id = randomUUID();
 const browser = await chromium.launch();
 
@@ -80,7 +80,7 @@ try {
   await p.waitForSelector("[class*=bubble], main section >> text=Filipe", { timeout: 90000 }).catch(() => {});
   await p.waitForFunction(() => document.querySelectorAll("main section > *").length >= 3, null, { timeout: 90000 }).catch(() => {});
   const body1 = (await p.locator("main section").first().innerText()).replace(/\s+/g, " ");
-  say("study: the student's question shows and the teacher answers", body1.includes("Quem foi Filipe") && body1.length > 200);
+  say("study: the student's question shows and the teacher answers", body1.includes("Quem foi Filipe") && body1.length > 200, body1);
   say("study: the answer talks about Filipe and ends with a question to the student", /Filipe/.test(body1) && /\?/.test(body1));
   const verseBtns = p.locator("main section button:has-text('Atos'), main section button:has-text('Ver ')");
   say("study: the answer offers the cited verses as buttons", (await verseBtns.count()) > 0);

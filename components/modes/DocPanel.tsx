@@ -46,7 +46,13 @@ export function DocPanel({ sessionId, mode, refreshKey }: { sessionId: string; m
 
   const fields = FIELDS.filter((f) => f.mode === mode);
 
-  const onResearch = useCallback((r: SuggestResult) => { ++seq.current; setDoc((r.doc ?? {}) as Doc); setGaps(r.gaps); setGapKeys(r.gapKeys); }, []);
+  // Sections are built in parallel and their answers arrive in any order: trusting each answer's own copy of the document let an older answer
+  // replace a newer one (a finished section "disappeared"). The stored document is the truth, so every answer triggers a fresh read, and only the latest read is shown.
+  const onResearch = useCallback((r: SuggestResult) => {
+    const mine = ++seq.current;
+    setDoc((cur) => ({ ...cur, ...((r.doc ?? {}) as Doc) }));
+    void getSessionDocument(sessionId).then((d) => { if (mine === seq.current) { setDoc((d.doc ?? {}) as Doc); setGaps(d.gaps); setGapKeys(d.gapKeys ?? []); } }).catch(() => { if (mine === seq.current) { setGaps(r.gaps); setGapKeys(r.gapKeys); } });
+  }, [sessionId]);
 
   // the teacher proposes one section and it goes into the document; the person edits it afterwards
   async function suggest(key: string) {
