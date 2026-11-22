@@ -78,6 +78,8 @@ export interface TurnResult {
     /** Short technical code of the failure (never user text). */
     degradedReason?: string;
     retrievalMs: number;
+    /** Milliseconds per stage of the retrieval (diagnostics). */
+    trace?: Record<string, number>;
     llmMs: number;
     llm?: { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number; blocks?: string };
   };
@@ -154,16 +156,20 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
 
   // 4) Retrieval.
   const tSearch = Date.now();
+  const trace: Record<string, number> = {};
+  const tRw = Date.now();
   const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(searchText) : null;
+  trace.rewrite = Date.now() - tRw;
   const wantedVerses = [...mentioned, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
   const [{ chunks }, verses, layers] = await Promise.all([
-    searchResilient(() => deps.search(rewritten ? [searchText, rewritten] : searchText, { extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
+    searchResilient(() => deps.search(rewritten ? [searchText, rewritten] : searchText, { trace, extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
     wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
     deps.loadLayers ? deps.loadLayers().catch(() => null) : Promise.resolve(null),
   ]);
 
   const retrievalMs = Date.now() - tSearch;
+  trace.total = retrievalMs;
 
   // 5) Prompt and 6) generation.
   const deepNote = DEEP_INTENTS.includes(intent)
@@ -276,6 +282,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       overWordLimit: words > limit,
       latencyMs: Date.now() - t0,
       retrievalMs,
+      trace,
       llmMs,
       llm: deps.llm.stats?.(),
       ...(textFallback ? { textFallback: true } : {}),

@@ -38,6 +38,8 @@ export interface SearchOptions {
   /** Cap on Bible chunks so dictionaries/commentaries can show up too (default 5). */
   maxBible?: number;
   perSignal?: number;
+  /** Filled with the milliseconds of each stage (diagnostics: where does a slow question spend its time?). */
+  trace?: Record<string, number>;
   /** Words of the question (and its English keywords): a dictionary entry titled with one of them gets a boost. */
   terms?: string[];
   /** References carried over from the previous turn (follow-up questions). */
@@ -145,16 +147,19 @@ export async function searchChunks(
   const per = opts.perSignal ?? 24;
   const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
   const hit = cacheKey ? searchCache.get(cacheKey) : undefined;
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) { if (opts.trace) opts.trace.cache = 1; return hit.value; }
+  const T0 = Date.now();
+  const mark = (name: string) => { if (opts.trace) opts.trace[name] = Math.max(opts.trace[name] ?? 0, Date.now() - T0); };
 
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
   const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
   const terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
-  const titlePromise = store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([]);
+  const titlePromise = (store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([])).then((r) => { mark("titles"); return r; });
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
+  mark("lensIds");
   const lensSearch = async (ids: string[], signal: "lens" | "contrast", per: number): Promise<Row[]> => {
     if (!ids.length) return [];
     // The lens works are mostly English: search with the English keywords when the question was rewritten.
@@ -172,13 +177,15 @@ export async function searchChunks(
   };
   // Divergent topics need both sides: the lens works, plus the works of the other traditions (so "another reading, with source" exists).
   const contrastIds = lensIds.length ? await lensWorkIds(store, ALL_LENSES.filter((l) => !opts.lenses!.includes(l))) : [];
-  const lensPromise = Promise.all([lensSearch(lensIds, "lens", 12), lensSearch(contrastIds, "contrast", 8)]).then(([a, b]) => [...a, ...b]);
+  mark("contrastIds");
+  const lensPromise = Promise.all([lensSearch(lensIds, "lens", 12), lensSearch(contrastIds, "contrast", 8)]).then(([a, b]) => { mark("lensSearch"); return [...a, ...b]; });
 
   const results = await Promise.all(
     queries.map(async (q, i) => {
       const vec = await emb.embedQuery(q);
+      mark(`embed${i}`);
       const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
-      const [main, lib] = await Promise.all([store.searchChunks(args), library ? within(library.searchChunks(args), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+      const [main, lib] = await Promise.all([store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
       return [...main, ...lib];
     }),
   );
@@ -194,6 +201,7 @@ export async function searchChunks(
     const prev = merged.get(r.id);
     merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
   }
+  mark("fetched");
   const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
   if (cacheKey) {
     searchCache.set(cacheKey, { at: Date.now(), value });
