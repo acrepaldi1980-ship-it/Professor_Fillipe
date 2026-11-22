@@ -7,6 +7,12 @@ const UNAVAILABLE = /credit balance|billing|\b(402|429|500|502|503|504|529)\b|ov
 export class FallbackLlm implements TeacherLlm {
   /** True once the fallback model answered during this turn (for the meta). */
   usedFallback = false;
+  private notes: string[] = [];
+  /** Diagnostics: why the main model was skipped, and what the fallback pool did. */
+  info() {
+    const sec = this.secondary.info?.();
+    return { endpoint: this.usedFallback ? sec?.endpoint ?? "fallback" : "anthropic", ms: sec?.ms ?? 0, log: [...this.notes, ...(sec?.log ?? [])] };
+  }
   constructor(private primary: TeacherLlm, private secondary: TeacherLlm) {}
   stats() {
     return this.primary.stats?.() ?? { calls: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
@@ -18,6 +24,7 @@ export class FallbackLlm implements TeacherLlm {
     } catch (e) {
       if (!UNAVAILABLE.test((e as Error).message ?? "")) throw e;
       console.error(JSON.stringify({ evt: "llm_fallback", reason: (e as Error).message.slice(0, 60) }));
+      this.notes.push(`anthropic:${String((e as Error).message).slice(0, 70)}`);
       this.usedFallback = true;
       return this.secondary.generate(args);
     }

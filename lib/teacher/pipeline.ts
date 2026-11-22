@@ -224,7 +224,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     parsed = teacherResponseSchema.safeParse(await generate(messages));
   } catch (e) {
     const response = fallbackResponse(student.preferred_name, verses, chunks);
-    return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, degradedReason: (e as Error).message.slice(0, 80), retrievalMs } };
+    return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, degradedReason: (e as Error).message.slice(0, 80), retrievalMs, trace, route: deps.llm.info?.() } };
   }
   if (!parsed.success) {
     schemaRetries = 1;

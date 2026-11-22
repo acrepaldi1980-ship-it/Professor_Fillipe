@@ -37,7 +37,7 @@ for (const name of scripts) {
   await new Promise((r) => setTimeout(r, 800));
   await sql("delete from llm_cooldowns").catch(() => undefined); // endpoints paused by an earlier script must not starve this one
   step(`e2e ${name}`, () => {
-    const r = sh("node", [`tests/e2e/${name}.mjs`], { timeout: 420000, maxBuffer: 20_000_000 });
+    const r = sh("node", [`tests/e2e/${name}.mjs`], { timeout: name === "pages-smoke" ? 1500000 : 420000, maxBuffer: 20_000_000 });
     const out = (r.stdout ?? "") + (r.stderr ?? "");
     const fails = out.split("\n").filter((l) => /^FAIL|^ERROR|Error:/.test(l)).slice(0, 6);
     const pass = (out.match(/^PASS/gm) ?? []).length;

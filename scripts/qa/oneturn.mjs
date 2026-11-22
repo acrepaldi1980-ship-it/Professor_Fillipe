@@ -16,6 +16,6 @@ try {
     const txt = await (await fetch(`${BASE}/api/v1/teacher/turn`, { method: "POST", headers: H, body: JSON.stringify({ sessionId: s.sessionId, text: q }) })).text();
     const done = txt.split("\n\n").find((b) => b.startsWith("event: done"))?.replace(/^event: done\ndata: /, "") ?? "";
     const m = JSON.parse(done || "{}");
-    console.log(`${Date.now() - t}ms "${q.slice(0, 30)}" retrieval=${m.retrievalMs} llm=${m.llmMs} total=${m.latencyMs} route=${JSON.stringify(m.route)} degraded=${m.degraded ?? false}`);
+    console.log(`${Date.now() - t}ms "${q.slice(0, 30)}" retrieval=${m.retrievalMs} llm=${m.llmMs} total=${m.latencyMs} route=${JSON.stringify(m.route)} degraded=${m.degraded ?? false} ${m.degradedReason ?? ""}`);
   }
 } finally { await sql(`delete from auth.users where id='${uid}'`).catch(() => undefined); }
