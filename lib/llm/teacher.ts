@@ -8,9 +8,15 @@ import { LlmError } from "./types";
 export class RouterTeacherLlm implements TeacherLlm {
   /** Which endpoint answered the last call (for the logs and the admin panel). */
   lastEndpoint = "";
+  lastLog: string[] = [];
+  lastMs = 0;
+  /** Diagnostics for the turn metadata: who answered, how long and what failed on the way. */
+  info() { return { endpoint: this.lastEndpoint, ms: this.lastMs, log: this.lastLog }; }
   async generate({ system, messages }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     try {
-      const r = await route({ task: "teacher", system, messages, tool: { name: "teacher_response", description: "Resposta estruturada do Professor Filipe (contrato da seção 8.5.5).", schema: teacherToolJsonSchema() }, maxTokens: 1200, temperature: 0.4, timeoutMs: 45000 });
+      const r = await route({ task: "teacher", system, messages, tool: { name: "teacher_response", description: "Resposta estruturada do Professor Filipe (contrato da seção 8.5.5).", schema: teacherToolJsonSchema() }, maxTokens: 1200, temperature: 0.4, timeoutMs: 14000, deadlineMs: 32000 });
+      this.lastLog = r.log ?? [];
+      this.lastMs = r.ms;
       this.lastEndpoint = r.endpoint;
       return r.out;
     } catch (e) {

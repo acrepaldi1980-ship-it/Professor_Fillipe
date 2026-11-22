@@ -60,7 +60,8 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
   const random = deps.random ?? Math.random;
   const now = deps.now ?? Date.now;
   const maxWait = deps.maxWaitMs ?? 12000;
-  const deadline = now() + (deps.deadlineMs ?? 48000);
+  const deadline = now() + (deps.deadlineMs ?? req.deadlineMs ?? 48000);
+  const log: string[] = [];
   if (!endpoints.length) throw new LlmError("auth", 0, 0, "no_providers_configured");
 
   const tried = new Set<string>();
@@ -88,10 +89,12 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
       if (req.validate && !req.validate(raw.out)) throw new LlmError("bad_output", 200, 0, "validation");
       streaks.delete(pick.id);
       store.record(pick.id, true, null, now() - t0);
-      return { out: raw.out, text: raw.text, endpoint: pick.id, provider: pick.provider, model: pick.model, ms: now() - t0, attempts };
+      log.push(`${pick.id}:ok:${now() - t0}`);
+      return { out: raw.out, text: raw.text, endpoint: pick.id, provider: pick.provider, model: pick.model, ms: now() - t0, attempts, log };
     } catch (e) {
       const err = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
       last = err;
+      log.push(`${pick.id}:${err.kind}:${now() - t0}`);
       store.record(pick.id, false, err.kind, now() - t0);
       let cd = cooldownFor(err.kind, err.retryAfter);
       if (cd === 0 || err.kind === "server" || err.kind === "timeout") {
@@ -118,8 +121,8 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
 }
 
 /** Convenience wrappers. */
-export async function completeJson(system: string, user: string, opts: { task?: LlmRequest["task"]; maxTokens?: number; temperature?: number; timeoutMs?: number; validate?: (o: unknown) => boolean } = {}, deps?: RouterDeps) {
-  return route({ task: opts.task ?? "json", system, messages: [{ role: "user", content: user }], json: true, maxTokens: opts.maxTokens ?? 1800, temperature: opts.temperature ?? 0.5, timeoutMs: opts.timeoutMs, validate: opts.validate }, deps);
+export async function completeJson(system: string, user: string, opts: { task?: LlmRequest["task"]; maxTokens?: number; temperature?: number; timeoutMs?: number; deadlineMs?: number; validate?: (o: unknown) => boolean } = {}, deps?: RouterDeps) {
+  return route({ task: opts.task ?? "json", system, messages: [{ role: "user", content: user }], json: true, maxTokens: opts.maxTokens ?? 1800, temperature: opts.temperature ?? 0.5, timeoutMs: opts.timeoutMs, deadlineMs: opts.deadlineMs, validate: opts.validate }, deps);
 }
 export async function completeText(system: string, user: string, opts: { maxTokens?: number; temperature?: number } = {}, deps?: RouterDeps) {
   return route({ task: "text", system, messages: [{ role: "user", content: user }], maxTokens: opts.maxTokens ?? 1800, temperature: opts.temperature ?? 0.2 }, deps);

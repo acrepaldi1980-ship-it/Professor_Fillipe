@@ -14,11 +14,13 @@ export interface LlmRequest {
   maxTokens?: number;
   temperature?: number;
   timeoutMs?: number;
+  /** Whole budget for this call (all attempts) in ms; the default is 48 s, too long for a spoken conversation. */
+  deadlineMs?: number;
   /** Accepts or refuses an answer (schema check). A refused answer makes the router try the next endpoint. */
   validate?: (out: unknown) => boolean;
 }
 
-export interface LlmResult { out: unknown; text: string; endpoint: string; provider: string; model: string; ms: number; attempts: number }
+export interface LlmResult { out: unknown; text: string; endpoint: string; provider: string; model: string; ms: number; attempts: number; /** One entry per attempt: endpoint:result:ms (diagnostics). */ log?: string[] }
 
 export type Kind = "openai" | "gemini";
 export interface Endpoint {

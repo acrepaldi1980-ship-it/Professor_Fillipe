@@ -112,6 +112,9 @@ export async function POST(req: Request) {
           }
         }
 
+        // The answer goes out NOW; saving it, the usage meter and the analytics happen after (the student must not wait for the database to start hearing it).
+        controller.enqueue(enc.encode(sse("structured", response)));
+
         let messageId: string | undefined;
         if (response.pastoral_flag) {
           await db.from("pastoral_events").insert({ user_id: user.id });
@@ -134,7 +137,6 @@ export async function POST(req: Request) {
         if (messageId && Math.random() < (Number(process.env.AUDIT_SAMPLE_RATE) || 0.01)) void db.from("answer_flags").insert({ message_id: messageId, user_id: user.id, reason: "audit_sample" });
         // Never log the student's text (spec 13): only metrics.
         console.log(JSON.stringify({ evt: "turn", ...meta }));
-        controller.enqueue(enc.encode(sse("structured", response)));
         controller.enqueue(enc.encode(sse("done", { ...meta, messageId, fairUse })));
       } catch (e) {
         console.error(JSON.stringify({ evt: "turn_error", code: (e as Error).message.slice(0, 80) }));

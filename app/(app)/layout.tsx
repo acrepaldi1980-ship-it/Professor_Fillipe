@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/ui/BottomNav";
-import { getMe } from "@/lib/api-client";
+import { getMe, warmUp } from "@/lib/api-client";
 import { currentSession } from "@/lib/auth/client";
 import { getPlatform } from "@/lib/platform";
 import { t } from "@/lib/i18n";
@@ -27,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         // someone arrived by an invite link/QR Code and had to sign in first: take them to the church screen to confirm
         try { if (window.location.pathname !== "/igreja" && (await getPlatform().store.get<string>("pf-join-code"))) return router.replace("/igreja"); } catch { /* storage unavailable */ }
         setReady(true);
+        warmUp();
       } catch {
         if (!cancelled) router.replace("/login");
       }

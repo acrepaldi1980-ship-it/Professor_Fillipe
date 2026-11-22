@@ -52,10 +52,39 @@ export interface TurnMeta {
   messageId?: string;
 }
 
-/** One teacher turn over SSE. Calls onStructured once with the validated contract. */
+/** Wakes the server parts a first question needs (search model, databases, voice) so the first answer is not slow. At most once every 8 minutes; never throws. */
+let lastWarm = 0;
+export function warmUp() {
+  if (Date.now() - lastWarm < 8 * 60_000) return;
+  lastWarm = Date.now();
+  void fetch(`${API_BASE}/warmup`, { signal: AbortSignal.timeout(60000) }).catch(() => undefined);
+}
+
+/** One teacher turn over SSE. A turn that fails for a passing reason (server error, dropped connection, no answer in 50 s) is tried once more by itself:
+ *  the student should get an answer, not an error to retry by hand. Errors that repeating cannot fix (login, plan limit, rate limit) come straight back. */
 export async function teacherTurn(
+  body: Parameters<typeof teacherTurnOnce>[0],
+  signal?: AbortSignal,
+  /** Called when the server finishes saving the answer (the message id arrives here, after the answer itself). */
+  onDone?: (meta: TurnMeta) => void,
+): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
+  const attempt = () => teacherTurnOnce(body, signal ? AbortSignal.any([signal, AbortSignal.timeout(50000)]) : AbortSignal.timeout(50000), onDone);
+  try {
+    return await attempt();
+  } catch (e) {
+    if (signal?.aborted) throw e;
+    const status = e instanceof ApiError ? e.status : 0;
+    const passing = status === 0 || status >= 500; // 0: network, timeout, "turn_failed"
+    if (!passing) throw e;
+    await new Promise((r) => setTimeout(r, 700));
+    return attempt();
+  }
+}
+
+async function teacherTurnOnce(
   body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
+  onDone?: (meta: TurnMeta) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
   const res = await apiFetch("/teacher/turn", {
     method: "POST",
@@ -67,26 +96,36 @@ export async function teacherTurn(
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = "";
-  let response: TeacherResponse | null = null;
-  let meta: TurnMeta | null = null;
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let i: number;
-    while ((i = buf.indexOf("\n\n")) >= 0) {
-      const block = buf.slice(0, i);
-      buf = buf.slice(i + 2);
-      const event = /^event: (.+)$/m.exec(block)?.[1];
-      const data = /^data: (.+)$/m.exec(block)?.[1];
-      if (!event || !data) continue;
-      if (event === "structured") response = JSON.parse(data);
-      else if (event === "done") meta = JSON.parse(data);
-      else if (event === "error") throw new Error("turn_failed");
-    }
-  }
-  if (!response) throw new Error("turn_failed");
-  return { response, meta: meta ?? { intent: "ask", tier: "fast", words: 0, latencyMs: 0 } };
+  // Resolves as soon as the answer ("structured") arrives; the rest of the stream (saving, "done" with the message id) is read in the background.
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const fail = (e: unknown) => { if (!settled) { settled = true; reject(e); } };
+    (async () => {
+      let response: TeacherResponse | null = null;
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let i: number;
+        while ((i = buf.indexOf("\n\n")) >= 0) {
+          const block = buf.slice(0, i);
+          buf = buf.slice(i + 2);
+          const event = /^event: (.+)$/m.exec(block)?.[1];
+          const data = /^data: (.+)$/m.exec(block)?.[1];
+          if (!event || !data) continue;
+          if (event === "structured") {
+            response = JSON.parse(data);
+            if (!settled) { settled = true; resolve({ response: response!, meta: { intent: "ask", tier: "fast", words: 0, latencyMs: 0 } }); }
+          } else if (event === "done") {
+            const meta = JSON.parse(data) as TurnMeta;
+            if (!settled && response) { settled = true; resolve({ response, meta }); }
+            onDone?.(meta);
+          } else if (event === "error" && !response) throw new Error("turn_failed");
+        }
+      }
+      if (!response) throw new Error("turn_failed");
+    })().catch(fail);
+  });
 }
 
 export async function transcribeAudio(audio: Blob): Promise<{ text: string; confidence?: number }> {

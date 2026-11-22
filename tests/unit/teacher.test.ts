@@ -177,8 +177,17 @@ describe("runTurn", () => {
     const llm: TeacherLlm = { generate: async () => { throw new Error("llm_failed_400"); } };
     const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, { ...deps([good()]), llm });
     expect(out.meta.degraded).toBe(true);
-    expect(out.response.speech).toContain("problema");
+    expect(out.response.speech).toContain("demorando");
     expect(out.response.next_options.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("when the model fails but a verse was found, the student still gets the verse (never an empty answer)", async () => {
+    const llm: TeacherLlm = { generate: async () => { throw new Error("llm_failed_429"); } };
+    const d = { ...deps([good()]), llm, getVerses: async () => [{ version_id: "por_blivre_2018", ref: "ACT.8.30", text: "Filipe correu ao encontro dele, e ouviu-o ler o profeta Isaías, e disse: Entendes tu o que lês?" }] };
+    const out = await runTurn({ sessionId: "s1", text: "Explique Atos 8:30" }, d);
+    expect(out.meta.degraded).toBe(true);
+    expect(out.response.speech).toContain("Entendes tu o que lês");
+    expect(out.response.citations[0]).toMatchObject({ type: "bible", ref: "ACT.8.30" });
   });
 
   it("keeps the answer it already has when an optional extra pass fails (e.g. rate limit on the shorter-version call)", async () => {

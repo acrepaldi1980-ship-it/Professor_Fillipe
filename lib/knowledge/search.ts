@@ -40,6 +40,8 @@ export interface SearchOptions {
   perSignal?: number;
   /** Filled with the milliseconds of each stage (diagnostics: where does a slow question spend its time?). */
   trace?: Record<string, number>;
+  /** English keywords for the question, still being produced by a model: the search starts without them and adds them if they arrive in time. */
+  extraQuery?: Promise<string | null>;
   /** Words of the question (and its English keywords): a dictionary entry titled with one of them gets a boost. */
   terms?: string[];
   /** References carried over from the previous turn (follow-up questions). */
@@ -114,6 +116,9 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 // search waits for it only for a short budget (it keeps warming in the background for the next question). Bible windows and
 // dictionary entries (Supabase) always answer. Repeated questions are served from a small cache.
 const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
+/** The main database must answer within this budget or the question goes on with what is ready (verses, titles, library): a spoken conversation cannot wait 10 s. */
+const MAIN_BUDGET_MS = Number(process.env.MAIN_BUDGET_MS) || 3200;
+const EXTRA_BUDGET_MS = Number(process.env.EXTRA_QUERY_BUDGET_MS) || 1600;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const LENS_BOOST = 1.7;
 const CONTRAST_BOOST = 1.4;
@@ -129,6 +134,12 @@ async function lensWorkIds(store: KnowledgeStore, lenses: string[]): Promise<str
   return ids;
 }
 
+const embedMemo = new Map<string, Promise<number[]>>();
+/** The same text is embedded by the main search, the lens search and the contrast search: do it once. */
+function memoEmbed(emb: EmbeddingProvider): EmbeddingProvider {
+  return { name: emb.name, dimensions: emb.dimensions, embedPassages: (t) => emb.embedPassages(t), embedQuery: (text) => { const k = `${emb.name}|${text}`; let p = embedMemo.get(k); if (!p) { p = emb.embedQuery(text); embedMemo.set(k, p); if (embedMemo.size > 200) embedMemo.delete(embedMemo.keys().next().value as string); p.catch(() => embedMemo.delete(k)); } return p; } };
+}
+
 const searchCache = new Map<string, { at: number; value: { chunks: Retrieved[]; refs: string[] } }>();
 
 const within = <T>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
@@ -142,7 +153,7 @@ export async function searchChunks(
   const store = deps.store ?? getStore();
   // Library works live in a second database; its failure must never break a search.
   const library = deps.library === undefined ? (deps.store ? undefined : getLibraryStore()) : (deps.library ?? undefined);
-  const emb = deps.embeddings ?? getEmbeddingProvider();
+  const emb = memoEmbed(deps.embeddings ?? getEmbeddingProvider());
   const queries = (Array.isArray(query) ? query : [query]).filter(Boolean);
   const per = opts.perSignal ?? 24;
   const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
@@ -153,7 +164,7 @@ export async function searchChunks(
 
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
   const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
-  const terms = queryTerms(queries);
+  let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
   const titlePromise = (store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([])).then((r) => { mark("titles"); return r; });
 
@@ -180,15 +191,19 @@ export async function searchChunks(
   mark("contrastIds");
   const lensPromise = Promise.all([lensSearch(lensIds, "lens", 12), lensSearch(contrastIds, "contrast", 8)]).then(([a, b]) => { mark("lensSearch"); return [...a, ...b]; });
 
-  const results = await Promise.all(
-    queries.map(async (q, i) => {
-      const vec = await emb.embedQuery(q);
-      mark(`embed${i}`);
-      const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
-      const [main, lib] = await Promise.all([store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
-      return [...main, ...lib];
-    }),
-  );
+  const runQuery = async (q: string, i: number): Promise<Row[]> => {
+    const vec = await emb.embedQuery(q);
+    mark(`embed${i}`);
+    const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
+    const [main, lib] = await Promise.all([within(store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), MAIN_BUDGET_MS, [] as Row[]), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+    return [...main, ...lib];
+  };
+  // The English keywords come from a model call that can take seconds: the search does not wait for it, it uses them only if they arrive in time.
+  let extraQ: string | null = null;
+  const extraResults: Promise<Row[]> = opts.extraQuery
+    ? within(opts.extraQuery.then(async (q) => { if (!q) return [] as Row[]; extraQ = q; mark("extraReady"); return runQuery(q, queries.length); }), EXTRA_BUDGET_MS, [] as Row[])
+    : Promise.resolve([] as Row[]);
+  const results = await Promise.all([...queries.map((q, i) => runQuery(q, i)), extraResults]);
   const merged = new Map<string, Row>();
   for (const rows of results) {
     for (const r of rows) {
@@ -196,6 +211,7 @@ export async function searchChunks(
       merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
     }
   }
+  if (extraQ) terms = queryTerms([...queries, extraQ]);
   for (const r of await titlePromise) if (!merged.has(r.id)) merged.set(r.id, r);
   for (const r of await lensPromise) {
     const prev = merged.get(r.id);

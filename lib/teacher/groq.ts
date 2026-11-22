@@ -6,7 +6,7 @@ const REWRITE_SYSTEM = 'Você ajuda uma busca em dicionários e comentários bí
 /** English keywords and names for a Portuguese question. Best-effort (returns null on any failure, the search then uses the original text). */
 export async function rewriteQueryToEnglish(question: string): Promise<string | null> {
   try {
-    const r = await completeJson(REWRITE_SYSTEM, question, { task: "query", maxTokens: 260, temperature: 0, timeoutMs: 2500, validate: (o) => !!o && typeof o === "object" });
+    const r = await completeJson(REWRITE_SYSTEM, question, { task: "query", maxTokens: 260, temperature: 0, timeoutMs: 2500, deadlineMs: 3200, validate: (o) => !!o && typeof o === "object" });
     const out = r.out as { en?: string; refs?: string[] };
     const en = out.en && out.en.length < 200 ? out.en : null;
     const refs = (out.refs ?? []).filter((x) => typeof x === "string" && x.length < 40).slice(0, 3);

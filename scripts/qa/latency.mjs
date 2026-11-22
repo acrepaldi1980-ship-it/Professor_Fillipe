@@ -19,9 +19,8 @@ try {
     const r = await fetch(`${BASE}/api/v1/teacher/turn`, { method: "POST", headers: H, body: JSON.stringify({ sessionId: s.sessionId, text: q }) });
     const first = Date.now() - t; const txt = await r.text(); const total = Date.now() - t;
     const m = txt.match(/event: (\w+)/g)?.join(",");
-    const meta = txt.match(/"retrievalMs":(\d+)[^}]*?"llmMs":(\d+)/) ?? txt.match(/"llmMs":(\d+)/);
     const speech = (txt.match(/"speech":"([^"]{0,60})/) ?? [])[1];
-    console.log(`turn "${q.slice(0, 30)}" status=${r.status} first-byte=${first}ms total=${total}ms events=${m} meta=${JSON.stringify(txt.match(/"retrievalMs":\d+/)?.[0])} ${JSON.stringify(txt.match(/"llmMs":\d+/)?.[0])} degraded=${/degraded":true/.test(txt)} speech="${speech}"`);
+    console.log(`turn "${q.slice(0, 30)}" status=${r.status} first-byte=${first}ms total=${total}ms events=${m} meta=${JSON.stringify(txt.match(/"retrievalMs":\d+/)?.[0])} ${JSON.stringify(txt.match(/"llmMs":\d+/)?.[0])} trace=${(txt.match(/"trace":(\{[^}]*\})/) ?? [])[1]} degraded=${/degraded":true/.test(txt)} speech="${speech}"`);
     t = Date.now();
     const sp = await fetch(`${BASE}/api/v1/voice/speak`, { method: "POST", headers: H, body: JSON.stringify({ text: "Filipe foi um dos sete escolhidos para servir em Jerusalém." }) });
     const b = await sp.arrayBuffer(); console.log(`   speak status=${sp.status} ${Date.now() - t}ms bytes=${b.byteLength}`);

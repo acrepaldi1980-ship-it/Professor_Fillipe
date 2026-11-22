@@ -1,6 +1,7 @@
 // One teacher turn (spec 8.5.1): crisis check → intent → references → retrieval → prompt → model → validation
 // → citation verification → memory. Every dependency is injected so the pipeline is testable without network.
 import type { BibleVerse, Retrieved, SearchOptions } from "../knowledge/search";
+import { formatRefPt } from "../knowledge/refs-parser";
 import { memory, type ChatMessage } from "./memory";
 import { pastoralResponse } from "./pastoral";
 import { classify, DEEP_INTENTS, extractRefs, moderate, resolveSearch, selectTier, wordLimit } from "./stages";
@@ -16,6 +17,8 @@ import { injectionResponse, leaksPrompt, screenInput } from "../security/injecti
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
   /** Optional token use of this turn (Anthropic): calls, input, output, cache reads and writes. */
+  /** Optional diagnostics of the last call: endpoint, ms and the attempts log. */
+  info?(): { endpoint: string; ms: number; log: string[] };
   stats?(): { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number; blocks?: string };
   generate(args: { system: string; systemParts?: { stable: string; dynamic: string }; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
 }
@@ -80,6 +83,7 @@ export interface TurnResult {
     retrievalMs: number;
     /** Milliseconds per stage of the retrieval (diagnostics). */
     trace?: Record<string, number>;
+    route?: { endpoint: string; ms: number; log: string[] };
     llmMs: number;
     llm?: { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number; blocks?: string };
   };
@@ -95,21 +99,28 @@ export function salvageText(raw: unknown, name: string): TeacherResponse | null 
   return { ...base, speech, next_options: [{ label: "Continuar", intent: "next" }, { label: "Encerrar por agora", intent: "stop" }] };
 }
 
-function fallbackResponse(name: string): TeacherResponse {
-  return {
-    speech: `${name}, tive um problema para responder agora. Pode repetir a pergunta ou escrever de outro jeito?`,
-    display_markdown: "",
-    citations: [],
+function fallbackResponse(name: string, verses: BibleVerse[] = [], chunks: Retrieved[] = []): TeacherResponse {
+  // Something always comes back: when the model cannot answer, the teacher offers what was already found (a verse from the Bible text, never invented).
+  const v = verses.find((x) => x.text && x.text.length > 20);
+  const base = {
     visuals: [],
     next_options: [
-      { label: "Tentar de novo", intent: "ask" },
-      { label: "Encerrar por agora", intent: "stop" },
+      { label: "Tentar de novo", intent: "ask" as const },
+      { label: "Encerrar por agora", intent: "stop" as const },
     ],
     lens_divergence: { present: false, summary: null },
     pastoral_flag: false,
-    level_signal: "same",
+    level_signal: "same" as const,
     mode_payload: null,
   };
+  if (v) {
+    const words = v.text.split(/\s+/);
+    const text = words.slice(0, 45).join(" ") + (words.length > 45 ? "…" : "");
+    const ref = formatRefPt(v.ref);
+    return { ...base, speech: `${name}, a resposta completa está demorando, mas já separei a Palavra para você. ${ref}: ${text} Quer que eu tente explicar de novo?`, display_markdown: `**${ref}**\n\n${v.text}`, citations: [{ type: "bible", ref: v.ref, version_id: v.version_id ?? "por_blivre_2018" }] };
+  }
+  void chunks;
+  return { ...base, speech: `${name}, a resposta está demorando mais do que devia. Já estou tentando de novo: pode repetir a pergunta ou escolher “Tentar de novo”?`, display_markdown: "", citations: [] };
 }
 
 /** The database sometimes cancels a slow search (statement timeout) or drops a request: try once more, and if it still fails answer without library excerpts
@@ -157,13 +168,15 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4) Retrieval.
   const tSearch = Date.now();
   const trace: Record<string, number> = {};
+  // The English keywords come from a model call: it runs alongside the search, never in front of it.
   const tRw = Date.now();
-  const rewritten = deps.rewriteQuery ? await deps.rewriteQuery(searchText) : null;
-  trace.rewrite = Date.now() - tRw;
+  const rewriteP: Promise<string | null> = deps.rewriteQuery ? deps.rewriteQuery(searchText).then((r) => { trace.rewrite = Date.now() - tRw; return r; }).catch(() => null) : Promise.resolve(null);
+  let rewritten: string | null = null;
+  void rewriteP.then((r) => { rewritten = r; });
   const wantedVerses = [...mentioned, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
   const [{ chunks }, verses, layers] = await Promise.all([
-    searchResilient(() => deps.search(rewritten ? [searchText, rewritten] : searchText, { trace, extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
+    searchResilient(() => deps.search(searchText, { trace, extraQuery: rewriteP, extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
     wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
     deps.loadLayers ? deps.loadLayers().catch(() => null) : Promise.resolve(null),
   ]);
@@ -210,7 +223,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   try {
     parsed = teacherResponseSchema.safeParse(await generate(messages));
   } catch (e) {
-    const response = fallbackResponse(student.preferred_name);
+    const response = fallbackResponse(student.preferred_name, verses, chunks);
     return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, degradedReason: (e as Error).message.slice(0, 80), retrievalMs } };
   }
   if (!parsed.success) {
@@ -283,6 +296,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       latencyMs: Date.now() - t0,
       retrievalMs,
       trace,
+      route: deps.llm.info?.(),
       llmMs,
       llm: deps.llm.stats?.(),
       ...(textFallback ? { textFallback: true } : {}),

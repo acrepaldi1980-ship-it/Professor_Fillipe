@@ -167,9 +167,14 @@ export default function StudyPage() {
       setMessages((m) => [...m, { id: nextId.current++, role: "user", text: clean }]);
       setState("thinking");
       try {
-        const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent });
+        const tid = nextId.current++;
+        // the answer arrives first; the message id (for the "wrong?" button) and the fair-use flag arrive when the server has saved it
+        const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent }, undefined, (d) => {
+          setFair(!!(d as { fairUse?: boolean }).fairUse);
+          if (d.messageId) setMessages((m) => m.map((x) => (x.id === tid ? { ...x, messageId: d.messageId } : x)));
+        });
         setFair(!!(meta as { fairUse?: boolean }).fairUse);
-        setMessages((m) => [...m, { id: nextId.current++, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
+        setMessages((m) => [...m, { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
         // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
         if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });
         if (response.pastoral_flag) setState("empathetic");
