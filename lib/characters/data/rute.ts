@@ -1,0 +1,35 @@
+import { character, sc } from "./helpers";
+
+export const RUTE = character({
+  id: "rute", kgId: "person:ruth_2450", name: "Rute", title: "a estrangeira fiel", tier: 1, era: "juizes", testament: "AT", color: "#8a6a2a",
+  born: { label: "A Bíblia não registra o nascimento de Rute; ela era moabita", ref: "RUT.1.4" },
+  died: { label: "A Bíblia não narra a morte de Rute; o livro termina com a sua descendência até Davi", ref: "RUT.4.17-RUT.4.22" },
+  summary: "Uma viúva moabita que escolheu o povo e o Deus de sua sogra, trabalhou nos campos de Belém e se tornou bisavó do rei Davi e antepassada de Jesus.",
+  places: [{ key: "moabe", name: "Moabe", lat: 31.4, lon: 35.8 }, { key: "belem", name: "Belém", lat: 31.7, lon: 35.2 }],
+  family: [{ rel: "sogra", name: "Noemi", ref: "RUT.1.2" }, { rel: "primeiro esposo", name: "Malom", ref: "RUT.4.10" }, { rel: "segundo esposo", name: "Boaz", ref: "RUT.4.13" }, { rel: "filho", name: "Obede", ref: "RUT.4.17" }, { rel: "bisneto", name: "Davi", slug: "davi", ref: "RUT.4.17" }],
+  crosses: ["davi"],
+  chapters: [
+    { title: "Uma moabita viúva", stage: "Origem", ref: "RUT.1.1-RUT.1.5", place: "moabe", scene: sc("field", "dusk", [["tent", 24, 0.45], ["wheat", 74, 0.8]], [["woman", 40, 0.8, "stand", undefined, "#7a4a6e"], ["woman", 54, 0.8, "stand", undefined, "#4a6a8a"]]),
+      text: "No tempo dos juízes, houve fome em Belém, e Elimeleque foi morar em Moabe com sua mulher Noemi e seus dois filhos. Ali os filhos se casaram com moabitas, uma delas Rute. Elimeleque morreu e depois os dois filhos, e Noemi ficou só com as noras.", question: "Como Deus cuida de quem fica só?" },
+    { title: "“Aonde fores, irei eu”", stage: "Decisão", ref: "RUT.1.6-RUT.1.18", place: "moabe", scene: sc("wilderness", "day", [["palm", 82, 0.4], ["stones", 22, 0.85]], [["woman", 44, 0.8, "walk", undefined, "#7a4a6e"], ["woman", 56, 0.8, "stand", undefined, "#4a6a8a"]]),
+      text: "Noemi decidiu voltar a Belém e aconselhou as noras a ficarem em Moabe. Rute insistiu: “Não me instes para que te deixe; aonde quer que fores, irei eu; o teu povo será o meu povo, e o teu Deus, o meu Deus. Onde morreres, morrerei, e ali serei sepultada.”", question: "O que levou Rute a escolher uma fé nova e um lugar novo?" },
+    { title: "A volta a Belém", stage: "Decisão", ref: "RUT.1.19-RUT.1.22", place: "belem", scene: sc("city", "dawn", [["gate", 74, 0.3, 1.2], ["house", 22, 0.5], ["olive", 50, 0.35]], [["woman", 40, 0.8, "walk", undefined, "#7a4a6e"], ["woman", 54, 0.8, "walk", undefined, "#4a6a8a"]]),
+      text: "Quando chegaram a Belém, toda a cidade se alvoroçou por causa delas. Noemi disse: “Não me chameis Noemi, chamai-me Mara, porque o Todo-Poderoso me amargurou.” Chegaram no começo da ceifa da cevada.", question: "Como dar nome à própria dor sem perder a esperança?" },
+    { title: "Respigando no campo de Boaz", stage: "Provas", ref: "RUT.2.1-RUT.2.23", place: "belem", scene: sc("field", "day", [["wheat", 30, 0.85, 1.3], ["wheat", 70, 0.85, 1.3], ["tent", 88, 0.3]], [["woman", 50, 0.85, "walk", undefined, "#4a6a8a"], ["man", 70, 0.7, "stand", undefined, "#8a6a3a"]]),
+      text: "Rute foi respigar espigas atrás dos ceifeiros no campo de Boaz, parente de Elimeleque. Ele lhe disse: “Não vás a outro campo. O Senhor recompense o teu feito e seja cumprida a tua paga por parte do Deus de Israel, sob cujas asas vieste refugiar-te.” Ele a fez comer e deixou espigas de propósito para ela.", question: "Como a bondade de uma pessoa pode ser um sinal do cuidado de Deus?" },
+    { title: "O plano de Noemi", stage: "Provas", ref: "RUT.3.1-RUT.3.5", place: "belem", scene: sc("inside", "dusk", [["lamp", 24, 0.8], ["table", 70, 0.8]], [["elder", 44, 0.8, "stand", undefined, "#d8d0bd"], ["woman", 60, 0.8, "stand", undefined, "#4a6a8a"]]),
+      text: "Noemi disse a Rute: “Minha filha, não deverei eu procurar-te um lar, para que sejas feliz?” Orientou-a a se lavar, perfumar-se e ir à eira, onde Boaz estaria. Rute respondeu: “Tudo o que me disseres farei.”", question: "Como o conselho de quem nos ama pode abrir caminhos?" },
+    { title: "Na eira, de noite", stage: "Provas", ref: "RUT.3.6-RUT.3.18", place: "belem", scene: sc("field", "night", [["wheat", 24, 0.8], ["fire", 76, 0.7]], [["man", 54, 0.8, "lie", undefined, "#8a6a3a"], ["woman", 38, 0.85, "kneel", undefined, "#4a6a8a"]]),
+      text: "À meia-noite, Boaz acordou e viu uma mulher aos seus pés. Rute disse: “Estende o teu manto sobre a tua serva, porque és resgatador.” Boaz respondeu: “Bendita sejas tu do Senhor, minha filha; toda a cidade sabe que és mulher virtuosa.” Prometeu tratar do caso pela manhã.", question: "O que quer dizer ser “resgatador” hoje, na vida de alguém?" },
+    { title: "Boaz no portão da cidade", stage: "Redenção", ref: "RUT.4.1-RUT.4.12", place: "belem", scene: sc("city", "day", [["gate", 50, 0.35, 1.5]], [["man", 40, 0.75, "stand", undefined, "#8a6a3a"], ["elder", 60, 0.75], ["elder", 68, 0.75]]),
+      text: "Boaz foi ao portão da cidade e, diante de dez anciãos, falou com o parente mais próximo, que renunciou ao direito de resgate. Boaz declarou: “Sois hoje testemunhas de que adquiri tudo o que era de Elimeleque, e tomo também Rute, a moabita, por minha mulher.”", question: "Quem paga o preço para que outro tenha um lugar à mesa?" },
+    { title: "Obede nasce", stage: "Redenção", ref: "RUT.4.13-RUT.4.17", place: "belem", scene: sc("inside", "dawn", [["lamp", 22, 0.8], ["house", 78, 0.5]], [["woman", 40, 0.8, "sit", undefined, "#4a6a8a"], ["elder", 56, 0.8, "stand", undefined, "#d8d0bd"], ["child", 48, 0.9]], { light: true }),
+      text: "Boaz casou-se com Rute, e o Senhor lhe deu a concepção: nasceu um filho. As mulheres disseram a Noemi: “Bendito seja o Senhor, que hoje não te deixou sem um resgatador.” Noemi tomou o menino ao colo e foi sua ama. O filho se chamou Obede, pai de Jessé, pai de Davi.", question: "Como Deus transforma amargura em motivo de louvor?" },
+    { title: "Uma antepassada de Davi e de Jesus", stage: "Final", ref: "RUT.4.18-RUT.4.22", place: "belem", scene: sc("pasture", "dawn", [["olive", 24, 0.4], ["house", 70, 0.4], ["scroll", 50, 0.85]], [["woman", 52, 0.8, "stand", undefined, "#4a6a8a"]], { light: true }),
+      text: "O livro termina com uma genealogia: de Perez a Boaz, a Obede, a Jessé e a Davi. O evangelho de Mateus inclui Rute entre os antepassados de Jesus. A Bíblia não narra a morte de Rute; sua história termina com a promessa que continuaria nos seus descendentes.", question: "O que a história de Rute mostra sobre quem Deus inclui no seu plano?" },
+  ],
+  lessons: [
+    { text: "“O teu povo será o meu povo, e o teu Deus, o meu Deus.”", ref: "RUT.1.16" },
+    { text: "Rute, a moabita, está na genealogia de Jesus.", ref: "MAT.1.5" },
+  ],
+});

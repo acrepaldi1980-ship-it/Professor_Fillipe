@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M19 Vida dos Personagens | Livro ilustrado da vida de cada personagem bíblico, do nascimento à morte, com linha da vida, narração, família e rota (8.19) |
 | M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Arte final do Anderson (19/11/2026): personagem 3D estilizado em quatro poses (boas-vindas, ensinando, parabéns, refletindo) com transições e vídeo de saudação |
 
 ### 4.3 Fase 2 — Produto robusto (P1, 3–5 meses)
@@ -926,6 +927,17 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **RF-M18-04 Modelos 3D.** Passa de 3 para 15 cenas (cada uma com pontos de toque, texto e versículos, descrição alternativa e dados de licença).
 - **RF-M18-05 Produção e armazenamento.** Imagens leves ficam no app; áudios e vídeos ficam no Supabase Storage (bucket público `media`) para não pesar no deploy; tudo gerado por scripts reproduzíveis em `scripts/media/` com ficha de fonte e licença em `docs/LICENSES.md`.
 - **Fora desta versão:** vídeo por IA generativa (custo por vídeo e risco de RA-20), narração por voz humana.
+
+### 8.19 M19 — Vida dos Personagens (P0, pedido do dono em 22/11/2026)
+
+- **Objetivo:** contar a vida de cada personagem bíblico, **do nascimento à morte**, em capítulos ilustrados, cada um preso a uma passagem. Nenhuma pessoa do grafo bíblico fica de fora.
+- **Camadas (decisão do dono, 22/11/2026):** 1) **40 personagens-chave** com a experiência completa; 2) **150 principais**; 3) **todos os 3.067** do grafo (Theographic) com ficha automática: nome, época, descrição (Easton, domínio público), parentescos, participações e passagens. Cada camada é publicada quando pronta.
+- **Experiência (sem animação, muito ilustrada):** capa ilustrada; **linha da vida** (nascimento → morte, por fases); capítulos com **ilustração**, texto curto, **narração** com a voz do professor (Piper), passagem, pergunta para pensar e etiqueta de base (Escritura, Tradição ou Detalhe artístico); **diagrama da família**; **diagrama da rota** pelos lugares; **vidas que se cruzam**; frases para guardar.
+- **Ilustração:** gerada no próprio app a partir do texto (motor de cenas em SVG: céu por hora do dia, relevo, bioma, objetos e figuras), custo zero e visual único. **Ninguém tem rosto.** Jesus aparece só como silhueta de costas ou à distância; Deus só como raio de luz (RA-20). Imagens geradas por IA ficam como melhoria futura (hoje a geração de imagens do Gemini responde 402, sem crédito).
+- **Fontes (RA-09):** cada capítulo cita uma passagem conferida contra a Bíblia (`scripts/check-characters.mts`). O que a Bíblia não registra (por exemplo, a morte de Maria e a de Paulo) é dito no texto; tradições aparecem marcadas.
+- **Cronologia:** datas aproximadas seguem a cronologia conservadora moderna (D-07) e vêm marcadas.
+- **Dados:** vidas curadas em `lib/characters/data/*.ts` (validadas com Zod ao carregar); fichas automáticas lidas de `kg_entities` e `kg_relations`. API: `GET /api/v1/study/characters` e `/study/characters/:id`. Telas: `/personagens` (lista e livro). 
+- **Pendências:** tradução das descrições do grafo para o português; revisão pelo consultor; as demais vidas das camadas 1 e 2.
 
 ## 9. Modelo de dados
 

@@ -96,6 +96,7 @@ export default function HomePage() {
         ))}
       </section>
       <section aria-label={t("home.explore")} className="grid grid-cols-2 gap-2">
+        <Link href="/personagens" className="col-span-2 rounded-control border border-line bg-surface p-3"><strong>{t("char.title")}</strong><span className="block text-sm text-muted">{t("char.help")}</span></Link>
         <Link href="/curiosidades" className="rounded-control border border-line bg-surface p-3"><strong>{t("cur.title")}</strong><span className="block text-sm text-muted">{t("home.cur.help")}</span></Link>
         {HAS_ARCH && <Link href="/arqueologia" className="rounded-control border border-line bg-surface p-3"><strong>{t("arch.title")}</strong><span className="block text-sm text-muted">{t("home.arch.help")}</span></Link>}
       </section>

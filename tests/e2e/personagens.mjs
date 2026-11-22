@@ -1,0 +1,43 @@
+// Vida dos Personagens (M19): the list, search, an illustrated life from birth to death with its diagrams, the passage of a chapter and the automatic card.
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
+import { sql } from "../../scripts/db.mjs";
+const require = createRequire((process.env.GLOBAL_NM ?? "/opt/node22/lib/node_modules") + "/x.js");
+const { chromium } = require("playwright");
+const REF = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
+const BASE = process.env.APP_URL ?? "http://localhost:3100";
+const email = `chr-${Date.now()}@example.test`, password = `Tt!${randomUUID()}`, id = randomUUID();
+const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+try {
+  await sql(`insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change) values ('${id}','00000000-0000-0000-0000-000000000000','authenticated','authenticated','${email}', extensions.crypt('${password}', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{}', now(), now(), '', '', '', '')`);
+  await sql(`insert into profiles (user_id, display_name, preferred_name, birth_date, is_minor, level, level_score) values ('${id}','Marcos','Marcos','1984-03-02',false,'intermediário',50)`);
+  await sql(`insert into consent_records (user_id, kind, version, granted) values ('${id}','terms','t',true),('${id}','privacy','t',true),('${id}','sensitive_religious','t',false)`);
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+  const { data } = await sb.auth.signInWithPassword({ email, password });
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 900 }, deviceScaleFactor: 1, locale: "pt-BR" });
+  const p = await ctx.newPage();
+  await p.goto(`${BASE}/termos`, { waitUntil: "domcontentloaded" });
+  await p.evaluate(async ({ k, v }) => { await new Promise((res, rej) => { const r = indexedDB.open("professor-filipe", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => { const tx = r.result.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = () => res(); tx.onerror = () => rej(); }; r.onerror = () => rej(); }); }, { k: `sb-${REF}-auth-token`, v: JSON.stringify(data.session) });
+  const errs = []; p.on("pageerror", (e) => errs.push(String(e).slice(0, 120)));
+  const say = (n, ok, x = "") => console.log(`${ok ? "PASS" : "FAIL"}  ${n}${x ? "  " + x : ""}`);
+  await p.goto(`${BASE}/personagens`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Vida ilustrada", { timeout: 40000 });
+  say("list: curated lives first, with the total of people", (await p.getByText(/\d+ personagens/).count()) > 0);
+  await p.getByPlaceholder("Buscar personagem").fill("Davi"); await p.waitForTimeout(1500);
+  say("search finds Davi", (await p.getByText("o pastor que virou rei").count()) > 0);
+  await p.goto(`${BASE}/personagens?id=abraao`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Para pensar", { timeout: 40000 });
+  say("book: 19 illustrated chapters from birth to death", (await p.locator("section[aria-labelledby]").count()) === 19);
+  say("book: every chapter has a picture", (await p.locator("section[aria-labelledby] svg").count()) === 19);
+  say("book: lifeline, family and route diagrams", (await p.locator("svg[aria-label='A linha da vida']").count()) === 1 && (await p.locator("svg[aria-label='A família']").count()) === 1 && (await p.locator("svg[aria-label='Por onde andou']").count()) === 1);
+  await p.getByRole("button", { name: /Gênesis 12:1-5/ }).click(); await p.waitForTimeout(2500);
+  say("passage opens with the Bible text", (await p.getByText("Sai da tua terra").count()) > 0);
+  await p.keyboard.press("Escape");
+  await p.goto(`${BASE}/personagens?id=kg:aaron_1`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Passagens onde aparece", { timeout: 40000 });
+  say("card: a person without a curated life has a card with relations and passages", (await p.getByText("Parentescos e participações").count()) > 0);
+  await p.goto(`${BASE}/personagens?id=nao_existe`, { waitUntil: "domcontentloaded" }); await p.waitForTimeout(2500);
+  say("unknown person shows an error, not a blank page", (await p.getByText("Não foi possível carregar").count()) > 0);
+  say("no page errors", errs.length === 0, errs.join(" | "));
+} catch (e) { console.log("ERROR", String(e).slice(0, 300)); } finally { await sql(`delete from auth.users where id='${id}'`).catch(() => undefined); await browser.close(); process.exit(0); }

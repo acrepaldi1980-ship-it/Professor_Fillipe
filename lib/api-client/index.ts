@@ -454,3 +454,12 @@ export async function saveEnvironment(pkg: unknown, status: "draft" | "published
   return res.json();
 }
 export const deleteEnvironment = (id: string) => apiJson<{ ok: true }>(`/study/environments?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+
+// ---- Vida dos Personagens (módulo M18) ----
+import type { Character as CharacterLife } from "@/lib/characters/schema";
+export interface CharacterSummary { id: string; name: string; title: string; tier: 1 | 2 | 3; era: CharacterLife["era"] | null; color: string; chapters: number; period: string | null; born: string | null; died: string | null }
+export interface GraphEntity { entity: { id: string; name_en: string; name_pt: string | null; aliases: string[] | null; description: string | null; period: string | null; refs: string[] | null }; relations: { relation: string; direction: string; id: string; kind: string; name_en: string; name_pt: string | null }[] }
+export type CharacterDetail = { kind: "curated"; character: CharacterLife; graph: GraphEntity | null } | { kind: "card"; id: string; color: string; graph: GraphEntity };
+export const listCharacters = (o: { q?: string; era?: string; page?: number } = {}) =>
+  apiJson<{ total: number; page: number; pageSize: number; characters: CharacterSummary[] }>(`/study/characters?${new URLSearchParams({ q: o.q ?? "", ...(o.era ? { era: o.era } : {}), page: String(o.page ?? 0) })}`);
+export const getCharacter = (id: string) => apiJson<CharacterDetail>(`/study/characters/${encodeURIComponent(id)}`);
