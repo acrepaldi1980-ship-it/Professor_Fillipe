@@ -107,7 +107,7 @@ export default function PanoView({ tour, initial, onOpenRef }: { tour: PanoTour;
   useEffect(() => {
     let alive = true;
     setLoading(true); setFailed(false);
-    loadTexture(scene.image).then((tx) => { if (!alive) return; setTexture(tx); { const im = tx.image as { width: number; height: number }; const cv = coverageFor(im.width, im.height, scene.coverage); cam.current.fov = cv.full ? 75 : Math.max(FOV_MIN, Math.min(75, cv.v * 1.12)); } setLoading(false); setFade(false); scene.links.forEach((l) => { const n = tour.scenes.find((s) => s.id === l.to); if (n) void loadTexture(n.image).catch(() => undefined); }); }).catch(() => { if (alive) { setFailed(true); setLoading(false); setFade(false); } });
+    loadTexture(scene.image).then((tx) => { if (!alive) return; setTexture(tx); { const im = tx.image as { width: number; height: number }; const cv = coverageFor(im.width, im.height, scene.coverage); cam.current.fov = cv.full ? 75 : cv.h / cv.v > 2.2 ? 55 : Math.max(FOV_MIN, Math.min(75, cv.v * 1.12)); } setLoading(false); setFade(false); scene.links.forEach((l) => { const n = tour.scenes.find((s) => s.id === l.to); if (n) void loadTexture(n.image).catch(() => undefined); }); }).catch(() => { if (alive) { setFailed(true); setLoading(false); setFade(false); } });
     return () => { alive = false; };
   }, [scene, tour, loadTexture]);
   useEffect(() => () => { stopSpeaking(); cache.current.forEach((tx) => tx.dispose()); }, []);

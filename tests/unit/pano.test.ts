@@ -90,3 +90,14 @@ describe("photo coverage", () => {
     expect(coverageFor(8000, 1500, { h: 180, v: 34 })).toEqual({ h: 180, v: 34, full: false });
   });
 });
+
+import { existsSync } from "node:fs";
+import { TOURS } from "@/lib/immersive/registry";
+describe("every registered tour", () => {
+  it("has its photos on disk, a credit with author, license and source, and verses that look like references", () => {
+    for (const t of Object.values(TOURS)) for (const s of t.scenes) {
+      expect(existsSync(`public${s.image}`), `${t.id}/${s.id}: ${s.image}`).toBe(true);
+      expect(s.credit.author.length).toBeGreaterThan(1); expect(s.credit.license.length).toBeGreaterThan(1); expect(s.credit.source.length).toBeGreaterThan(5);
+    }
+  });
+});
