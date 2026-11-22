@@ -1,8 +1,9 @@
 // Environment packages available to the immersive screen (Prompt 3.1). A new environment is one more line here.
+import { TABERNACLE_PACKAGE } from "./packages/tabernaculo";
 import { TEST_PACKAGE } from "./packages/test";
 import type { EnvironmentPackage } from "./package";
 
-export const PACKAGES: Record<string, EnvironmentPackage> = { [TEST_PACKAGE.id]: TEST_PACKAGE };
+export const PACKAGES: Record<string, EnvironmentPackage> = { [TABERNACLE_PACKAGE.id]: TABERNACLE_PACKAGE, [TEST_PACKAGE.id]: TEST_PACKAGE };
 export const getPackage = (id: string) => PACKAGES[id];
 
 // 360° photo tours (Prompt 3.5b). A new tour is one more line here (or an upload in the admin tool, later).

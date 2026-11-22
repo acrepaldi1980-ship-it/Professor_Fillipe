@@ -20,9 +20,10 @@ import { speakText, stopSpeaking } from "@/lib/voice/client-speak";
 import { panelModel } from "@/lib/immersive/vr";
 import { Joystick } from "./Joystick";
 import { VrLayer, XR, xrStore, type VrInput } from "./VrLayer";
+import { TABERNACLE_SCENES } from "./scenes-tabernaculo";
 import { TEST_SCENES } from "./scenes-test";
 
-const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES };
+const SCENES: Record<string, (p: { detail: 0 | 1 | 2 }) => React.JSX.Element> = { ...TEST_SCENES, ...TABERNACLE_SCENES };
 /** A zone that is a GLB file: downloaded only when the visitor gets near (the zone is mounted by the Rig), released when far. */
 function GlbZone({ url, scale, y }: { url: string; scale: number; y: number }) {
   const gltf = useGLTF(url);
@@ -282,7 +283,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
             </div>
           </div>
           {onAuthorPick && <button type="button" data-testid="imm-pick" onClick={() => onAuthorPick({ x: +snap.pos[0].toFixed(2), z: +snap.pos[1].toFixed(2), yaw: +snap.yaw.toFixed(3) })} className="absolute right-2 top-14 min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("env.pick")}</button>}
-          <p className="pointer-events-none absolute left-2 top-12 max-w-[70%] text-[10px] leading-tight text-white/85 [text-shadow:0_1px_2px_#000]" data-testid="imm-caption">{t("imm.caption")}</p>
+          <p className="pointer-events-none absolute bottom-14 left-2 right-2 text-center text-[10px] leading-tight text-white/85 [text-shadow:0_1px_2px_#000]" data-testid="imm-caption">{t("imm.caption")}</p>
           {vrError && <p role="alert" className="absolute left-2 right-2 top-24 rounded-control bg-black/70 p-2 text-sm text-white">{t("imm.vr.error")}</p>}
           {showFps && <div className="absolute left-2 top-12 rounded bg-black/55 px-2 text-xs text-white" data-testid="imm-fps">{Math.round(snap.fps)} fps · dpr {dpr}</div>}
           <span className="sr-only" data-testid="imm-pos" aria-live="off">{snap.pos[0].toFixed(2)},{snap.pos[1].toFixed(2)},{snap.yaw.toFixed(2)},{snap.zones.join("+")}</span>
