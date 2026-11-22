@@ -1058,5 +1058,10 @@
   "tree.siblings": "Hermanos",
   "tree.partners": "Cónyuges y compañeros",
   "tree.children": "Hijos",
-  "tree.grandchildren": "Nietos"
+  "tree.grandchildren": "Nietos",
+  "jos.lang.pt": "Traducción al portugués hecha automáticamente a partir de la traducción inglesa de Whiston (1737). Puede tener imperfecciones; confirme el original al citar.",
+  "jos.lang.partial": "Este capítulo está traducido solo en parte; el resto aparece en el original inglés (Whiston).",
+  "jos.lang.wait": "La traducción de este capítulo está en preparación; por ahora el texto aparece en inglés (la traducción de Whiston, de 1737). El profesor explica en español.",
+  "jos.show.en": "Ver el original en inglés",
+  "jos.show.pt": "Ver en portugués"
 }

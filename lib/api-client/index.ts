@@ -467,9 +467,9 @@ export const getCharacter = (id: string) => apiJson<CharacterDetail>(`/study/cha
 // ---- Flávio Josefo (módulo M20) ----
 export type JosephusWork = "ant" | "war" | "life" | "apion";
 export interface JosephusKey { cite: string; why: string; ref?: string }
-export interface JosephusBook { book: number; title: string; span: string; summary: string; key: JosephusKey[]; chapters: { chapter: number; title: string; sections: number }[] }
+export interface JosephusBook { book: number; title: string; span: string; summary: string; key: JosephusKey[]; chapters: { chapter: number; title: string; sections: number; translated: number }[] }
 export interface JosephusToc { bio: { name: string; hebrew: string; years: string; lines: string[]; note: string }; works: { key: JosephusWork; title: string; cite: string; books: JosephusBook[] }[] }
-export interface JosephusChapter { work: JosephusWork; book: number; chapter: number; title: string; info: { title: string; span: string; summary: string } | null; sections: { n: number; text: string }[]; prev: { work: JosephusWork; book: number; chapter: number; label: string } | null; next: { work: JosephusWork; book: number; chapter: number; label: string } | null; parallels: { n: number; cite: string; refs: string[] }[]; credit: string }
+export interface JosephusChapter { work: JosephusWork; book: number; chapter: number; title: string; titleEn: string; info: { title: string; span: string; summary: string } | null; sections: { n: number; text: string; text_pt: string | null }[]; prev: { work: JosephusWork; book: number; chapter: number; label: string } | null; next: { work: JosephusWork; book: number; chapter: number; label: string } | null; parallels: { n: number; cite: string; refs: string[] }[]; credit: string }
 export const getJosephus = () => apiJson<JosephusToc>("/study/josephus");
 export const getJosephusChapter = (w: JosephusWork, b: number, c: number) => apiJson<JosephusChapter>(`/study/josephus/${w}/${b}/${c}`);
 

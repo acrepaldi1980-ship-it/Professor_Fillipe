@@ -23,6 +23,7 @@ export default function JosephusPage() {
   const [place, setPlace] = useState<{ w: JosephusWork | null; b: number | null; c: number | null }>({ w: null, b: null, c: null });
   const [chap, setChap] = useState<JosephusChapter | null>(null);
   const [error, setError] = useState(false);
+  const [original, setOriginal] = useState(false);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   const { playing, play, stop } = useNarrator();
 
@@ -51,12 +52,13 @@ export default function JosephusPage() {
         {chap && (
           <article className="flex flex-col gap-3">
             <header><p className="text-sm text-muted">{toc?.works.find((x) => x.key === chap.work)?.title}</p><h1 className="font-serif text-2xl font-bold">{chap.book === 0 ? t("jos.preface") : chapterLabel(chap.work, chap.book, chap.chapter)}{chap.title ? `: ${chap.title}` : ""}</h1></header>
-            <p className="text-xs text-muted">{t("jos.lang")}</p>
+            <p className="text-xs text-muted">{chap.sections.every((s) => s.text_pt) ? t("jos.lang.pt") : chap.sections.some((s) => s.text_pt) ? t("jos.lang.partial") : t("jos.lang.wait")}</p>
+            {chap.sections.some((s) => s.text_pt) && <button type="button" className="self-start text-sm underline" onClick={() => setOriginal((o) => !o)}>{original ? t("jos.show.pt") : t("jos.show.en")}</button>}
             <div className="flex flex-wrap gap-2">
               <Link href={`/estudo?jos=${chap.work}.${chap.book}.${chap.chapter}`} className="rounded-control bg-primary px-3 py-2 text-white">{t("jos.ask")}</Link>
               {chap.parallels.flatMap((p) => p.refs.slice(0, 3).map((r) => <button key={`${p.n}${r}`} type="button" className="rounded-full border border-line bg-surface px-3 py-1" title={p.cite} onClick={() => void openVerse(r)}>{p.cite} ↔ {formatRefPt(r)}</button>))}
             </div>
-            <div className="flex flex-col gap-3 text-[17px] leading-relaxed" lang="en">{chap.sections.map((s) => <p key={s.n} id={`s${s.n}`}><sup className="mr-1 font-semibold text-muted">{s.n}</sup>{s.text}</p>)}</div>
+            <div className="flex flex-col gap-3 text-[17px] leading-relaxed">{chap.sections.map((s) => <p key={s.n} id={`s${s.n}`} lang={original || !s.text_pt ? "en" : "pt-BR"}><sup className="mr-1 font-semibold text-muted">{s.n}</sup>{original ? s.text : (s.text_pt ?? s.text)}</p>)}</div>
             <nav className="flex justify-between gap-2" aria-label="capítulos">
               {chap.prev ? <Link className="rounded-control border border-line bg-surface px-3 py-2" href={href(chap.prev.work, chap.prev.book, chap.prev.chapter)} onClick={go(chap.prev.work, chap.prev.book, chap.prev.chapter)}>← {t("jos.prev")}</Link> : <span />}
               {chap.next ? <Link className="rounded-control border border-line bg-surface px-3 py-2" href={href(chap.next.work, chap.next.book, chap.next.chapter)} onClick={go(chap.next.work, chap.next.book, chap.next.chapter)}>{t("jos.next")} →</Link> : <span />}
