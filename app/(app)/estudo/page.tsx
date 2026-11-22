@@ -25,6 +25,7 @@ import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { splitSentences } from "@/lib/voice/speech-text";
+import { speakQueue } from "@/lib/voice/speak-queue";
 
 const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
@@ -112,45 +113,40 @@ export default function StudyPage() {
 
   // Server voice (Gemini, the same family as the greeting video) first; if it is unavailable the device voice takes over for the rest.
   const serverVoice = useRef<"unknown" | "ok" | "down">("unknown");
-  const speak = useCallback(async (speech: string, cue?: AvatarState) => {
+  const speak = useCallback(async (speech: string, cue?: AvatarState, onFirstSound?: () => void) => {
     const my = ++playId.current;
     const sentences = splitSentences(speech);
     const platform = getPlatform();
-    // stay in "thinking" until the first sound is really playing (the server voice can take a few seconds the first time)
+    let first = false;
+    const firstSound = () => { if (first) return; first = true; onFirstSound?.(); };
     try {
-      let next: Promise<Blob> | null = serverVoice.current !== "down" ? speakSentence(sentences[0]) : null;
-      next?.catch(() => undefined);
-      for (let i = 0; i < sentences.length; i++) {
-        if (my !== playId.current) return;
-        let played = false;
-        if (next) {
-          try {
-            const blob = await next;
-            if (my !== playId.current) return;
-            serverVoice.current = "ok";
-            next = i + 1 < sentences.length ? speakSentence(sentences[i + 1]) : null;
-            next?.catch(() => undefined);
-            setState("speaking");
-            await platform.audioPlayer.play(blob); // the mouth follows the real audio level
-            played = true;
-          } catch {
-            serverVoice.current = "down";
-            next = null;
-          }
-        }
-        if (!played && my === playId.current) {
-          if (platform.speech.isSupported()) {
-            setState("speaking");
-            const voiceName = (await loadPrefs()).voiceName;
-            let missing = false;
-            await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv), onUnavailable: () => { missing = true; } });
-            if (missing) { setError(t("study.error.malevoice")); break; }
-          } else setError(t("study.error.voice"));
-        }
+      let from = 0;
+      if (serverVoice.current !== "down") {
+        // all the sentences are requested at once (3 in flight) and queued back to back on the audio clock: no gaps, and the mouth follows the audible sound
+        const r = await speakQueue(sentences, {
+          fetchAudio: (sx) => speakSentence(sx),
+          player: platform.audioPlayer,
+          isCurrent: () => my === playId.current,
+          onFirstSound: () => { if (my === playId.current) { setState("speaking"); firstSound(); } },
+        });
+        if (r.played) serverVoice.current = "ok";
+        if (r.failedAt !== null) { serverVoice.current = "down"; from = r.failedAt; } else from = sentences.length;
+      }
+      // the device voice takes over for what the server voice could not speak
+      for (let i = from; i < sentences.length && my === playId.current; i++) {
+        if (platform.speech.isSupported()) {
+          setState("speaking");
+          firstSound();
+          const voiceName = (await loadPrefs()).voiceName;
+          let missing = false;
+          await platform.speech.speak(sentences[i], { voiceName, onLevel: (lv) => my === playId.current && setLevel(lv), onUnavailable: () => { missing = true; } });
+          if (missing) { setError(t("study.error.malevoice")); break; }
+        } else setError(t("study.error.voice"));
       }
     } catch {
       if (my === playId.current) setError(t("study.error.voice"));
     }
+    firstSound(); // never leave the text hidden
     if (my === playId.current) {
       setLevel(0);
       setState(cue ?? "idle");
@@ -161,6 +157,8 @@ export default function StudyPage() {
     async (text: string, intent?: string) => {
       const clean = text.trim();
       if (!clean) return;
+      // the session is created in the background when the screen opens: a very fast first message waits for it instead of failing with "invalid request"
+      for (let i = 0; i < 50 && !sessionId.current; i++) await new Promise((r) => setTimeout(r, 200));
       getPlatform().speech.unlock();
       stopSpeaking();
       setError(null);
@@ -174,13 +172,23 @@ export default function StudyPage() {
           if (d.messageId) setMessages((m) => m.map((x) => (x.id === tid ? { ...x, messageId: d.messageId } : x)));
         });
         setFair(!!(meta as { fairUse?: boolean }).fairUse);
-        setMessages((m) => [...m, { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
-        // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
+        let shown = false;
+        // The text, the visual and the voice appear TOGETHER: the text is held until the first sound is audible (at most 2 s, so a slow voice never hides the answer).
+        const reveal = () => {
+          if (shown) return;
+          shown = true;
+          setMessages((m) => [...m, { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
+          // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
         if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });
+        };
         if (response.pastoral_flag) setState("empathetic");
         const cue: AvatarState = response.pastoral_flag ? "empathetic" : response.avatar_cue && response.avatar_cue !== "neutral" ? CUE_STATE[response.avatar_cue] : response.visuals.length ? "pointing" : "idle";
-        if (!textOnly) await speak(response.speech, cue);
-        else setState(cue);
+        if (!textOnly) {
+          const hold = window.setTimeout(reveal, 2000);
+          await speak(response.speech, cue, () => { window.clearTimeout(hold); reveal(); });
+          window.clearTimeout(hold);
+          reveal();
+        } else { reveal(); setState(cue); }
       } catch (e) {
         setState("idle");
         const msg = (e as Error).message;
@@ -334,7 +342,7 @@ export default function StudyPage() {
           {recording ? "■" : "🎤"}
         </button>
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("study.placeholder")} className="h-12 min-w-0 flex-1 rounded-control border border-line bg-surface px-3 text-base text-ink" />
-        <Button type="submit">{t("study.send")}</Button>
+        <Button type="submit" disabled={!sessionReady}>{t("study.send")}</Button>
       </form>
       <div className="flex items-center justify-between pb-3 text-sm">
         {messages.length > 0 && <a href={`/fechamento?s=${sessionId.current}`} className="inline-flex min-h-11 items-center rounded-control border border-line px-3">{t("study.end")}</a>}

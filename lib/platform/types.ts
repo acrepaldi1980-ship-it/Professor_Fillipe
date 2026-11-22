@@ -17,6 +17,8 @@ export interface Microphone {
 export interface AudioPlayer {
   /** Plays a chunk or file; resolves when playback of it finishes. */
   play(source: Blob | ArrayBuffer | string): Promise<void>;
+  /** Queues a clip right after the ones already queued (no gap between sentences); resolves when it has been played. `onStart` fires when its first sound is audible. */
+  enqueue(source: Blob | ArrayBuffer, hooks?: { onStart?: () => void }): Promise<void>;
   /** Stops immediately (barge-in, RF-M06-04: must stop within 300 ms). */
   stop(): void;
   isPlaying(): boolean;

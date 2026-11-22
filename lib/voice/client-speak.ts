@@ -5,6 +5,7 @@ import { speakSentence } from "@/lib/api-client";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
 import { splitSentences } from "./speech-text";
+import { speakQueue } from "./speak-queue";
 
 let server: "unknown" | "ok" | "down" = "unknown";
 let token = 0;
@@ -22,27 +23,20 @@ export async function speakText(text: string, onLevel?: (level: number) => void)
   const unsubscribe = onLevel ? platform.audioPlayer.onLevel(onLevel) : undefined;
   let spokeAny = false;
   try {
-    for (const sentence of splitSentences(text)) {
-      if (my !== token) return spokeAny;
-      let played = false;
-      if (server !== "down" && getLanguage() === "pt-BR") { // the server voice (Piper) speaks Portuguese; in Spanish the device voice is used
-        try {
-          const blob = await speakSentence(sentence);
-          if (my !== token) return spokeAny;
-          server = "ok";
-          await platform.audioPlayer.play(blob);
-          played = true;
-          spokeAny = true;
-        } catch {
-          server = "down";
-        }
-      }
-      if (!played && my === token && platform.speech.isSupported()) {
-        let missing = false;
-        await platform.speech.speak(sentence, { voiceName: (await loadPrefs()).voiceName, onLevel, onUnavailable: () => { missing = true; } });
-        if (missing) return spokeAny;
-        spokeAny = true;
-      }
+    const sentences = splitSentences(text);
+    let from = 0;
+    if (server !== "down" && getLanguage() === "pt-BR") { // the server voice (Piper) speaks Portuguese; in Spanish the device voice is used
+      // the sentences are requested together and queued back to back: no pause between them
+      const r = await speakQueue(sentences, { fetchAudio: (s) => speakSentence(s), player: platform.audioPlayer, isCurrent: () => my === token });
+      if (r.played) { server = "ok"; spokeAny = true; }
+      if (r.failedAt !== null) { server = "down"; from = r.failedAt; } else from = sentences.length;
+    }
+    for (let i = from; i < sentences.length && my === token; i++) {
+      if (!platform.speech.isSupported()) break;
+      let missing = false;
+      await platform.speech.speak(sentences[i], { voiceName: (await loadPrefs()).voiceName, onLevel, onUnavailable: () => { missing = true; } });
+      if (missing) return spokeAny;
+      spokeAny = true;
     }
     return spokeAny;
   } finally {

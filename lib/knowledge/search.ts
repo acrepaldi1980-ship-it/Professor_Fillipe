@@ -118,6 +118,7 @@ type Row = Omit<Retrieved, "layer" | "weight" | "score">;
 const LIBRARY_BUDGET_MS = Number(process.env.LIBRARY_BUDGET_MS) || 2500;
 /** The main database must answer within this budget or the question goes on with what is ready (verses, titles, library): a spoken conversation cannot wait 10 s. */
 const MAIN_BUDGET_MS = Number(process.env.MAIN_BUDGET_MS) || 3200;
+const TITLES_BUDGET_MS = Number(process.env.TITLES_BUDGET_MS) || 1500;
 const EXTRA_BUDGET_MS = Number(process.env.EXTRA_QUERY_BUDGET_MS) || 1600;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const LENS_BOOST = 1.7;
@@ -166,7 +167,7 @@ export async function searchChunks(
   const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
   let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
-  const titlePromise = (store.titleChunks && terms.length ? store.titleChunks(terms).catch(() => []) : Promise.resolve([])).then((r) => { mark("titles"); return r; });
+  const titlePromise = (store.titleChunks && terms.length ? within(store.titleChunks(terms), TITLES_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])).then((r) => { mark("titles"); return r; });
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
