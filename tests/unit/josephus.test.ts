@@ -51,3 +51,12 @@ describe("library shards", () => {
     expect(shardUrls({})).toEqual([]);
   });
 });
+
+import { entryBoost } from "@/lib/knowledge/search";
+describe("entry boost", () => {
+  it("recognizes the entry name after the work title (Smith, the Catholic Encyclopedia...)", () => {
+    expect(entryBoost({ kind: "dictionary", title_path: "Smith's Bible Dictionary (1884) > Barnabas" }, ["barnabas"])).toBeGreaterThan(1);
+    expect(entryBoost({ kind: "dictionary", title_path: "Barnabas" }, ["barnabas"])).toBeGreaterThan(1);
+    expect(entryBoost({ kind: "dictionary", title_path: "Smith's Bible Dictionary (1884) > Paul" }, ["barnabas"])).toBe(1);
+  });
+});

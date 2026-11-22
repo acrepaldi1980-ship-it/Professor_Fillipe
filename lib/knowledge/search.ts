@@ -75,7 +75,7 @@ export function queryTerms(queries: string[]): string[] {
 /** "Who was X?" / "What is X?": an entry titled exactly with a word of the question beats a loosely related Bible window. */
 export function entryBoost(r: { kind: string; title_path: string | null }, terms?: string[]): number {
   if (!terms?.length || !ENTRY_KINDS.has(r.kind) || !r.title_path) return 1;
-  const key = r.title_path.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[,(]/)[0].replace(/[^a-z ]/g, "").trim();
+  const key = r.title_path.split(">").pop()!.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[,(]/)[0].replace(/[^a-z ]/g, "").trim();
   return key.length >= 3 && terms.includes(key) ? 1.9 : 1;
 }
 
