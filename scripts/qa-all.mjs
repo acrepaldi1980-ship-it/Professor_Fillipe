@@ -2,6 +2,7 @@
 // production build with a mock AI (no quota used). Writes docs/QA_RELATORIO.md. Usage: node scripts/qa-all.mjs [--skip-build] [--only name,name]
 import { spawn, spawnSync } from "node:child_process";
 import { readdirSync, writeFileSync } from "node:fs";
+import { sql } from "./db.mjs";
 
 const args = process.argv.slice(2);
 const only = args.includes("--only") ? args[args.indexOf("--only") + 1].split(",") : null;
@@ -22,12 +23,18 @@ if (!args.includes("--skip-build")) step("production build", () => ({ ok: sh("np
 
 const procs = [];
 spawnSync("pkill", ["-f", "next-server"]); spawnSync("pkill", ["-f", "mock-llm"]);
-procs.push(spawn("node", ["tests/e2e/mock-llm.mjs", "4010"], { env, stdio: "ignore" }));
 procs.push(spawn("npx", ["next", "start", "-p", "3100"], { env, stdio: "ignore" }));
 await new Promise((r) => setTimeout(r, 9000));
 
 const scripts = readdirSync("tests/e2e").filter((f) => f.endsWith(".mjs") && f !== "mock-llm.mjs" && !f.startsWith("_")).map((f) => f.replace(".mjs", "")).filter((f) => !only || only.includes(f));
+// The mock AI never fails by default (stable runs); only the scripts that test failover ask for failures.
+const FAIL_RATE = { research: "0.25" };
+let mock = null;
 for (const name of scripts) {
+  mock?.kill("SIGTERM"); spawnSync("pkill", ["-f", "mock-llm"]);
+  mock = spawn("node", ["tests/e2e/mock-llm.mjs", "4010"], { env: { ...env, MOCK_FAIL: FAIL_RATE[name] ?? "0" }, stdio: "ignore" });
+  await new Promise((r) => setTimeout(r, 800));
+  await sql("delete from llm_cooldowns").catch(() => undefined); // endpoints paused by an earlier script must not starve this one
   step(`e2e ${name}`, () => {
     const r = sh("node", [`tests/e2e/${name}.mjs`], { timeout: 420000, maxBuffer: 20_000_000 });
     const out = (r.stdout ?? "") + (r.stderr ?? "");
@@ -36,6 +43,7 @@ for (const name of scripts) {
     return { ok: r.status === 0 && !fails.length, note: `${pass} ok` + (fails.length ? ` | ${fails.join(" | ").slice(0, 400)}` : "") };
   });
 }
+mock?.kill("SIGTERM");
 for (const p of procs) p.kill("SIGTERM");
 spawnSync("pkill", ["-f", "next-server"]);
 const md = ["# Relatório de qualidade (gerado por `scripts/qa-all.mjs`)", "", `Data: ${new Date().toISOString()}`, "", "| Etapa | Resultado | Tempo | Observação |", "| --- | --- | --- | --- |", ...results.map((r) => `| ${r.name} | ${r.ok ? "OK" : "**FALHOU**"} | ${r.s}s | ${r.note.replace(/\|/g, "/")} |`), "", `Total: ${results.filter((r) => r.ok).length}/${results.length} etapas OK`];

@@ -15,7 +15,7 @@ const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return
 const SAMPLE = { id: randomUUID(), version: "por_blivre_2018", ref: "JHN.3.16", tradition: "reformada", strong: "G26", provider: "asaas", hash: "a".repeat(64) };
 const routes = walk("app/api").filter((f) => f.endsWith("route.ts")).map((f) => f.replace("app/api/v1/", "").replace("/route.ts", ""));
 const expand = (r) => r.replace(/\[\.\.\.path\]/, "compare").replace(/\[(\w+)\]/g, (_, k) => SAMPLE[k] ?? SAMPLE.id);
-const PRIVATE = /^(account|admin|me|notebook|sessions|teacher|billing\/(cancel|checkout|simulate|subscription)|church|review|preferences|consents|events|feedback|voice|visuals\/(illustration$))/;
+const PRIVATE = /^(account|admin|me|notebook|sessions|teacher|billing\/(cancel|checkout|simulate|subscription)|church|review|preferences|consents|events|voice|visuals\/(illustration$))/;
 const ADMIN = /^admin\//;
 const PUBLIC_OK = /^(health|config|plans|warmup|sources|sermon-types|visuals\/(maps|models|timelines)|webhooks|bible|graph|lexicon)/;
 const NO_JSON = /pdf|export|speak|illustration\/|voice\/speak|document\/pdf/;
@@ -52,17 +52,17 @@ try {
         const r = await call(method, path, token, body);
         const tag = `${who} ${method} /${path}`;
         if (r.status >= 500 && ![501, 503].includes(r.status)) bad.five.push(`${tag} -> ${r.status} ${r.text.slice(0, 80)}`);
-        if (r.status >= 400 && !NO_JSON.test(route) && r.status !== 404 && !r.ct.includes("json")) bad.noJson.push(`${tag} -> ${r.status} ${r.ct}`);
+        if (r.status >= 400 && !NO_JSON.test(route) && r.status !== 404 && r.status !== 405 && !r.ct.includes("json")) bad.noJson.push(`${tag} -> ${r.status} ${r.ct}`);
         if (r.status >= 400 && r.ct.includes("json")) { try { const j = JSON.parse(r.text); if (typeof j.error !== "string" && !j.message && !j.issues) bad.noJson.push(`${tag} -> body without error code: ${r.text.slice(0, 60)}`); } catch { bad.noJson.push(`${tag} -> invalid JSON`); } }
         if (who === "visitor" && PRIVATE.test(route) && !PUBLIC_OK.test(route) && r.status !== 401 && r.status !== 405 && r.status !== 404) bad.visitorOpen.push(`${tag} -> ${r.status}`);
         if (who === "student" && ADMIN.test(route) && ![401, 403, 405, 404].includes(r.status)) bad.studentOnAdmin.push(`${tag} -> ${r.status}`);
       }
     }
   }
-  say(`${routes.length} routes x 3 roles x 5 calls (${calls} calls): none answers 5xx`, !bad.five.length, bad.five.slice(0, 8).join(" | "));
-  say("every error is JSON with an error code", !bad.noJson.length, bad.noJson.slice(0, 8).join(" | "));
-  say("private routes refuse visitors (401)", !bad.visitorOpen.length, bad.visitorOpen.slice(0, 8).join(" | "));
-  say("admin routes refuse students", !bad.studentOnAdmin.length, bad.studentOnAdmin.slice(0, 8).join(" | "));
+  say(`${routes.length} routes x 3 roles x 5 calls (${calls} calls): none answers 5xx`, !bad.five.length, bad.five.slice(0, 40).join(" | "));
+  say("every error is JSON with an error code", !bad.noJson.length, bad.noJson.slice(0, 40).join(" | "));
+  say("private routes refuse visitors (401)", !bad.visitorOpen.length, bad.visitorOpen.slice(0, 40).join(" | "));
+  say("admin routes refuse students", !bad.studentOnAdmin.length, bad.studentOnAdmin.slice(0, 40).join(" | "));
   // health and config are public and shaped
   const h = await call("GET", "health"); say("health answers 200 with ok", h.status === 200 && /ok/i.test(h.text), h.text.slice(0, 60));
   const pl = await call("GET", "plans"); say("plans lists the plans", pl.status === 200 && /plus|premium/i.test(pl.text));

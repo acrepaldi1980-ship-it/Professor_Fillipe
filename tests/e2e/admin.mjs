@@ -76,7 +76,7 @@ try {
   const users = (await call(admin, "GET", "/admin/users")).body.users;
   say("admin: users list has plan and situation but no conversation fields", users.length >= 3 && users.every((u) => !("messages" in u) && !("text" in u)) && users.some((u) => u.plan === "free"));
   const settings = (await call(admin, "GET", "/admin/settings")).body;
-  say("admin: settings list plans, sermon types (4 with Explicativo) and prompt versions", settings.plans.length === 3 && settings.sermonTypes.some((t) => t.name === "Explicativo") && settings.prompts.length >= 2);
+  say("admin: settings list plans, sermon types (4 with Explicativo) and prompt versions", settings.plans.length === 6 && ["free", "plus", "premium", "church_30", "church_100", "church_300"].every((id) => settings.plans.some((x) => x.id === id)) && settings.sermonTypes.some((t) => t.name === "Explicativo") && settings.prompts.length >= 2);
 
   // prompt versions: create v3 from v2 text with a marker, activate, then revert to v2; the teacher reads the active version
   const v2 = settings.prompts.find((p) => p.layer === "mode_free" && p.active);
@@ -135,7 +135,7 @@ try {
   await sql(`update profiles set role='admin' where user_id='${sid}'`);
   await p.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
   await p.waitForSelector("h1:text('Administração')", { timeout: 20000 });
-  say("page: an admin sees the hub with every section", (await p.locator("main a").count()) === 9);
+  say("page: an admin sees the hub with every section", (await p.locator("main a").count()) >= 10 && (await p.locator("main a[href='/admin/ambientes']").count()) === 1);
   for (const [path, text] of [["/admin/obras", "Obras"], ["/admin/respostas", "Respostas sinalizadas"], ["/admin/usuarios", "Usuários"], ["/admin/metricas", "Métricas"], ["/admin/configuracoes", "Configurações"], ["/admin/auditoria", "Registro de ações"]]) {
     await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
     await p.waitForSelector(`h1:text('${text}')`, { timeout: 20000 }).catch(() => {});

@@ -87,7 +87,7 @@ try {
   await admin.post({ ...META }, null);
   // audit
   const au = await sql(`select action from audit_logs where target='casa_de_pedro' order by created_at`);
-  say("every change is audited", au.length >= 3 && au.every((r) => r.action === "model3d_saved"));
+  say("every change is audited", au.length >= 3 && au.every((r) => /^model3d_(saved|deleted|hidden)$/.test(r.action)));
   say("a student cannot write directly to the table", (await createClient(url, key, { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${student.token}` } } }).from("models3d").insert({ id: "hack", name: "x" })).error !== null);
   const stor = await createClient(url, key, { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${student.token}` } } }).storage.from("models3d").upload("hack.glb", glb, { contentType: "model/gltf-binary" });
   say("a student cannot upload files to the model bucket", !!stor.error);
