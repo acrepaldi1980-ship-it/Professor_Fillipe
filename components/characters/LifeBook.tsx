@@ -11,6 +11,8 @@ import { ERAS, type Character } from "@/lib/characters/schema";
 import { defaultBibleVersion, t, type MessageKey } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 import { FamilyTree } from "./FamilyTree";
+import { LazyScene } from "./LazyScene";
+import { soft } from "./nav";
 import { hash, SceneArt } from "./SceneArt";
 
 const STAGE_COLORS = ["#b9772f", "#6f7a3a", "#7d4a6e", "#3f6f86", "#8a4a3a", "#5a6f4a", "#9a6a2a", "#4a5a8a"];
@@ -113,7 +115,7 @@ export function LifeBook({ c, related }: { c: Character; related: { id: string; 
 
       {c.chapters.map((ch, i) => (
         <section key={ch.id} ref={(el) => { refs.current[i] = el; }} className="scroll-mt-20 overflow-hidden rounded-2xl border border-line bg-surface" aria-labelledby={`ch-${ch.id}`}>
-          <SceneArt spec={ch.scene} seed={hash(`${c.id}${ch.id}`)} className="block aspect-video w-full" />
+          <LazyScene spec={ch.scene} seed={hash(`${c.id}${ch.id}`)} className="aspect-video w-full" color={c.color} />
           <div className="flex flex-col gap-3 p-4">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full px-2 py-0.5 font-semibold text-white" style={{ background: c.color }}>{ch.stage}</span>
@@ -134,7 +136,7 @@ export function LifeBook({ c, related }: { c: Character; related: { id: string; 
 
       <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("tree.title")}</h2>{c.kgId ? <FamilyTree characterId={c.id} color={c.color} onVerse={(r) => void openVerse(r)} /> : <Family c={c} />}</section>
       <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.map")}</h2><Route c={c} /></section>
-      {related.length > 0 && <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.crosses")}</h2><div className="flex flex-wrap gap-2">{related.map((r) => <Link key={r.id} href={`/personagens?id=${r.id}`} className="rounded-full border border-line bg-surface px-3 py-1.5">{r.name}</Link>)}</div></section>}
+      {related.length > 0 && <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.crosses")}</h2><div className="flex flex-wrap gap-2">{related.map((r) => <Link key={r.id} href={`/personagens?id=${r.id}`} onClick={soft(`/personagens?id=${r.id}`)} className="rounded-full border border-line bg-surface px-3 py-1.5">{r.name}</Link>)}</div></section>}
       {c.lessons.length > 0 && <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("char.lessons")}</h2><ul className="flex flex-col gap-2">{c.lessons.map((l) => <li key={l.ref} className="rounded-control border border-line bg-surface p-3">{l.text} <button type="button" className="underline" onClick={() => void openVerse(l.ref)}>{formatRefPt(l.ref)}</button></li>)}</ul></section>}
       <p className="text-xs text-muted">{t("char.art")}</p>
       <Link href="/estudo" className="self-start rounded-control border border-line bg-surface px-3 py-2">{t("char.ask")}</Link>

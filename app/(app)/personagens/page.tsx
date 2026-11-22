@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { FamilyTree } from "@/components/characters/FamilyTree";
 import { LifeBook } from "@/components/characters/LifeBook";
+import { LazyScene } from "@/components/characters/LazyScene";
+import { soft } from "@/components/characters/nav";
 import { hash, SceneArt } from "@/components/characters/SceneArt";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -20,8 +22,8 @@ const firstScene = (id: string) => CURATED.find((c) => c.id === id)?.chapters[0]
 function Card({ c }: { c: CharacterSummary }) {
   const scene = firstScene(c.id);
   return (
-    <Link href={`/personagens?id=${encodeURIComponent(c.id)}`} className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface">
-      <SceneArt spec={scene} seed={hash(c.id)} className="block h-28 w-full" />
+    <Link href={`/personagens?id=${encodeURIComponent(c.id)}`} onClick={soft(`/personagens?id=${encodeURIComponent(c.id)}`)} className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface">
+      <LazyScene spec={scene} seed={hash(c.id)} className="h-28 w-full" light color={c.color} />
       <div className="flex flex-col gap-0.5 p-3">
         <strong className="font-serif text-lg">{c.name}</strong>
         <span className="text-sm text-muted">{c.title}</span>
@@ -70,7 +72,7 @@ export default function CharactersPage() {
   if (id) {
     return (
       <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-24">
-        <Link href="/personagens" className="self-start text-sm underline" onClick={() => setId(null)}>{t("char.back")}</Link>
+        <Link href="/personagens" className="self-start text-sm underline" onClick={soft("/personagens")}>{t("char.back")}</Link>
         {error && <p role="alert">{t("char.error")}</p>}
         {!detail && !error && <p className="text-muted">{t("common.loading")}</p>}
         {detail?.kind === "curated" && <LifeBook c={detail.character} related={detail.character.crosses.flatMap((s) => { const o = CURATED.find((x) => x.id === s); return o ? [{ id: o.id, name: o.name }] : []; })} />}

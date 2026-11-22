@@ -7,6 +7,8 @@ import { familyTree } from "./family";
 import { CURATED, curatedKgIds, getCurated, summarize, type CharacterSummary } from "./index";
 
 const PAGE = 60;
+/** The lives and the graph change only when we publish: the browser may keep the answer for a few minutes. */
+const CACHE = { "Cache-Control": "private, max-age=300" };
 const FIND_COLORS = ["#b9772f", "#6f7a3a", "#7d4a6e", "#3f6f86", "#8a4a3a", "#5a6f4a"];
 const colorOf = (id: string) => FIND_COLORS[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % FIND_COLORS.length];
 
@@ -15,7 +17,7 @@ type Row = { id: string; name_en: string; name_pt: string | null; period: string
 export async function charactersGet(req: Request, id?: string) {
   try {
     await requireUser(req);
-    if (id) { const [cid, sub] = id.split("/"); if (sub === "tree") { const c = getCurated(decodeURIComponent(cid)); const kg = c ? c.kgId : decodeURIComponent(cid).startsWith("kg:") ? `person:${decodeURIComponent(cid).slice(3)}` : undefined; if (!kg) return Response.json({ error: "not_found" }, { status: 404 }); return Response.json(await familyTree(kg)); } return await detail(decodeURIComponent(id)); }
+    if (id) { const [cid, sub] = id.split("/"); if (sub === "tree") { const c = getCurated(decodeURIComponent(cid)); const kg = c ? c.kgId : decodeURIComponent(cid).startsWith("kg:") ? `person:${decodeURIComponent(cid).slice(3)}` : undefined; if (!kg) return Response.json({ error: "not_found" }, { status: 404 }); return Response.json(await familyTree(kg), { headers: CACHE }); } return await detail(decodeURIComponent(id)); }
     const url = new URL(req.url);
     const q = (url.searchParams.get("q") ?? "").trim().slice(0, 60).toLowerCase();
     const era = url.searchParams.get("era");
@@ -26,15 +28,14 @@ export async function charactersGet(req: Request, id?: string) {
     if (!era) {
       const known = [...curatedKgIds()];
       const like = `%${q.replace(/[%_]/g, "")}%`;
-      const rows = await refQuery<Row>(
-        `select id, name_en, name_pt, period, coalesce(cardinality(refs), 0) as n from kg_entities
+      const rows = await refQuery<Row & { total: string }>(
+        `select id, name_en, name_pt, period, coalesce(cardinality(refs), 0) as n, count(*) over () as total from kg_entities
          where kind = 'person' and not (id = any($1::text[])) and ($2 = '%%' or lower(name_en) like $2 or lower(coalesce(name_pt, '')) like $2)
          order by n desc, name_en limit ${PAGE} offset ${page * PAGE}`, [`{${known.map((k) => `"${k}"`).join(",")}}`, like]);
-      const [{ count }] = await refQuery<{ count: string }>(`select count(*) from kg_entities where kind = 'person' and not (id = any($1::text[])) and ($2 = '%%' or lower(name_en) like $2 or lower(coalesce(name_pt, '')) like $2)`, [`{${known.map((k) => `"${k}"`).join(",")}}`, like]);
-      total += Number(count);
+      total += rows.length ? Number(rows[0].total) : 0;
       rest = rows.map((r) => ({ id: `kg:${r.id.replace(/^person:/, "")}`, name: r.name_pt ?? r.name_en, title: r.period ? `viveu entre ${r.period.replace(" a ", " e ")}` : "", tier: 3 as const, era: null, color: colorOf(r.id), chapters: 0, period: r.period, born: null, died: null }));
     }
-    return Response.json({ total, page, pageSize: PAGE, characters: page === 0 ? [...curated, ...rest] : rest });
+    return Response.json({ total, page, pageSize: PAGE, characters: page === 0 ? [...curated, ...rest] : rest }, { headers: CACHE });
   } catch (e) {
     return errorResponse(e);
   }
@@ -42,11 +43,11 @@ export async function charactersGet(req: Request, id?: string) {
 
 async function detail(id: string) {
   const cur = getCurated(id);
-  if (cur) return Response.json({ kind: "curated", character: cur, graph: cur.kgId ? await graphOf(cur.kgId) : null });
+  if (cur) return Response.json({ kind: "curated", character: cur, graph: cur.kgId ? await graphOf(cur.kgId) : null }, { headers: CACHE });
   if (id.startsWith("kg:") && /^[\w.-]+$/.test(id.slice(3))) {
     const g = await graphOf(`person:${id.slice(3)}`);
     if (!g) return Response.json({ error: "not_found" }, { status: 404 });
-    return Response.json({ kind: "card", id, color: colorOf(id), graph: g });
+    return Response.json({ kind: "card", id, color: colorOf(id), graph: g }, { headers: CACHE });
   }
   return Response.json({ error: "not_found" }, { status: 404 });
 }

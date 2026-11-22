@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getFamilyTree, type FamilyTreeData } from "@/lib/api-client";
 import { CURATED } from "@/lib/characters";
+import { soft } from "./nav";
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
@@ -71,7 +72,7 @@ export function FamilyTree({ characterId, color, onVerse }: { characterId: strin
   const name = (id: string) => at.get(id)?.name ?? id;
   const focus = at.get(tree.focus);
   const list = (title: string, ids: { id: string; refs: string[] }[]) => ids.length > 0 && (
-    <div><h3 className="font-semibold">{title}</h3><ul className="flex flex-col gap-1">{ids.map(({ id, refs }) => <li key={id}><Link className="underline" href={`/personagens?id=${encodeURIComponent(appId(id))}`}>{name(id)}</Link>{at.get(id)?.period ? <span className="text-sm text-muted"> · {years(at.get(id)!.period)}</span> : null}{refs.map((r) => <button key={r} type="button" className="ml-2 text-sm underline" onClick={() => onVerse(r)}>{formatRefPt(r)}</button>)}</li>)}</ul></div>
+    <div><h3 className="font-semibold">{title}</h3><ul className="flex flex-col gap-1">{ids.map(({ id, refs }) => <li key={id}><Link className="underline" href={`/personagens?id=${encodeURIComponent(appId(id))}`} onClick={soft(`/personagens?id=${encodeURIComponent(appId(id))}`)}>{name(id)}</Link>{at.get(id)?.period ? <span className="text-sm text-muted"> · {years(at.get(id)!.period)}</span> : null}{refs.map((r) => <button key={r} type="button" className="ml-2 text-sm underline" onClick={() => onVerse(r)}>{formatRefPt(r)}</button>)}</li>)}</ul></div>
   );
   const parents = tree.edges.filter((e) => e.child === tree.focus).map((e) => ({ id: e.parent, refs: e.refs }));
   const children = tree.edges.filter((e) => e.parent === tree.focus).map((e) => ({ id: e.child, refs: e.refs }));
@@ -85,7 +86,7 @@ export function FamilyTree({ characterId, color, onVerse }: { characterId: strin
           {tree.edges.map((e) => { const a = at.get(e.parent), b = at.get(e.child); if (!a || !b) return null; const x1 = a.x + W / 2, y1 = a.y + H, x2 = b.x + W / 2, y2 = b.y; return <path key={`${e.parent}${e.child}`} d={`M${x1} ${y1} C${x1} ${(y1 + y2) / 2} ${x2} ${(y1 + y2) / 2} ${x2} ${y2}`} stroke={color} strokeWidth="1.6" fill="none" opacity=".65" />; })}
           {tree.partners.map((p) => { const a = at.get(p.a), b = at.get(p.b); if (!a || !b || a.gen !== b.gen) return null; const [l, r] = a.x < b.x ? [a, b] : [b, a]; return <g key={`${p.a}${p.b}`}><path d={`M${l.x + W} ${l.y + H / 2} L${r.x} ${r.y + H / 2}`} stroke="#b3202f" strokeWidth="2" strokeDasharray="4 3" /><text x={(l.x + W + r.x) / 2} y={l.y + H / 2 - 4} textAnchor="middle" fontSize="11" fill="#b3202f">⚭</text></g>; })}
           {lay.nodes.map((n) => (
-            <a key={n.id} href={`/personagens?id=${encodeURIComponent(appId(n.id))}`}>
+            <a key={n.id} href={`/personagens?id=${encodeURIComponent(appId(n.id))}`} onClick={soft(`/personagens?id=${encodeURIComponent(appId(n.id))}`)}>
               <rect x={n.x} y={n.y} width={W} height={H} rx="10" fill={n.id === tree.focus ? color : "#fffaf0"} stroke={color} strokeWidth={n.id === tree.focus ? 3 : 1.4} />
               <text x={n.x + W / 2} y={n.y + 19} textAnchor="middle" fontSize="12.5" fontWeight="700" fill={n.id === tree.focus ? "#fff" : "#3a2f27"}>{short(n.name, 17)}</text>
               <text x={n.x + W / 2} y={n.y + 35} textAnchor="middle" fontSize="10" fill={n.id === tree.focus ? "#fff" : "#7a6d60"}>{short(years(n.period), 22)}</text>

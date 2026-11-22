@@ -122,7 +122,7 @@ function Person({ f, seed }: { f: Spec["figures"][number]; seed: number }) {
 const placeY = (z: number) => HORIZON + 6 + z * 120;
 const placeS = (z: number) => 0.55 + z * 0.95;
 
-export function SceneArt({ spec, seed = 1, className }: { spec: Spec; seed?: number; className?: string }) {
+export function SceneArt({ spec, seed = 1, className, light = false }: { spec: Spec; seed?: number; className?: string; light?: boolean }) {
   const uid = useId().replace(/:/g, "");
   const sky = SKY[spec.time], bio = BIOME[spec.biome];
   const night = spec.time === "night", storm = spec.weather === "storm", fog = spec.weather === "fog";
@@ -149,7 +149,7 @@ export function SceneArt({ spec, seed = 1, className }: { spec: Spec; seed?: num
       {night ? <g><circle cx="620" cy="90" r="26" fill="#f4efd8" /><circle cx="632" cy="84" r="24" fill={sky[0]} opacity=".55" /></g>
         : <g><circle cx={spec.time === "day" ? 600 : spec.time === "dawn" ? 160 : 650} cy={spec.time === "day" ? 85 : 232} r="120" fill={`url(#sun${uid})`} opacity={storm ? 0.2 : 0.8} /><circle cx={spec.time === "day" ? 600 : spec.time === "dawn" ? 160 : 650} cy={spec.time === "day" ? 85 : 232} r="30" fill="#fff4c4" opacity={storm ? 0.3 : 0.95} /></g>}
       {clouds.map(([x, y, s], i) => <g key={i} transform={`translate(${x} ${y}) scale(${s})`} opacity={storm ? 0.9 : 0.7}><ellipse cx="0" cy="0" rx="60" ry="16" fill={storm ? "#4a4f60" : "#fff"} /><ellipse cx="-26" cy="-10" rx="30" ry="14" fill={storm ? "#565c70" : "#fff"} /><ellipse cx="22" cy="-12" rx="34" ry="15" fill={storm ? "#565c70" : "#fff"} /></g>)}
-      <g filter={`url(#rough${uid})`} opacity={dim === 1 ? 1 : 1}>
+      <g filter={light ? undefined : `url(#rough${uid})`}>
         <path d={ridge(seed + 1, HORIZON - 40, 70, 70)} fill={bio.far} />
         <path d={ridge(seed + 2, HORIZON - 12, 38, 54)} fill={bio.mid} />
         {spec.biome === "sea" ? <rect x="-20" y={HORIZON - 4} width={W + 40} height={H} fill="#5f8fb4" /> : null}
@@ -163,7 +163,7 @@ export function SceneArt({ spec, seed = 1, className }: { spec: Spec; seed?: num
       {fog && <rect width={W} height={H} fill="#e8eef2" opacity=".45" />}
       {spec.weather === "rain" || storm ? <g stroke="#cfe0ee" strokeWidth="1.2" opacity=".55">{rain.map(([x, y], i) => <line key={i} x1={x} y1={y} x2={x - 6} y2={y + 16} />)}</g> : null}
       {dim < 1 && <rect width={W} height={H} fill="#0b1020" opacity={1 - dim} style={{ mixBlendMode: "multiply" }} />}
-      <rect width={W} height={H} filter={`url(#grain${uid})`} opacity=".16" style={{ mixBlendMode: "multiply" }} />
+      {!light && <rect width={W} height={H} filter={`url(#grain${uid})`} opacity=".16" style={{ mixBlendMode: "multiply" }} />}
       <rect width={W} height={H} fill={`url(#vig${uid})`} />
       <rect x="6" y="6" width={W - 12} height={H - 12} fill="none" stroke="#f4e9cc" strokeWidth="2.5" opacity=".7" />
     </svg>
