@@ -1,10 +1,11 @@
-// Translates Josephus into Portuguese with the Claude Message Batches API (50% cheaper, results within hours), keeps every answer on disk (resumable) and
-// writes the sections to the database. Needs credit on the Anthropic account.
+// Translates Josephus into Portuguese, keeps every answer on disk (resumable) and writes the sections to the database. Providers:
+//   anthropic (default): the Claude Message Batches API, 50% cheaper, results within hours; needs credit on the Anthropic account.
+//   mistral / gemini:    direct calls at a gentle pace, on the free plans (Mistral "Experiment": about 1 request per second; Gemini free tier: a daily quota).
 //
-// Usage: NODE_OPTIONS=--use-env-proxy tsx --env-file=.env.local scripts/translate/josephus-pt.ts <step> [--model claude-sonnet-5-5] [--limit N] [--work ant]
+// Usage: NODE_OPTIONS=--use-env-proxy tsx --env-file=.env.local scripts/translate/josephus-pt.ts <step> [--provider anthropic|mistral|gemini] [--model ...] [--limit N] [--work ant]
 //   plan    -> counts requests and estimates tokens and cost (no calls)
-//   submit  -> sends the batches (records their ids in data/translate/josephus/state.json)
-//   collect -> waits for the batches, reads the results, redoes what failed
+//   submit  -> (anthropic) sends the batches; collect -> waits and reads them
+//   run     -> (mistral, gemini) translates unit by unit; stops cleanly on a daily limit and resumes later
 //   apply   -> writes text_pt and title_pt in the database
 import Anthropic from "@anthropic-ai/sdk";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -13,7 +14,8 @@ import { nsql } from "../neon.mjs";
 
 const arg = (n: string) => { const i = process.argv.indexOf(n); return i >= 0 ? process.argv[i + 1] : undefined; };
 const step = process.argv[2] ?? "plan";
-const MODEL = arg("--model") ?? "claude-sonnet-5-5";
+const PROVIDER = arg("--provider") ?? "anthropic";
+const MODEL = arg("--model") ?? (PROVIDER === "mistral" ? "mistral-large-latest" : PROVIDER === "gemini" ? "gemini-2.5-flash" : "claude-sonnet-5-5");
 const LIMIT = Number(arg("--limit") ?? 1e9);
 const ONLY = arg("--work");
 const DIR = "data/translate/josephus";
@@ -43,8 +45,36 @@ async function main() {
   const inTok = words * 1.35 + all.length * 450, outTok = words * 1.7;
   const cost = (inTok / 1e6) * pi + (outTok / 1e6) * po;
   if (step === "plan") { console.log(`${all.length} requests, ${words} English words, ~${Math.round(inTok / 1000)}k input and ~${Math.round(outTok / 1000)}k output tokens; ${MODEL}: ~US$ ${cost.toFixed(2)} (batch: ~US$ ${(cost / 2).toFixed(2)})`); return; }
-  const client = new Anthropic();
   const st = load();
+  if (step === "run") {
+    // the key is never in the code: the credential proxy adds it to requests to these hosts
+    const call = async (user: string): Promise<{ text?: string; stop?: "limit" | "retry"; wait?: number }> => {
+      const res = PROVIDER === "mistral"
+        ? await fetch("https://api.mistral.ai/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer proxy-injected" }, body: JSON.stringify({ model: MODEL, temperature: 0.2, max_tokens: 8000, messages: [{ role: "system", content: SYSTEM }, { role: "user", content: user }] }) })
+        : await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": "proxy-injected" }, body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents: [{ role: "user", parts: [{ text: user }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 8000 } }) });
+      if (res.status === 429 || res.status >= 500) { const ra = Number(res.headers.get("retry-after")) || 20; const body = await res.text(); return { stop: /per.?day|daily|quota/i.test(body) && res.status === 429 && ra > 300 ? "limit" : "retry", wait: ra }; }
+      if (!res.ok) throw new Error(`${PROVIDER} ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const j = (await res.json()) as { choices?: { message?: { content?: string } }[]; candidates?: { content?: { parts?: { text?: string }[] } }[] };
+      return { text: j.choices?.[0]?.message?.content ?? j.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") };
+    };
+    const todo = all.filter((u) => !st.done[u.id]);
+    let n = 0;
+    for (const u of todo) {
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const r = await call(render(u.secs));
+        if (r.stop === "limit") { console.log(`daily limit reached after ${n} units; run again later`); save(st); return; }
+        if (r.stop === "retry") { await sleep((r.wait ?? 20) * 1000); continue; }
+        if (r.text && parse(r.text, u.secs)) { st.done[u.id] = r.text; n++; break; }
+        console.log(`${u.id}: answer did not match the markers, trying again`);
+      }
+      save(st);
+      if (n % 20 === 0) console.log(`${n}/${todo.length} units translated`);
+      await sleep(PROVIDER === "mistral" ? 1100 : 4500);
+    }
+    console.log(`done: ${n} units this run, ${Object.keys(st.done).length} in total`);
+    return;
+  }
+  const client = new Anthropic();
   if (step === "submit") {
     const todo = all.filter((u) => !st.done[u.id] && !st.batches.some((b) => b.ids.includes(u.id)));
     for (let i = 0; i < todo.length; i += 400) {

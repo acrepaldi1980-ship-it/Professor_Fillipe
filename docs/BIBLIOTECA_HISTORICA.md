@@ -7,6 +7,13 @@ A tradução para o português é **automática** (modelo Claude, pela API de lo
 
 Custo estimado (lote com 50% de desconto, preços da tabela da Anthropic de 03/11/2026): **Josefo inteiro** (762 mil palavras, 773 pedidos) ≈ **US$ 0,40 com Haiku 5.5** ou ≈ **US$ 7,90 com Sonnet 5.5**. As demais obras somam cerca de quatro vezes isso.
 
+## Alternativas à tradução paga (avaliadas em 22/11/2026)
+1. **Mistral, plano gratuito "Experiment"** (sem cartão, com verificação de telefone): capacidade informada de cerca de 1 bilhão de tokens por mês e 1 pedido por segundo (números de terceiros; confirmar no painel). Josefo inteiro usa menos de 0,3% disso e levaria cerca de 15 a 30 minutos. Qualidade boa em português. Atenção: no plano gratuito a Mistral pode usar os pedidos para treinar modelos; o texto de Josefo é de domínio público, então não há problema. `--provider mistral`.
+2. **Gemini, chave gratuita em projeto sem faturamento** (AI Studio, sem cartão): qualidade alta, mas cota diária curta (o Flash dá algumas centenas de pedidos por dia, então Josefo levaria alguns dias). `--provider gemini`.
+3. **Tradução local gratuita** (NLLB, Marian): testada. O modelo `opus-mt-en-ROMANCE` responde em espanhol; o NLLB-600M traduz bem, mas no motor atual leva dezenas de horas e trava em repetições. Rodar com CTranslate2 exigiria liberar outros endereços da rede e instalar o PyTorch. Qualidade menor e muito trabalho.
+4. **Traduções portuguesas já existentes:** a Wikisource em português só tem trechos (*Contra Ápio*); as edições completas em português são protegidas por direitos autorais.
+5. **Claude (lotes):** o caminho mais simples e de melhor qualidade, cerca de US$ 0,40 (Haiku 5.5) a US$ 7,90 (Sonnet 5.5) para Josefo inteiro.
+
 ## Catálogo (situação em 22/11/2026)
 
 | # | Autor | Obra | Tradução-base proposta | Direitos | Situação |
