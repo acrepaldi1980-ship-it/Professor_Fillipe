@@ -20,12 +20,13 @@ Os limites mudam com frequência: confira na página de cada um. Todos têm cama
 | Provedor | Variável | Onde criar a chave | Observação |
 | --- | --- | --- | --- |
 | Groq | `GROQ_API_KEY` ou `GROQ_API_KEYS` | console.groq.com | já configurado; 3 modelos de chat ativos hoje |
-| Cerebras | `CEREBRAS_API_KEY(S)` | cloud.cerebras.ai | muito rápido; boa cota diária |
+| Cerebras | `CEREBRAS_API_KEY(S)` | cloud.cerebras.ai | **atenção (nov/2026): a camada gratuita sem cartão acabou; hoje é um crédito de teste de US$ 5 que pede cartão e vence em 30 dias.** Só use se aceitar isso |
 | Google Gemini (camada gratuita) | `GEMINI_LLM_API_KEY(S)` | aistudio.google.com, **em um projeto sem faturamento pré-pago** | a chave atual do app está em projeto pré-pago e dá erro 402 |
 | OpenRouter (modelos `:free`) | `OPENROUTER_API_KEY(S)` | openrouter.ai | cota diária pequena por chave; ótimo como reserva |
 | Mistral (plano Experiment) | `MISTRAL_API_KEY(S)` | console.mistral.ai | pede verificação de telefone |
 | SambaNova | `SAMBANOVA_API_KEY` | cloud.sambanova.ai | |
 | NVIDIA NIM | `NVIDIA_API_KEY` | build.nvidia.com | créditos de teste |
+| Cloudflare Workers AI | `LLM_EXTRA` (sem código) | dash.cloudflare.com > Workers AI | 10.000 neurons por dia sem cartão; endereço `https://api.cloudflare.com/client/v4/accounts/<ID>/ai/v1`; confirmar limites e suporte a respostas estruturadas |
 | GitHub Models | `GITHUB_MODELS_TOKEN` | github.com/settings/tokens | limites baixos; só reserva |
 
 Trocar os modelos de um provedor sem mexer no código: `CEREBRAS_MODELS=modelo-1,modelo-2`. Usar só alguns provedores: `LLM_ONLY=groq,cerebras`.
