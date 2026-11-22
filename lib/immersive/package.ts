@@ -33,6 +33,8 @@ export const Hotspot = z.object({
   label: z.string().min(2).max(60),
   text: z.string().min(5).max(600),
   refs: z.array(ref).max(6).default([]),
+  /** What this point rests on (the consultant's three layers): what the Scriptures say, what history supports, or what is an artistic reconstruction. */
+  basis: z.enum(["escritura", "historia", "reconstrucao"]).optional(),
   at: v3,
   /** Distance in meters at which the visitor can open it. */
   radius: z.number().positive().max(12).default(2.5),

@@ -977,5 +977,9 @@
   "imm.panos": "Fotos 360° reais",
   "imm.panos.help": "Fotografias panorâmicas de lugares reais, com navegação por pontos.",
   "pano.guided": "▶ Passeio guiado",
-  "pano.guided.stop": "■ Parar passeio"
+  "pano.guided.stop": "■ Parar passeio",
+  "imm.caption": "Reconstrução visual baseada nas descrições bíblicas. O que não tem medida ou característica expressa nas Escrituras foi representado por aproximação artística.",
+  "imm.basis.escritura": "Texto bíblico",
+  "imm.basis.historia": "Fundamento histórico",
+  "imm.basis.reconstrucao": "Reconstrução artística"
 }

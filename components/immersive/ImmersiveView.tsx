@@ -282,6 +282,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
             </div>
           </div>
           {onAuthorPick && <button type="button" data-testid="imm-pick" onClick={() => onAuthorPick({ x: +snap.pos[0].toFixed(2), z: +snap.pos[1].toFixed(2), yaw: +snap.yaw.toFixed(3) })} className="absolute right-2 top-14 min-h-9 rounded-control bg-primary px-3 text-sm font-semibold text-primary-ink">{t("env.pick")}</button>}
+          <p className="pointer-events-none absolute left-2 top-12 max-w-[70%] text-[10px] leading-tight text-white/85 [text-shadow:0_1px_2px_#000]" data-testid="imm-caption">{t("imm.caption")}</p>
           {vrError && <p role="alert" className="absolute left-2 right-2 top-24 rounded-control bg-black/70 p-2 text-sm text-white">{t("imm.vr.error")}</p>}
           {showFps && <div className="absolute left-2 top-12 rounded bg-black/55 px-2 text-xs text-white" data-testid="imm-fps">{Math.round(snap.fps)} fps · dpr {dpr}</div>}
           <span className="sr-only" data-testid="imm-pos" aria-live="off">{snap.pos[0].toFixed(2)},{snap.pos[1].toFixed(2)},{snap.yaw.toFixed(2)},{snap.zones.join("+")}</span>
@@ -335,7 +336,7 @@ export default function ImmersiveView({ pkg, onOpenRef, onAuthorPick }: { pkg: E
 
       {open && (
         <div className="absolute inset-x-2 bottom-2 rounded-control border border-line bg-surface p-3 text-sm shadow-lg" role="dialog" aria-label={open.label} data-testid="imm-panel">
-          <strong>{open.label}</strong>
+          <strong>{open.label}</strong>{open.basis && <span className="ml-2 rounded bg-black/10 px-2 py-0.5 text-xs" data-testid="imm-basis">{t(`imm.basis.${open.basis}` as "imm.basis.escritura")}</span>}
           <p className="mt-1">{open.text}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {open.refs.slice(0, 3).map((r) => <button key={r} type="button" className="min-h-9 rounded-control border border-line px-3 underline" onClick={() => onOpenRef?.(r.split("-")[0])}>{formatRefPt(r)}</button>)}

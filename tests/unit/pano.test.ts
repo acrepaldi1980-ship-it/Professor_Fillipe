@@ -101,3 +101,13 @@ describe("every registered tour", () => {
     }
   });
 });
+
+import { EnvironmentPackage } from "@/lib/immersive/package";
+import { TEST_PACKAGE } from "@/lib/immersive/packages/test";
+describe("hotspot basis (three layers)", () => {
+  it("accepts scripture, history and reconstruction, and refuses anything else", () => {
+    const h = TEST_PACKAGE.hotspots[0];
+    for (const basis of ["escritura", "historia", "reconstrucao"]) expect(EnvironmentPackage.safeParse({ ...TEST_PACKAGE, hotspots: [{ ...h, basis }, ...TEST_PACKAGE.hotspots.slice(1)] }).success).toBe(true);
+    expect(EnvironmentPackage.safeParse({ ...TEST_PACKAGE, hotspots: [{ ...h, basis: "invento" }, ...TEST_PACKAGE.hotspots.slice(1)] }).success).toBe(false);
+  });
+});
