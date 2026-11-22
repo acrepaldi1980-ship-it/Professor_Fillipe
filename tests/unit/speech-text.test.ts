@@ -28,3 +28,19 @@ describe("speech text", () => {
     expect(splitSentences("Sem pontuação final")).toEqual(["Sem pontuação final"]);
   });
 });
+
+import { expandVerseMarkers, prepareForSpeech as prep } from "@/lib/voice/speech-text";
+describe("a v followed by a number is read as 'versículo'", () => {
+  it.each([
+    ["v. 16", "versículo 16"], ["v16", "versículo 16"], ["v 16", "versículo 16"], ["V. 16", "versículo 16"], ["vs. 7", "versículo 7"],
+    ["vv. 3-5", "versículos 3 a 5"], ["vv 3 a 5", "versículos 3 a 5"], ["v. 3-5", "versículos 3 a 5"], ["vv. 3 e 5", "versículos 3 e 5"], ["vv.3,5", "versículos 3 e 5"],
+  ])("%s -> %s", (input, out) => expect(expandVerseMarkers(input)).toBe(out));
+  it("works inside a sentence and after a reference", () => {
+    expect(expandVerseMarkers("Veja o v. 30 e também o v31.")).toBe("Veja o versículo 30 e também o versículo 31.");
+    expect(prep("Em Atos 8, v. 30, Filipe pergunta.")).toContain("versículo 30");
+    expect(prep("Atos 8:30")).toContain("capítulo 8, versículo 30");
+  });
+  it("leaves other words alone", () => {
+    for (const x of ["TV 4", "vida 5", "ave 3", "viu 2 homens", "a verdade 7"]) expect(expandVerseMarkers(x)).toBe(x);
+  });
+});

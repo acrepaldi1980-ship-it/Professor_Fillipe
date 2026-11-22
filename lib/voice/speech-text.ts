@@ -28,6 +28,20 @@ export function expandReferencesForSpeech(text: string): string {
   return out;
 }
 
+/**
+ * "v. 16", "v16", "vv. 3-5", "vs 7" (a v and a number) are read as "versículo 16" / "versículos 3 a 5": the voice must not spell the letter.
+ * Only a lone v/vv/vs followed by a number counts (so "V8" inside a word or "TV 4" are left alone).
+ */
+export function expandVerseMarkers(text: string): string {
+  return text
+    // ranges and lists first: vv. 3-5, vv 3 a 5, vv. 3 e 5
+    .replace(/(?<![\p{L}\p{N}])(?:vv|vs)\.?\s*(\d+)\s*(?:[-–—]|a|até)\s*(\d+)/giu, "versículos $1 a $2")
+    .replace(/(?<![\p{L}\p{N}])(?:vv|vs)\.?\s*(\d+)\s*(?:e|,)\s*(\d+)/giu, "versículos $1 e $2")
+    // a single verse: v. 16, v16, v 16, vs. 16
+    .replace(/(?<![\p{L}\p{N}])(?:v|vs)\.?\s*(\d+)\s*[-–—]\s*(\d+)/giu, "versículos $1 a $2")
+    .replace(/(?<![\p{L}\p{N}])(?:vv|v|vs)\.?\s*(\d+)/giu, "versículo $1");
+}
+
 export function applyLexicon(text: string): string {
   let out = text;
   for (const [word, respell] of Object.entries(lexicon.entries as Record<string, string>)) {
@@ -38,7 +52,7 @@ export function applyLexicon(text: string): string {
 }
 
 export function prepareForSpeech(text: string): string {
-  return applyLexicon(expandReferencesForSpeech(text)).replace(/[*_`#>]/g, "").replace(/\s+/g, " ").trim();
+  return applyLexicon(expandVerseMarkers(expandReferencesForSpeech(text))).replace(/[*_`#>]/g, "").replace(/\s+/g, " ").trim();
 }
 
 /** Splits into sentences, keeping very short ones attached to the next. */

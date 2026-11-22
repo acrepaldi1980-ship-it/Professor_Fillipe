@@ -40,8 +40,6 @@ export async function POST(req: Request) {
   let ctx;
   try {
     ctx = await requireUser(req);
-    await enforceRate(ctx.db, `u:${ctx.user.id}:turn`, LIMITS.turn);
-    await enforceRate(ctx.db, clientKey(req) + ":turn", { limit: 60, windowSeconds: 60 });
   } catch (e) {
     return errorResponse(e);
   }
@@ -50,14 +48,28 @@ export async function POST(req: Request) {
   if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
   if (teacherProvider() === "anthropic" && !process.env.ANTHROPIC_API_KEY) return Response.json({ error: "teacher_unavailable" }, { status: 503 });
 
+  // Every database read this turn needs is started NOW, together (they used to run one after the other: ~7 round trips before the model was even called).
+  const quiet = <T,>(p: PromiseLike<T>) => { const q = Promise.resolve(p); q.catch(() => undefined); return q; };
+  const pRate = quiet(Promise.all([enforceRate(ctx.db, `u:${user.id}:turn`, LIMITS.turn), enforceRate(ctx.db, clientKey(req) + ":turn", { limit: 60, windowSeconds: 60 })]));
   // The session must belong to the user (Row Level Security hides other people's sessions).
-  const { data: session } = await db.from("sessions").select("id").eq("id", parsed.data.sessionId).maybeSingle();
+  const pSession = quiet(db.from("sessions").select("id").eq("id", parsed.data.sessionId).maybeSingle());
+  const pLimits = quiet(Promise.all([loadAccess(db, user.id), loadUsage(db, user.id)]));
+  const pStudent = quiet(Promise.all([studentForPrompt(db, user.id), loadBibleSettings(db, user.id)]));
+  const pRecent = quiet(db.from("messages").select("role,text,speech,structured").eq("session_id", parsed.data.sessionId).order("created_at", { ascending: false }).limit(8));
+  const pMode = quiet(loadSessionMode(db, parsed.data.sessionId));
+
+  try {
+    await pRate;
+  } catch (e) {
+    return errorResponse(e);
+  }
+  const { data: session } = await pSession;
   if (!session) return errorResponse(new HttpError(404, "session_not_found"));
 
   // Plan limits (spec 8.12): text messages per day by plan; paid plans have fair use (moved to the fast model far above normal use).
   let fairUse = false;
   try {
-    const [access, usage] = await Promise.all([loadAccess(db, user.id), loadUsage(db, user.id)]);
+    const [access, usage] = await pLimits;
     const safety = Number(process.env.TEACHER_DAILY_LIMIT) || 400; // absolute guard against runaway spending, whatever the plan
     if (usage.text_messages_day >= safety) return Response.json({ error: "daily_limit" }, { status: 429 });
     const lim = checkLimit(access, usage, "text_messages_day");
@@ -71,9 +83,9 @@ export async function POST(req: Request) {
     async start(controller) {
       const enc = new TextEncoder();
       try {
-        const [student, bible] = await Promise.all([studentForPrompt(db, user.id), loadBibleSettings(db, user.id)]);
+        const [student, bible] = await pStudent;
         // Conversation context comes from the database, so it survives serverless instances (the in-memory copy does not).
-        const { data: recent } = await db.from("messages").select("role,text,speech,structured").eq("session_id", session.id).order("created_at", { ascending: false }).limit(8);
+        const { data: recent } = await pRecent;
         const ordered = (recent ?? []).reverse();
         const history = ordered.map((m) => ({ role: (m.role === "teacher" ? "assistant" : "user") as "assistant" | "user", content: m.speech || m.text }));
         const lastTeacher = [...ordered].reverse().find((m) => m.role === "teacher");
@@ -83,7 +95,7 @@ export async function POST(req: Request) {
           ...findReferences(`${structured?.speech ?? ""} ${structured?.display_markdown ?? ""}`, { strictCase: true }).flatMap((r) => r.refs),
         ].slice(0, 10);
         // Guided modes: the session carries its setup (age group, sermon type, passage...) and the live document is updated from mode_payload.
-        const sm = await loadSessionMode(db, session.id);
+        const sm = await pMode;
         const mode = sm?.mode ?? "free";
         const [typeDef, extraSources] = await Promise.all([mode === "sermon" ? sermonTypeDefinition(db, sm?.context.sermon_type) : undefined, mode === "deep" ? deepSources(sm?.context.ref) : undefined]);
         // Inside an immersive environment the teacher knows where the student is and what they see (from the package, never from client text).

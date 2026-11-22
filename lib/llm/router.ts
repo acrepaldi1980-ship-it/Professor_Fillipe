@@ -81,40 +81,66 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
     }
     tried.add(pick.id);
     attempts++;
-    inflight.set(pick.id, (inflight.get(pick.id) ?? 0) + 1);
-    const t0 = now();
+    // One attempt on one endpoint: calls it, records the result and, on failure, pauses it (and rethrows).
+    const attemptOn = async (ep: Endpoint): Promise<LlmResult> => {
+      inflight.set(ep.id, (inflight.get(ep.id) ?? 0) + 1);
+      const t0 = now();
+      try {
+        // each attempt gets what is left of the budget (at most the request's own timeout), so one slow endpoint cannot use it all
+        const raw = await call(ep, { ...req, timeoutMs: Math.max(4000, Math.min(req.timeoutMs ?? 30000, deadline - now())) });
+        if (req.validate && !req.validate(raw.out)) throw new LlmError("bad_output", 200, 0, "validation");
+        streaks.delete(ep.id);
+        store.record(ep.id, true, null, now() - t0);
+        log.push(`${ep.id}:ok:${now() - t0}`);
+        return { out: raw.out, text: raw.text, endpoint: ep.id, provider: ep.provider, model: ep.model, ms: now() - t0, attempts, log };
+      } catch (e) {
+        const err = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
+        log.push(`${ep.id}:${err.kind}:${now() - t0}`);
+        store.record(ep.id, false, err.kind, now() - t0);
+        let cd = cooldownFor(err.kind, err.retryAfter);
+        if (cd === 0 || err.kind === "server" || err.kind === "timeout") {
+          const n = (streaks.get(ep.id) ?? 0) + 1;
+          streaks.set(ep.id, n);
+          if (n >= 3) { cd = Math.max(cd, 300); streaks.set(ep.id, 0); } // three failures in a row: park it for 5 minutes
+        }
+        console.log(JSON.stringify({ evt: "llm_fail", endpoint: ep.id, kind: err.kind, status: err.status, detail: err.message.slice(0, 120) }));
+        const reason = `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150);
+        // A daily quota, no credit or a wrong key belongs to the whole account/key, not to one model: pause every endpoint that uses it,
+        // instead of spending a call on each sibling model just to learn the same thing.
+        const wholeKey = err.kind === "quota" || err.kind === "auth" || (err.kind === "other" && /api key not valid|invalid api key|unauthorized/i.test(err.message));
+        if (wholeKey && cd === 0) cd = 1800;
+        if (cd > 0) {
+          const targets = wholeKey ? endpoints.filter((e2) => e2.provider === ep.provider && e2.keyIndex === ep.keyIndex) : [ep];
+          // not awaited: the pause is already in memory for this instance; saving it for the other instances must not make the student wait
+          for (const t of targets) void store.setCooldown(t.id, cd + Math.round(random() * 3), reason).catch(() => undefined);
+        }
+        throw err;
+      } finally {
+        inflight.set(ep.id, Math.max(0, (inflight.get(ep.id) ?? 1) - 1));
+      }
+    };
     try {
-      // each attempt gets what is left of the budget (at most the request's own timeout), so one slow endpoint cannot use it all
-      const raw = await call(pick, { ...req, timeoutMs: Math.max(4000, Math.min(req.timeoutMs ?? 30000, deadline - now())) });
-      if (req.validate && !req.validate(raw.out)) throw new LlmError("bad_output", 200, 0, "validation");
-      streaks.delete(pick.id);
-      store.record(pick.id, true, null, now() - t0);
-      log.push(`${pick.id}:ok:${now() - t0}`);
-      return { out: raw.out, text: raw.text, endpoint: pick.id, provider: pick.provider, model: pick.model, ms: now() - t0, attempts, log };
+      if (!req.hedgeAfterMs) return { ...(await attemptOn(pick)), attempts, log };
+      // Hedged call: when the first endpoint is slow, ask a second one too and take whichever answers first (free models have long tails).
+      const p1 = attemptOn(pick);
+      p1.catch(() => undefined);
+      const early = await Promise.race([p1.then((r) => ({ r }), (err) => ({ err })), sleep(req.hedgeAfterMs).then(() => null)]);
+      if (early) { if ("r" in early) return { ...early.r, attempts, log }; throw early.err; }
+      const cool2 = await store.cooldowns();
+      const alt = order(endpoints.filter((e) => !tried.has(e.id) && (cool2.get(e.id) ?? 0) <= now() && (inflight.get(e.id) ?? 0) < e.concurrency), req, random)[0];
+      if (!alt) return { ...(await p1), attempts, log };
+      tried.add(alt.id);
+      attempts++;
+      try {
+        const win = await Promise.any([p1, attemptOn(alt)]);
+        return { ...win, attempts, log };
+      } catch (agg) {
+        const errs = (agg as AggregateError).errors ?? [agg];
+        throw errs[errs.length - 1];
+      }
     } catch (e) {
-      const err = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
-      last = err;
-      log.push(`${pick.id}:${err.kind}:${now() - t0}`);
-      store.record(pick.id, false, err.kind, now() - t0);
-      let cd = cooldownFor(err.kind, err.retryAfter);
-      if (cd === 0 || err.kind === "server" || err.kind === "timeout") {
-        const n = (streaks.get(pick.id) ?? 0) + 1;
-        streaks.set(pick.id, n);
-        if (n >= 3) { cd = Math.max(cd, 300); streaks.set(pick.id, 0); } // three failures in a row: park it for 5 minutes
-      }
-      console.log(JSON.stringify({ evt: "llm_fail", endpoint: pick.id, kind: err.kind, status: err.status, detail: err.message.slice(0, 120) }));
-      const reason = `${err.kind}: ${err.message.replace(/^llm_\w+_\d+:?\s*/, "")}`.replace(/\s+/g, " ").slice(0, 150);
-      // A daily quota, no credit or a wrong key belongs to the whole account/key, not to one model: pause every endpoint that uses it,
-      // instead of spending a call on each sibling model just to learn the same thing.
-      const wholeKey = err.kind === "quota" || err.kind === "auth" || (err.kind === "other" && /api key not valid|invalid api key|unauthorized/i.test(err.message));
-      if (wholeKey && cd === 0) cd = 1800;
-      if (cd > 0) {
-        const targets = wholeKey ? endpoints.filter((e) => e.provider === pick.provider && e.keyIndex === pick.keyIndex) : [pick];
-        for (const t of targets) await store.setCooldown(t.id, cd + Math.round(random() * 3), reason); // a little jitter so instances do not return together
-      }
-      if (err.kind === "bad_output" && ++bad >= 3) throw err;
-    } finally {
-      inflight.set(pick.id, Math.max(0, (inflight.get(pick.id) ?? 1) - 1));
+      last = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
+      if (last.kind === "bad_output" && ++bad >= 3) throw last;
     }
   }
   throw last ?? new LlmError("other", 0, 0, "no_attempt");

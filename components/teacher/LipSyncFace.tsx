@@ -20,18 +20,19 @@ export function LipSyncFace({ src, level, speaking, className }: { src: string; 
     const img = new Image();
     img.src = src;
     let raf = 0;
-    let state = { drop: 0, nod: 0 };
+    let state: { drop: number; nod: number; bob: number; act: number } = { drop: 0, nod: 0, bob: 0, act: 0 };
     let last = -1;
     const calm = reduced();
     const tick = (t: number) => {
       const { level: lv, speaking: sp } = live.current;
       state = stepMotion(state, calm ? 0 : lv, sp && !calm, t);
+      const head = calm ? { nod: 0, bob: 0 } : state;
       const drop = Math.round(state.drop * FACE_MOUTH.maxDrop * 4) / 4;
       if (img.complete && (drop !== last || last < 0)) {
         drawFace(ctx, img, FACE_MOUTH, drop);
         last = drop;
       }
-      if (wrap.current) wrap.current.style.transform = `rotate(${state.nod.toFixed(2)}deg) translateY(${(-state.drop * 1.5).toFixed(2)}px)`;
+      if (wrap.current) wrap.current.style.transform = `rotate(${head.nod.toFixed(2)}deg) translateY(${(-head.bob).toFixed(2)}px)`; // the head never follows the jaw: only slow, small movements
       raf = requestAnimationFrame(tick);
     };
     img.onload = () => { last = -1; };

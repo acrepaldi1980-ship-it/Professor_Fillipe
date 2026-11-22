@@ -55,12 +55,34 @@ export function drawFace(ctx: CanvasRenderingContext2D, img: CanvasImageSource, 
   }
 }
 
-/** Smoothing of the jaw (fast to open, slower to close) and of the head motion; returns the new values. */
-export function stepMotion(s: { drop: number; nod: number }, level: number, speaking: boolean, t: number) {
+export interface Motion {
+  /** Jaw opening 0..1 (follows the speech level). */
+  drop: number;
+  /** Head tilt in degrees. */
+  nod: number;
+  /** Head rise in px. */
+  bob: number;
+  /** Slow measure of how much he has been speaking lately (0..1): the head only becomes a little more alive, it never follows single syllables. */
+  act: number;
+}
+
+/**
+ * Smoothing of the jaw (fast to open, slower to close) and a calm, natural head.
+ * The head must NOT follow the syllables (that read as a trembling neck): it moves with two slow, unrelated swings (periods ~5 s and ~8 s) and a slow
+ * breath; speaking only raises their amplitude gradually. Returns the new values.
+ */
+export function stepMotion(s: { drop: number; nod?: number; bob?: number; act?: number }, level: number, speaking: boolean, t: number): Motion {
   const target = speaking ? Math.min(1, level * 3.4) : 0;
   const drop = s.drop + (target - s.drop) * (target > s.drop ? 0.65 : 0.3);
-  // a very small nod and sway while speaking, never abrupt
-  const nodTarget = speaking ? Math.sin(t / 620) * 0.35 + drop * 0.6 : 0;
-  const nod = s.nod + (nodTarget - s.nod) * 0.08;
-  return { drop, nod };
+  // activity: a ~1 s low-pass of "is speaking", so the head's life changes smoothly when speech starts and stops
+  const act = (s.act ?? 0) + ((speaking ? 1 : 0) - (s.act ?? 0)) * 0.025;
+  const sec = t / 1000;
+  const sway = Math.sin(sec * 1.25) * 0.55 + Math.sin(sec * 0.78 + 1.3) * 0.35; // two slow swings
+  const breath = Math.sin(sec * 1.5);
+  // at rest the page already breathes (CSS); the head only comes alive, gently, while he speaks
+  const nodTarget = sway * 0.5 * act;
+  const bobTarget = breath * 0.45 * act;
+  const nod = (s.nod ?? 0) + (nodTarget - (s.nod ?? 0)) * 0.1;
+  const bob = (s.bob ?? 0) + (bobTarget - (s.bob ?? 0)) * 0.1;
+  return { drop, nod, bob, act };
 }

@@ -16,6 +16,8 @@ export interface LlmRequest {
   timeoutMs?: number;
   /** Whole budget for this call (all attempts) in ms; the default is 48 s, too long for a spoken conversation. */
   deadlineMs?: number;
+  /** Ask a second endpoint too when the first has not answered after this many ms; the first valid answer wins (slow tails of free models). */
+  hedgeAfterMs?: number;
   /** Accepts or refuses an answer (schema check). A refused answer makes the router try the next endpoint. */
   validate?: (out: unknown) => boolean;
 }

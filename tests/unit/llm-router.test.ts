@@ -193,3 +193,34 @@ describe("whole-key pause", () => {
     expect((await store.cooldowns()).has("g/b")).toBe(true);
   });
 });
+
+describe("hedged calls (slow tails of free models)", () => {
+  const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+  it("asks a second endpoint when the first is slow and takes the first valid answer", async () => {
+    const calls: string[] = [];
+    const r = await route(req({ hedgeAfterMs: 20 }), {
+      endpoints: () => [ep("a/slow"), ep("b/fast")], store: new MemoryStore(), random: fixedRandom([0.9, 0.1]), sleep: wait,
+      call: async (e) => { calls.push(e.id); await wait(e.id === "a/slow" ? 300 : 5); return { out: { from: e.id }, text: "" }; },
+    });
+    expect(r.endpoint).toBe("b/fast");
+    expect(calls).toEqual(["a/slow", "b/fast"]);
+  });
+  it("does not spend a second call when the first answers in time", async () => {
+    const calls: string[] = [];
+    const r = await route(req({ hedgeAfterMs: 100 }), {
+      endpoints: () => [ep("a/m1"), ep("b/m2")], store: new MemoryStore(), random: fixedRandom([0.9, 0.1]), sleep: wait,
+      call: async (e) => { calls.push(e.id); await wait(5); return { out: {}, text: "" }; },
+    });
+    expect(r.endpoint).toBe("a/m1");
+    expect(calls).toEqual(["a/m1"]);
+  });
+  it("when the hedge also fails, the error comes back and the router goes on with the others", async () => {
+    const calls: string[] = [];
+    const r = await route(req({ hedgeAfterMs: 10 }), {
+      endpoints: () => [ep("a/m1"), ep("b/m2"), ep("c/m3")], store: new MemoryStore(), random: fixedRandom([0.9, 0.5, 0.1]), sleep: wait,
+      call: async (e) => { calls.push(e.id); await wait(40); if (e.id !== "c/m3") throw new LlmError("server", 500, 0, "boom"); return { out: { ok: 1 }, text: "" }; },
+    });
+    expect(r.endpoint).toBe("c/m3");
+    expect(calls).toEqual(["a/m1", "b/m2", "c/m3"]);
+  });
+});
