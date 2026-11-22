@@ -95,6 +95,7 @@ export default function JosephusPage() {
         <SceneArt spec={SCENE} seed={37} className="block h-52 w-full" />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 text-white"><h1 className="font-serif text-3xl font-bold">{t("jos.title")}</h1><p className="opacity-90">{toc?.bio.hebrew} · {toc?.bio.years}</p></div>
       </header>
+      <Link href="/historiadores?a=josefo" className="self-start text-sm underline">{t("hist.back")}</Link>
       <p className="text-muted">{t("jos.subtitle")}</p>
       {error && <p role="alert">{t("jos.error")}</p>}
       {toc && (

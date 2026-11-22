@@ -1,0 +1,40 @@
+// Historiadores (M21): the hub with the six authors and the testimonies table, an author page, the link to the teacher; then Josephus (M20) below.
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
+import { sql } from "../../scripts/db.mjs";
+const require = createRequire((process.env.GLOBAL_NM ?? "/opt/node22/lib/node_modules") + "/x.js");
+const { chromium } = require("playwright");
+const REF = process.env.SUPABASE_PROJECT_REF ?? "hltyhkydytetdatgyvux";
+const BASE = process.env.APP_URL ?? "http://localhost:3100";
+let ok = true;
+const say = (n, p, x = "") => { if (!p) ok = false; console.log(`${p ? "PASS" : "FAIL"}  ${n}${x ? "  " + x : ""}`); };
+const email = `jos-${Date.now()}@example.test`, password = `Tt!${randomUUID()}`, id = randomUUID();
+const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+try {
+  await sql(`insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change) values ('${id}','00000000-0000-0000-0000-000000000000','authenticated','authenticated','${email}', extensions.crypt('${password}', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}','{}', now(), now(), '', '', '', '')`);
+  await sql(`insert into profiles (user_id, display_name, preferred_name, birth_date, is_minor, level, level_score) values ('${id}','Marcos','Marcos','1984-03-02',false,'intermediário',50)`);
+  await sql(`insert into consent_records (user_id, kind, version, granted) values ('${id}','terms','t',true),('${id}','privacy','t',true),('${id}','sensitive_religious','t',false)`);
+  const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+  const { data } = await sb.auth.signInWithPassword({ email, password });
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 900 }, locale: "pt-BR" });
+  const p = await ctx.newPage();
+  await p.goto(`${BASE}/termos`, { waitUntil: "domcontentloaded" });
+  await p.evaluate(async ({ k, v }) => { await new Promise((res, rej) => { const r = indexedDB.open("professor-filipe", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => { const tx = r.result.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = () => res(); tx.onerror = () => rej(); }; r.onerror = () => rej(); }); }, { k: `sb-${REF}-auth-token`, v: JSON.stringify(data.session) });
+  const errs = []; p.on("pageerror", (e) => errs.push(String(e).slice(0, 120)));
+  await p.goto(`${BASE}/historiadores`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Testemunhos fora da Bíblia", { timeout: 40000 });
+  for (const n of ["Flávio Josefo", "Eusébio de Cesareia", "Tácito", "Plínio, o Jovem", "Suetônio", "Fílon de Alexandria"]) say(`author card: ${n}`, (await p.getByText(n, { exact: true }).count()) > 0);
+  say("the testimonies table lists the sources side by side", (await p.locator("table tbody tr").count()) >= 5);
+  await p.getByText("Tácito", { exact: true }).first().click();
+  await p.waitForSelector("text=Passagens que importam", { timeout: 15000 });
+  say("author page shows Annals 15.44 with the debate", (await p.getByText(/Anais 15\.44/).count()) > 0 && (await p.getByText("Discussão:").count()) > 0);
+  say("each passage can be asked to the teacher", (await p.locator("a[href^='/estudo?hist=tacito.']").count()) > 0);
+  await p.goto(`${BASE}/estudo?hist=tacito.ann1544`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("[data-testid=hist-banner]", { timeout: 40000 });
+  say("study banner names the author and passage", (await p.getByTestId("hist-banner").innerText()).includes("Tácito"));
+  await p.goto(`${BASE}/historiadores?a=josefo`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Ler os 30 livros de Josefo", { timeout: 15000 });
+  say("Josephus links to his reader inside the section", true);
+  say("no page errors", errs.length === 0, errs.join(" | "));
+} catch (e) { ok = false; console.log("ERROR", String(e).slice(0, 300)); } finally { await sql(`delete from auth.users where id='${id}'`).catch(() => undefined); await browser.close(); process.exit(ok ? 0 : 1); }

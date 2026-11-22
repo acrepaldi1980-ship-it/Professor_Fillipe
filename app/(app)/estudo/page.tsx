@@ -24,6 +24,7 @@ import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
+import { byId } from "@/lib/historians/data";
 import { splitSentences } from "@/lib/voice/speech-text";
 import { speakQueue } from "@/lib/voice/speak-queue";
 
@@ -57,6 +58,8 @@ export default function StudyPage() {
   const [trailDone, setTrailDone] = useState(false);
   const josRef = useRef<{ work: "ant" | "war" | "life" | "apion"; book: number; chapter: number } | null>(null); // studying Josephus (?jos=work.book.chapter)
   const [josBanner, setJosBanner] = useState<string | null>(null);
+  const histRef = useRef<{ id: string; passage?: string } | null>(null); // studying a historian (?hist=id or ?hist=id.passage)
+  const [histBanner, setHistBanner] = useState<string | null>(null);
   const themeRef = useRef<string | null>(null); // a topic suggested by the home screen (?tema=)
   const [sessionReady, setSessionReady] = useState(false);
   const [mode, setMode] = useState<string>("free");
@@ -76,6 +79,8 @@ export default function StudyPage() {
     if (tp && td > 0) { trailRef.current = { pathId: tp, day: td }; setTrailBanner({ pathId: tp, day: td }); firstLesson.current = true; }
     const jp = /^(ant|war|life|apion)\.(\d+)\.(\d+)$/.exec(query.get("jos") ?? "");
     if (jp) { josRef.current = { work: jp[1] as "ant" | "war" | "life" | "apion", book: Number(jp[2]), chapter: Number(jp[3]) }; setJosBanner(query.get("jos")); firstLesson.current = true; }
+    const hp = /^([a-z]{3,12})(?:\.([a-z0-9]{3,12}))?$/.exec(query.get("hist") ?? "");
+    if (hp) { histRef.current = { id: hp[1], passage: hp[2] }; const h = byId(hp[1]); setHistBanner(hp[1] === "testemunhos" ? t("hist.testimonies") : h ? `${h.name}${hp[2] ? `: ${h.passages.find((x) => x.id === hp[2])?.cite ?? ""}` : ""}` : null); firstLesson.current = true; }
     const lessonId = query.get("lesson"); // a lesson published by the church (home card)
     if (lessonId) { firstLesson.current = true; themeRef.current = query.get("titulo") ?? t("study.church.default"); }
     const existing = query.get("s");
@@ -87,7 +92,7 @@ export default function StudyPage() {
     void createSession("free", undefined, lessonId ?? undefined, trailRef.current ? { pathId: trailRef.current.pathId, pathDay: trailRef.current.day } : undefined)
       .then(({ sessionId: id }) => {
         sessionId.current = id;
-        router.replace(`/estudo?s=${id}${trailRef.current ? `&trilha=${trailRef.current.pathId}&dia=${trailRef.current.day}` : ""}${josRef.current ? `&jos=${josRef.current.work}.${josRef.current.book}.${josRef.current.chapter}` : ""}`);
+        router.replace(`/estudo?s=${id}${trailRef.current ? `&trilha=${trailRef.current.pathId}&dia=${trailRef.current.day}` : ""}${josRef.current ? `&jos=${josRef.current.work}.${josRef.current.book}.${josRef.current.chapter}` : ""}${histRef.current ? `&hist=${histRef.current.id}${histRef.current.passage ? `.${histRef.current.passage}` : ""}` : ""}`);
         setSessionReady(true);
       })
       .catch(() => router.replace("/login"));
@@ -171,7 +176,7 @@ export default function StudyPage() {
       try {
         const tid = nextId.current++;
         // the answer arrives first; the message id (for the "wrong?" button) and the fair-use flag arrive when the server has saved it
-        const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent, josephus: josRef.current ?? undefined }, undefined, (d) => {
+        const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent, josephus: josRef.current ?? undefined, historian: histRef.current ?? undefined }, undefined, (d) => {
           setFair(!!(d as { fairUse?: boolean }).fairUse);
           if (d.messageId) setMessages((m) => m.map((x) => (x.id === tid ? { ...x, messageId: d.messageId } : x)));
         });
@@ -213,6 +218,10 @@ export default function StudyPage() {
     if (trailRef.current) {
       const tr = trailRef.current;
       return void getPathDetail(tr.pathId).then((d) => { const day = d.days.find((x) => x.day === tr.day); void send(t("study.trail.ask").replace("{n}", String(tr.day)).replace("{title}", day?.title ?? d.title)); }).catch(() => void send(t("study.trail.ask").replace("{n}", String(tr.day)).replace("{title}", "")));
+    }
+    if (histRef.current) {
+      const hr = histRef.current, h = byId(hr.id), p = h?.passages.find((x) => x.id === hr.passage);
+      return void send(hr.id === "testemunhos" ? t("hist.seed.testimonies") : p ? t("hist.seed.passage").replace("{name}", h!.name).replace("{cite}", p.cite).replace("{topic}", p.topic) : t("hist.seed.author").replace("{name}", h?.name ?? hr.id));
     }
     if (josRef.current) {
       const j = josRef.current;
@@ -298,6 +307,12 @@ export default function StudyPage() {
         </div>
       )}
       <div className={`flex min-w-0 flex-col ${docMode && tab === "doc" ? "hidden md:flex" : ""}`}>
+      {histBanner && (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-control border border-primary bg-surface p-2 text-sm" data-testid="hist-banner">
+          <span>{t("hist.banner").replace("{who}", histBanner)}</span>
+          <a className="underline" href="/historiadores">{t("hist.back")}</a>
+        </div>
+      )}
       {josBanner && (
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-control border border-primary bg-surface p-2 text-sm" data-testid="jos-banner">
           <span>{t("jos.banner").replace("{cite}", josBanner)}</span>

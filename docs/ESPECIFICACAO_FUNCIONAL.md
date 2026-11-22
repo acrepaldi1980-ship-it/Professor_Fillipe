@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M21 Historiadores | Seção com Josefo, Eusébio, Tácito, Plínio, Suetônio e Fílon, testemunhos fora da Bíblia e estudo com o professor (8.21) |
 | M20 Flávio Josefo | Os 30 livros de Josefo (Whiston), leitor por capítulo, resumos, paralelos com a Bíblia e estudo guiado pelo professor (8.20) |
 | M19 Vida dos Personagens | Livro ilustrado da vida de cada personagem bíblico, do nascimento à morte, com linha da vida, narração, família e rota (8.19) |
 | M17 Avatar do Professor Filipe | Avatar animado com estados, expressões e sincronia de boca com a voz. Arte final do Anderson (19/11/2026): personagem 3D estilizado em quatro poses (boas-vindas, ensinando, parabéns, refletindo) com transições e vídeo de saudação |
@@ -948,6 +949,13 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Professor:** o modo de estudo recebe o capítulo aberto (`/estudo?jos=obra.livro.capítulo`); o servidor monta o contexto a partir do banco (nunca do texto do cliente): o trecho, os paralelos e as regras. O texto de Josefo está **no acervo de busca** com a divisão citável.
 - **Regra (RA-21):** o professor **apresenta** Josefo como fonte e não fala como ele (“Josefo escreve que…”), cita sempre a obra e a divisão e lembra que ele escrevia como judeu a serviço de Roma. **[DECISÃO pendente]:** se o dono quiser uma voz de Josefo em primeira pessoa, é preciso mudar RA-21 e RA-02 e aprovar antes.
 - **Limites:** o texto está em inglês (não há tradução portuguesa livre); o professor explica em português. As notas de Whiston não entram no texto.
+
+### 8.21 M21 — Historiadores (P0, pedido do dono em 22/11/2026)
+
+- **Objetivo:** uma seção `/historiadores` que reúne Flávio Josefo e os demais historiadores do mundo da Bíblia (Eusébio, Tácito, Plínio, Suetônio e Fílon), tudo ligado ao professor. Catálogo, direitos e situação em `docs/BIBLIOTECA_HISTORICA.md`.
+- **Conteúdo:** ficha de cada autor (quem foi, obras, edição usada), passagens que importam com o resumo e **a discussão acadêmica**, os limites da fonte e a **tabela de testemunhos fora da Bíblia** (o que cada um diz, independência, discussão), sem declarar consenso onde ele não existe (RA-14).
+- **Ligação com o professor:** cada autor, cada passagem e a tabela abrem o estudo (`/estudo?hist=autor.passagem`); o servidor monta o contexto com a ficha e as regras. O professor **apresenta** o historiador como fonte e não fala como ele (RA-21). Josefo tem leitor próprio (`/josefo`, M20).
+- **Português:** o texto original em inglês de cada obra é de domínio público; a versão em português é tradução automática (pipeline em `scripts/translate`). Obras ainda sem leitor ficam na busca do professor, em inglês, marcadas "em preparação".
 
 ## 9. Modelo de dados
 

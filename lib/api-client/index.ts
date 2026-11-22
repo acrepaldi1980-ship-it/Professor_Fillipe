@@ -82,7 +82,7 @@ export async function teacherTurn(
 }
 
 async function teacherTurnOnce(
-  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
+  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; historian?: { id: string; passage?: string }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
   onDone?: (meta: TurnMeta) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
