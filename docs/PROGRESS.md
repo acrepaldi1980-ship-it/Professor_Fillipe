@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-Prompt 0.1 em andamento. Etapas 1 e 4 concluídas; Etapa 2 (decisões) quase fechada. Próximo: Etapa 3 (migrations e ingestão, depende do Supabase) e Etapa 5 (busca).
+Em 22/11/2026: Fases 0, 1 (MVP em PWA publicado, beta pendente de itens do dono) e quase todo o Prompt 2.x concluídos; Fase 3 (imersão 3D) com motor, VR, tours 360° e cinco ambientes preliminares (Tabernáculo, Arca de Noé, Templo de Salomão, Nova Jerusalém). Falta: Prompt 2.5 (lojas), crédito da Anthropic, revisão do consultor, medições em aparelho real e a lista de Pendências abaixo (parte antiga).
 
 ## Prompts concluídos
 
