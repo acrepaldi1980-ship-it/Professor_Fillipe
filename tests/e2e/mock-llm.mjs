@@ -3,6 +3,15 @@
 // Usage: node tests/e2e/mock-llm.mjs [port]   (MOCK_FAIL=0.3 makes 30% of the calls fail)
 import { createServer } from "node:http";
 
+// A richer answer when the student asks about Filipe (the user-functions test checks a real-looking answer: a name, a verse button and a closing question).
+function teacherFor(messages) {
+  const last = [...(messages ?? [])].reverse().find((m) => m.role === "user");
+  const text = typeof last?.content === "string" ? last.content : JSON.stringify(last?.content ?? "");
+  if (!/Filipe/.test(text)) return baseTeacher;
+  const speech = "Filipe foi um dos sete escolhidos para servir em Jerusalém e depois levou o evangelho a Samaria, como conta Atos 8. Em Atos 8:26-40 ele explica o profeta Isaías a um oficial etíope no caminho. O que você já sabia sobre esse encontro?";
+  const more = " O texto mostra que Filipe obedeceu ao chamado de Deus, foi ao encontro do etíope e perguntou se ele entendia o que lia, a pergunta do nosso slogan.";
+  return { ...baseTeacher, speech, display_markdown: speech + more, citations: [{ type: "bible", ref: "ACT.8.26", version_id: "por_blivre_2018" }], next_options: [{ label: "Ler Atos 8:26-40", intent: "read" }, { label: "Continuar", intent: "next" }] };
+}
 const port = Number(process.argv[2] ?? 4010);
 const failRate = Number(process.env.MOCK_FAIL ?? 0.25);
 const stats = { calls: 0, failed: 0, models: {}, lastSystem: "" };
@@ -35,7 +44,7 @@ function sectionContent(prompt) {
   }
 }
 
-const teacher = { speech: "Entendi o seu pedido, vamos seguir juntos. O que você quer ver agora?", display_markdown: "", citations: [], visuals: [], next_options: [{ label: "Continuar", intent: "next" }], lens_divergence: { present: false, summary: null }, pastoral_flag: false, level_signal: "same", mode_payload: null };
+const baseTeacher = { speech: "Entendi o seu pedido, vamos seguir juntos. O que você quer ver agora?", display_markdown: "", citations: [], visuals: [], next_options: [{ label: "Continuar", intent: "next" }], lens_divergence: { present: false, summary: null }, pastoral_flag: false, level_signal: "same", mode_payload: null };
 
 createServer((req, res) => {
   if (req.url === "/stats") { res.end(JSON.stringify(stats)); return; }
@@ -67,7 +76,7 @@ createServer((req, res) => {
         res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ feedback: { central_idea: { stated_early: true, clarity: 4, comment: "A ideia central aparece logo no começo e volta na conclusão." }, transitions: { score: 3, comment: "Você avisa a passagem entre os pontos, mas pode usar uma frase-ponte." }, illustrations: { used: ["O guia que espera no caminho"], comment: "A ilustração ajuda o primeiro ponto; falta uma para o segundo." }, fidelity: { score: 5, comment: "O que você disse confere com o texto de Atos 8.", issues: [] }, strengths: ["Ideia central clara.", "Boa fidelidade ao texto.", "Conclusão com aplicação."], improvements: [{ what: "Menos hesitações.", how: "Troque o 'né' por uma pausa curta." }, { what: "Mais uma ilustração.", how: "Dê um exemplo do dia a dia no segundo ponto." }] }, parts }) } }] }));
         return;
       }
-      if (j.tools) res.end(JSON.stringify({ choices: [{ message: { tool_calls: [{ function: { arguments: JSON.stringify(teacher) } }] } }] }));
+      if (j.tools) res.end(JSON.stringify({ choices: [{ message: { tool_calls: [{ function: { arguments: JSON.stringify(teacherFor(j.messages)) } }] } }] }));
       else res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ content: sectionContent(prompt) }) } }] }));
     }, delay);
   });
