@@ -177,6 +177,7 @@ export default function StudyPage() {
         const reveal = () => {
           if (shown) return;
           shown = true;
+          (globalThis as { __pfSync?: unknown[] }).__pfSync?.push({ mark: "reveal", t: performance.now() }); // test hook
           setMessages((m) => [...m, { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
           // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
         if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });

@@ -28,6 +28,8 @@ export class WebAudioPlayer implements AudioPlayer {
   private rate = 1;
   private levelListeners = new Set<(level: number) => void>();
   private raf = 0;
+  private gen = 0;
+  private lastScheduled: Promise<void> = Promise.resolve();
 
   private audio(): AudioContext {
     this.ctx ??= new AudioContext();
@@ -36,25 +38,39 @@ export class WebAudioPlayer implements AudioPlayer {
 
   async enqueue(source: Blob | ArrayBuffer, hooks: { onStart?: () => void } = {}): Promise<void> {
     const ctx = this.audio();
-    if (ctx.state === "suspended") await ctx.resume().catch(() => undefined);
-    const bytes = source instanceof Blob ? await source.arrayBuffer() : source.slice(0);
-    const buffer = await ctx.decodeAudioData(bytes);
-    const env = computeEnvelope(buffer.getChannelData(0), buffer.sampleRate);
-    const node = ctx.createBufferSource();
-    node.buffer = buffer;
-    node.playbackRate.value = this.rate;
-    node.connect(ctx.destination);
-    const startAt = Math.max(ctx.currentTime + 0.04, this.tail);
-    const dur = buffer.duration / this.rate;
-    this.tail = startAt + dur;
-    return new Promise<void>((resolve) => {
-      const clip: Clip = { env, node, startAt, endAt: startAt + dur, started: false, rate: this.rate, onStart: hooks.onStart, done: resolve };
-      node.onended = () => { this.clips = this.clips.filter((c) => c !== clip); clip.done(); if (!this.clips.length) this.idle(); };
-      this.clips.push(clip);
-      node.start(startAt);
-      (globalThis as { __pfSync?: unknown[] }).__pfSync?.push({ t: performance.now(), clip: { startAt, endAt: startAt + dur } }); // test hook: only exists when a test defines it
-      this.loop();
-    });
+    const gen = this.gen;
+    // Clips are DECODED in parallel but SCHEDULED strictly in the order they were queued: a short sentence that decodes first must not play before the one
+    // that was asked first (the sentences of one answer must come out in order).
+    const prev = this.lastScheduled;
+    let release!: () => void;
+    this.lastScheduled = new Promise<void>((r) => { release = r; });
+    try {
+      if (ctx.state === "suspended") await ctx.resume().catch(() => undefined);
+      const bytes = source instanceof Blob ? await source.arrayBuffer() : source.slice(0);
+      const buffer = await ctx.decodeAudioData(bytes);
+      await prev;
+      if (gen !== this.gen) return; // stopped while decoding
+      const env = computeEnvelope(buffer.getChannelData(0), buffer.sampleRate);
+      const node = ctx.createBufferSource();
+      node.buffer = buffer;
+      node.playbackRate.value = this.rate;
+      node.connect(ctx.destination);
+      const startAt = Math.max(ctx.currentTime + 0.04, this.tail);
+      const dur = buffer.duration / this.rate;
+      this.tail = startAt + dur;
+      const played = new Promise<void>((resolve) => {
+        const clip: Clip = { env, node, startAt, endAt: startAt + dur, started: false, rate: this.rate, onStart: hooks.onStart, done: resolve };
+        node.onended = () => { this.clips = this.clips.filter((c) => c !== clip); clip.done(); if (!this.clips.length) this.idle(); };
+        this.clips.push(clip);
+        node.start(startAt);
+        (globalThis as { __pfSync?: unknown[] }).__pfSync?.push({ t: performance.now(), clip: { startAt, endAt: startAt + dur } }); // test hook: only exists when a test defines it
+        this.loop();
+      });
+      release(); // the next clip may be scheduled now (not when this one has finished playing)
+      return played;
+    } finally {
+      release();
+    }
   }
 
   play(source: Blob | ArrayBuffer | string): Promise<void> {
@@ -64,6 +80,8 @@ export class WebAudioPlayer implements AudioPlayer {
   }
 
   stop() {
+    this.gen++; // clips still decoding must not start
+    this.lastScheduled = Promise.resolve();
     const pending = this.clips;
     this.clips = [];
     for (const c of pending) { c.node.onended = null; try { c.node.stop(); } catch { /* not started yet */ } c.done(); }
@@ -99,7 +117,7 @@ export class WebAudioPlayer implements AudioPlayer {
       let level = 0;
       for (const c of this.clips) {
         if (ph >= c.startAt && ph <= c.endAt) {
-          if (!c.started) { c.started = true; c.onStart?.(); }
+          if (!c.started) { c.started = true; (globalThis as { __pfSync?: unknown[] }).__pfSync?.push({ mark: "onStart", t: performance.now() }); c.onStart?.(); }
           level = levelAt(c.env, (ph - c.startAt) * 1000 * c.rate) * 0.3; // the avatar multiplies by ~3.4
           break;
         }

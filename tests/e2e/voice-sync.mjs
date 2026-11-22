@@ -31,7 +31,7 @@ function wav(sampleRate, parts) { // parts: [seconds, amplitude]
   for (const [s, a] of parts) for (let k = 0; k < Math.round(s * sampleRate); k++, i++) { buf.writeInt16LE(Math.round(a * 32767 * (a ? Math.sin((2 * Math.PI * 220 * i) / sampleRate) : 0)), o); o += 2; }
   return buf;
 }
-const CLIP = wav(22050, [[0.4, 0], [0.6, 0.6], [0.3, 0]]); // 400 ms silence, 600 ms tone, 300 ms silence
+const clipN = (n) => wav(22050, [[0.4, 0], [0.6, 0.6], [0.3 + 0.1 * n, 0]]); // 400 ms silence, 600 ms tone, then a tail that grows with the sentence number (to tell the sentences apart)
 const b2 = await chromium.launch({ args: ["--autoplay-policy=no-user-gesture-required"] });
 try {
   const ctx = await b2.newContext({ viewport: { width: 420, height: 860 }, locale: "pt-BR" });
@@ -40,7 +40,8 @@ try {
   let speakCalls = 0;
   p.on("response", async (r) => { if (/teacher\/turn/.test(r.url())) console.log("TURN", r.status(), (await r.text().catch(() => "")).slice(0, 900).replace(/\n/g, " | ")); });
   p.on("console", (m) => { if (m.type() === "error") console.log("CONSOLE", m.text().slice(0, 160)); });
-  await p.route("**/api/v1/voice/speak", async (route) => { speakCalls++; await new Promise((r) => setTimeout(r, 120)); await route.fulfill({ status: 200, contentType: "audio/wav", body: CLIP }); });
+  await p.route("**/api/v1/voice/speak", async (route) => { speakCalls++; // the first sentence is the SLOWEST to arrive: the order must still hold
+    const n = speakCalls - 1; await new Promise((r) => setTimeout(r, n === 0 ? 400 : 60)); await route.fulfill({ status: 200, contentType: "audio/wav", body: clipN(n) }); });
   await p.goto(`${BASE}/estudo`, { waitUntil: "networkidle" });
   await p.waitForSelector("input[placeholder]", { timeout: 20000 });
   await p.evaluate(() => { window.__bubbleAt = 0; new MutationObserver(() => { if (!window.__bubbleAt && document.body.innerText.includes("Filipe foi um dos sete")) window.__bubbleAt = performance.now(); }).observe(document.body, { childList: true, subtree: true, characterData: true }); });
@@ -54,6 +55,8 @@ try {
   const frames = log.filter((e) => e.ph !== undefined);
   say("the server voice was asked once per sentence", speakCalls >= 3, `calls=${speakCalls}`);
   say("the audio clock advanced (headless audio works)", frames.length > 30 && frames.at(-1).ph > frames[0].ph, `frames=${frames.length}`);
+  const durs = clips.map((c) => c.endAt - c.startAt);
+  say("the sentences play in the order they were asked, even when a later one arrives first", durs.length >= 3 && durs[0] < durs[1] && durs[1] < durs[2], durs.map((d) => d.toFixed(2)).join(", "));
   say("sentences are queued back to back: each starts exactly when the previous ends (±5 ms)", clips.length >= 3 && clips.slice(1).every((c, i) => Math.abs(c.startAt - clips[i].endAt) < 0.005), JSON.stringify(clips.slice(0, 4)));
   // mouth onset vs the tone: the mouth must open within one frame (+ the envelope attack) after the audible start of the tone, never before it
   const errors = [];
@@ -67,6 +70,7 @@ try {
   say("the mouth stays closed during the silence at the start of every sentence", quiet.length > 5 && quiet.every((f) => f.level < 0.02), `maxLevel=${Math.max(...quiet.map((f) => f.level)).toFixed(3)}`);
   const closeAfter = frames.filter((f) => clips.some((c) => f.ph >= c.startAt + 1.05 && f.ph <= c.startAt + 1.28));
   say("and closes again after the sound", closeAfter.length > 3 && closeAfter.every((f) => f.level < 0.05), `maxLevel=${Math.max(...closeAfter.map((f) => f.level)).toFixed(3)}`);
+  console.log("   marks:", JSON.stringify(log.filter((e) => e.mark).map((e) => [e.mark, Math.round(e.t)])));
   const clipStartPerf = frames.find((f) => f.ph >= clips[0].startAt)?.t ?? 0;
   console.log("   timeline(ms): clip audible", Math.round(clipStartPerf), "bubble", Math.round(bubbleAt), "tone", Math.round(frames.find((f) => f.level > 0.05)?.t ?? 0));
   const firstSoundPerf = frames.find((f) => f.level > 0.05)?.t ?? 0;
