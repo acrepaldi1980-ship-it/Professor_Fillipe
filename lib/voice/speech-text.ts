@@ -80,10 +80,13 @@ export function recognitionVocabulary(max = 120): string[] {
   return (lexicon.vocabulary as string[]).slice(0, max);
 }
 
-/** The first clip decides how soon the voice starts: when the first sentence is long, its first phrase goes alone (about 4 to 12 words) and the rest follows right behind. */
-export function shortFirstChunk(sentences: string[], maxWords = 12): string[] {
+/**
+ * The first clip decides how soon the voice starts, and the narrator voice needs about one second of work per second of speech:
+ * when the first sentence is longer than `maxWords`, its first phrase (3 to 8 words, up to a comma, semicolon or colon) goes alone and the rest follows right behind.
+ */
+export function shortFirstChunk(sentences: string[], maxWords = 9): string[] {
   const first = sentences[0];
   if (!first || first.split(/\s+/).length <= maxWords) return sentences;
-  const m = /^(\S+(?:\s+\S+){3,11}?[,;:])\s+([\s\S]+)$/.exec(first);
+  const m = /^(\S+(?:\s+\S+){2,7}?[,;:])\s+([\s\S]+)$/.exec(first);
   return m ? [m[1], m[2], ...sentences.slice(1)] : sentences;
 }

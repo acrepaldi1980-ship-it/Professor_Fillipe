@@ -47,7 +47,7 @@ describe("cadence and fast start", () => {
     expect(y.length).toBeGreaterThan(12000);
   });
   it("sends a long first sentence out in two so the voice starts sooner", () => {
-    const long = "Hoje vamos olhar para este texto de João com calma, porque ele fala de um amor que a gente demora para entender.";
+    const long = "Hoje vamos olhar este texto de João, porque ele fala de um amor que a gente demora para entender.";
     const r = shortFirstChunk([long, "E você?"]);
     expect(r.length).toBe(3);
     expect(r[0].endsWith(",")).toBe(true);

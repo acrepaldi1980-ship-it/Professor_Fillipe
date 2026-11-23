@@ -24,8 +24,9 @@ image = (
 app = modal.App("voz-professor-filipe", image=image, secrets=[modal.Secret.from_dict({"VOICE_TOKEN": os.environ.get("VOICE_TOKEN", "")})])
 
 
-@app.function(cpu=8, memory=3072, scaledown_window=420, timeout=120)
+# measured: 8 CPUs were no faster than 4 for Kokoro (about 1.2 s of work per second of speech either way), so 4 keeps the free credit going further
+@app.function(cpu=4, memory=2048, scaledown_window=420, timeout=120)
 @modal.web_server(7860, startup_timeout=120, label="voz")
 def serve():
     # server.mjs listens on :7860 and checks the Bearer token itself
-    subprocess.Popen(["node", "/app/server.mjs"], cwd="/app", env={**os.environ, "THREADS": "8", "PORT": "7860"})
+    subprocess.Popen(["node", "/app/server.mjs"], cwd="/app", env={**os.environ, "THREADS": "4", "PORT": "7860"})
