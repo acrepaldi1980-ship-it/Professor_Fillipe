@@ -16,8 +16,8 @@ export function readWav(buf: ArrayBuffer): { samples: Float32Array; sampleRate: 
   return { samples, sampleRate };
 }
 
-/** The voice is made younger by resampling up 3% (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.08 younger, 1.13 younger still, 0.96 mature. */
-const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1.03);
+/** The voice is made younger by no resampling (a man of about 35: firm adult pitch, bright timbre, calm pace) (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.08 younger, 1.13 younger still, 0.96 mature. */
+const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1);
 
 export class RemoteTtsProvider implements VoiceProvider {
   readonly name = "remote";
@@ -30,7 +30,7 @@ export class RemoteTtsProvider implements VoiceProvider {
       method: "POST",
       signal: AbortSignal.timeout(Number(process.env.REMOTE_TTS_TIMEOUT_MS ?? 7000)),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.REMOTE_TTS_TOKEN}` },
-      body: JSON.stringify({ text, speaker: Number(process.env.KOKORO_SPEAKER ?? 44), speed: Number(process.env.KOKORO_SPEED ?? 1) }),
+      body: JSON.stringify({ text, speaker: Number(process.env.KOKORO_SPEAKER ?? 44), speed: Number(process.env.KOKORO_SPEED ?? 0.98) }),
     });
     if (!res.ok) throw new Error(`remote_tts_${res.status}`);
     const { samples, sampleRate } = readWav(await res.arrayBuffer());

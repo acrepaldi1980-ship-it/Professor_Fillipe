@@ -26,7 +26,7 @@ function modelPath(): string {
 }
 /** Speaker ids of the Kokoro v1.0 voice table: pm_alex 44 and pm_santa 45 are the Brazilian Portuguese men. */
 const SPEAKER = Number(process.env.KOKORO_SPEAKER ?? 44);
-const SPEED = Number(process.env.KOKORO_SPEED ?? 1); // a calm, unhurried teacher
+const SPEED = Number(process.env.KOKORO_SPEED ?? 0.98); // a calm, unhurried teacher
 
 async function load(): Promise<Tts> {
   if (engine) return engine;
@@ -40,8 +40,8 @@ async function load(): Promise<Tts> {
   return engine;
 }
 
-/** The voice is made younger by resampling up 3% (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.08 younger, 1.13 younger still, 0.96 mature. */
-const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1.03);
+/** The voice is made younger by no resampling (a man of about 35: firm adult pitch, bright timbre, calm pace) (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.08 younger, 1.13 younger still, 0.96 mature. */
+const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1);
 
 export class KokoroTtsProvider implements VoiceProvider {
   readonly name = "kokoro";
