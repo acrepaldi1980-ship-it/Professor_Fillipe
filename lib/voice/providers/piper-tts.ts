@@ -21,7 +21,7 @@ export const piperAvailable = () => existsSync(join(piperDir(), onnx()));
 /** Announcer settings: a touch more pitch variation than the default (0.667/0.8) and a slow, unhurried pace (length scale 1.5, about 2.5 words per second; the first tunings (1.07, 1.2) were still too fast for the owner). */
 /** Announcer voice: the voice is lowered by this ratio (0.92 = about 8% deeper and slower, the chest of a broadcast announcer). 1 turns it off. */
 const DEEPEN = Number(process.env.PIPER_DEEPEN ?? 1);
-const NOISE = Number(process.env.PIPER_NOISE ?? 0.8), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.9), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.5);
+const NOISE = Number(process.env.PIPER_NOISE ?? 0.55), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.7), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.5);
 
 async function load(): Promise<Tts> {
   if (engine) return engine;
