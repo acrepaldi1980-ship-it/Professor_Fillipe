@@ -22,7 +22,8 @@ export class RemoteTtsProvider implements VoiceProvider {
 
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!remoteConfigured()) throw new Error("remote_tts_not_configured");
-    const res = await fetch(`${process.env.REMOTE_TTS_URL!.replace(/\/$/, "")}/tts`, {
+    // REMOTE_TTS_PATH defaults to "/tts" (voice-server/server.mjs); on Modal the URL already is the endpoint, so the path is set to an empty value
+    const res = await fetch(`${process.env.REMOTE_TTS_URL!.replace(/\/$/, "")}${process.env.REMOTE_TTS_PATH ?? "/tts"}`, {
       method: "POST",
       signal: AbortSignal.timeout(Number(process.env.REMOTE_TTS_TIMEOUT_MS ?? 7000)),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.REMOTE_TTS_TOKEN}` },

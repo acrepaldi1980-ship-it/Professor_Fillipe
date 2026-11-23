@@ -4,7 +4,15 @@ A voz de locutor mais natural que existe de graça (Kokoro-82M, licença Apache-
 do que a hospedagem gratuita do app oferece (lá ela leva 8 a 14 s por frase). Este servidor roda **numa máquina separada** e o app o usa
 automaticamente; se ele estiver lento ou dormindo, o app cai sozinho na voz que já tem (Piper), então nada quebra.
 
-## Opção A: Hugging Face Space (grátis, sem cartão)
+## Opção Modal (grátis, sem cartão, a recomendada) 
+A Modal dá US$ 30 de crédito por mês no plano gratuito (Starter) e só cobra pelo tempo de processamento usado; parado, custa zero.
+1. Crie a conta em modal.com (entrar com Google ou GitHub). Em **Settings → API Tokens**, crie um token (ele aparece como `modal token set --token-id ... --token-secret ...`).
+2. No computador (ou aqui na sessão, se o token for salvo como variável de ambiente `MODAL_TOKEN_ID` e `MODAL_TOKEN_SECRET`), dentro desta pasta:
+   `pip install modal` e depois `VOICE_TOKEN=SUA_SENHA modal deploy modal_voice.py`
+3. O comando imprime uma URL terminada em `.modal.run`. Use-a como `REMOTE_TTS_URL`.
+Observação: o arquivo `modal_voice.py` não pôde ser testado sem uma conta Modal; o servidor que ele roda (`server.mjs`) foi testado.
+
+## Opção A: Hugging Face Space (agora exige assinatura PRO para Docker)
 1. Crie uma conta em huggingface.co, depois **New Space** → SDK **Docker** → CPU basic (gratuito).
 2. Envie os arquivos `Dockerfile` e `server.mjs` desta pasta para o Space (e, no topo de um `README.md` do Space, `app_port: 7860`).
 3. Em **Settings → Variables and secrets**, crie o segredo `VOICE_TOKEN` com uma senha longa qualquer.
