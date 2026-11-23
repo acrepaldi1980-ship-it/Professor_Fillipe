@@ -18,8 +18,8 @@ const onnx = () => `pt_BR-${voice()}-medium.onnx`;
 /** cadu has its own folder (its tokens differ from faber's); faber lives at the root of models/piper. */
 export const piperDir = () => (voice() === "faber" ? baseDir() : join(baseDir(), voice()));
 export const piperAvailable = () => existsSync(join(piperDir(), onnx()));
-/** Announcer settings: a touch more pitch variation than the default (0.667/0.8) and a slow, unhurried pace (length scale 1.2: about 15% slower than the first tuning, which the owner found too fast). */
-const NOISE = Number(process.env.PIPER_NOISE ?? 0.8), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.9), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.2);
+/** Announcer settings: a touch more pitch variation than the default (0.667/0.8) and a slow, unhurried pace (length scale 1.5, about 2.5 words per second; the first tunings (1.07, 1.2) were still too fast for the owner). */
+const NOISE = Number(process.env.PIPER_NOISE ?? 0.8), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.9), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.5);
 
 async function load(): Promise<Tts> {
   if (engine) return engine;
