@@ -47,11 +47,11 @@ async function main() {
   if (step === "plan") { console.log(`${all.length} requests, ${words} English words, ~${Math.round(inTok / 1000)}k input and ~${Math.round(outTok / 1000)}k output tokens; ${MODEL}: ~US$ ${cost.toFixed(2)} (batch: ~US$ ${(cost / 2).toFixed(2)})`); return; }
   const st = load();
   if (step === "run") {
-    // the key is never in the code: the credential proxy adds it to requests to these hosts
+    // the key is never in the code: Gemini reads GEMINI_TRANSLATE_KEY (a free key from a project WITHOUT billing); Mistral gets it from the credential proxy
     const call = async (user: string): Promise<{ text?: string; stop?: "limit" | "retry"; wait?: number }> => {
       const res = PROVIDER === "mistral"
         ? await fetch("https://api.mistral.ai/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer proxy-injected" }, body: JSON.stringify({ model: MODEL, temperature: 0.2, max_tokens: 8000, messages: [{ role: "system", content: SYSTEM }, { role: "user", content: user }] }) })
-        : await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": "proxy-injected" }, body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents: [{ role: "user", parts: [{ text: user }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 8000 } }) });
+        : await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_TRANSLATE_KEY ?? "proxy-injected" }, body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents: [{ role: "user", parts: [{ text: user }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 8000 } }) });
       if (res.status === 429 || res.status >= 500) { const ra = Number(res.headers.get("retry-after")) || 20; const body = await res.text(); return { stop: /per.?day|daily|quota/i.test(body) && res.status === 429 && ra > 300 ? "limit" : "retry", wait: ra }; }
       if (!res.ok) throw new Error(`${PROVIDER} ${res.status}: ${(await res.text()).slice(0, 200)}`);
       const j = (await res.json()) as { choices?: { message?: { content?: string } }[]; candidates?: { content?: { parts?: { text?: string }[] } }[] };
