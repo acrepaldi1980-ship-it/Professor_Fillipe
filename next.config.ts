@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     "/api/v1/sessions/**": ["node_modules/pdfkit/js/data/**"],
     "/api/v1/visuals/**": ["lib/visuals/refs/**"],
     // free male voice (Piper): model + native runtime, only in the voice function
-    "/api/v1/voice/**": ["models/piper/**", "node_modules/sherpa-onnx-node/**", "node_modules/sherpa-onnx-linux-x64/**"],
+    "/api/v1/voice/**": ["models/kokoro/**", "models/piper/**", "node_modules/sherpa-onnx-node/**", "node_modules/sherpa-onnx-linux-x64/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/package.json",
       "node_modules/onnxruntime-node/dist/**",
@@ -21,7 +21,9 @@ const nextConfig: NextConfig = {
     ],
   },
   outputFileTracingExcludes: {
-    "/api/v1/teacher/**": ["models/piper/**"],
+    // the voice function runs sherpa-onnx (its own runtime): the Node ONNX runtime used by search would only add weight (function limit: 250 MB)
+    "/api/v1/voice/**": ["node_modules/onnxruntime-node/**", "node_modules/onnxruntime-common/**"],
+    "/api/v1/teacher/**": ["models/piper/**", "models/kokoro/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
       "node_modules/onnxruntime-node/bin/napi-v6/win32/**",

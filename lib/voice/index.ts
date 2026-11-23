@@ -1,6 +1,7 @@
 import { ElevenLabsTtsProvider } from "./providers/elevenlabs-tts";
 import { GeminiTtsProvider } from "./providers/gemini-tts";
 import { GroqSttProvider } from "./providers/groq-stt";
+import { KokoroTtsProvider, kokoroAvailable } from "./providers/kokoro-tts";
 import { PiperTtsProvider } from "./providers/piper-tts";
 import type { VoiceProvider } from "./types";
 
@@ -21,7 +22,9 @@ export const tts = (): VoiceProvider => {
 export function ttsChain(): VoiceProvider[] {
   const chain: VoiceProvider[] = [];
   // Piper (free, offline male voice) first when chosen, otherwise it is the last resort after the paid providers.
-  if (process.env.VOICE_PROVIDER === "piper") return [new PiperTtsProvider()];
+  // Kokoro (free, more natural) leads whenever its model is shipped, unless a paid provider was chosen explicitly; Piper stays as the fallback.
+  const choice = process.env.VOICE_PROVIDER;
+  if (choice === "piper" || choice === "kokoro" || (kokoroAvailable() && choice !== "gemini" && choice !== "elevenlabs")) return [...(kokoroAvailable() && choice !== "piper" ? [new KokoroTtsProvider()] : []), new PiperTtsProvider()];
   const first = tts();
   chain.push(first);
   if (first.name !== "gemini" && process.env.GEMINI_API_KEY) chain.push(new GeminiTtsProvider());

@@ -3,6 +3,7 @@
 // Quality is plainer than Gemini/ElevenLabs, so it is the last resort of ttsChain (or the first with VOICE_PROVIDER=piper).
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { pauseAfter, polishSpeech } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -31,9 +32,10 @@ export class PiperTtsProvider implements VoiceProvider {
 
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!piperAvailable()) throw new Error("piper_model_missing");
-    const a = (await load()).generate({ text, sid: 0, speed: 1.0 });
-    const pcm = new Int16Array(a.samples.length);
-    for (let i = 0; i < a.samples.length; i++) pcm[i] = Math.max(-1, Math.min(1, a.samples[i])) * 32767;
+    const a = (await load()).generate({ text, sid: 0, speed: 0.95 });
+    const x = polishSpeech(a.samples, a.sampleRate, { tail: pauseAfter(text) });
+    const pcm = new Int16Array(x.length);
+    for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
     return pcmToWav(new Uint8Array(pcm.buffer), a.sampleRate);
   }
 }
