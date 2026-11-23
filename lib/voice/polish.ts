@@ -22,7 +22,23 @@ function run(x: Float32Array, c: Biquad): Float32Array {
   return y;
 }
 
-export interface PolishOptions { /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number; /** target RMS of the speech, dBFS */ rmsDb?: number }
+/** Pitch-and-pace change by resampling (cubic): ratio < 1 lowers the voice, deepens the formants (a bigger, "broadcast" chest) and slows it by 1/ratio. */
+export function resample(x: Float32Array, ratio: number): Float32Array {
+  if (ratio === 1 || x.length < 4) return x;
+  const n = Math.floor((x.length - 1) / ratio), out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const t = i * ratio, k = Math.floor(t), f = t - k;
+    const p0 = x[Math.max(0, k - 1)], p1 = x[k], p2 = x[k + 1], p3 = x[Math.min(x.length - 1, k + 2)];
+    out[i] = p1 + 0.5 * f * (p2 - p0 + f * (2 * p0 - 5 * p1 + 4 * p2 - p3 + f * (3 * (p1 - p2) + p3 - p0)));
+  }
+  return out;
+}
+
+export interface PolishOptions {
+  /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number;
+  /** target RMS of the speech, dBFS */ rmsDb?: number;
+  /** broadcast announcer style: more chest (proximity bass) and presence, a steadier level */ announcer?: boolean;
+}
 
 /** Drops the silence before the first sound (keeps 25 ms), so the voice starts the moment the clip does. */
 export function trimLead(x: Float32Array, sr: number): Float32Array {
@@ -36,9 +52,9 @@ export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOpti
   if (samples.length === 0) return samples;
   let x = trimLead(samples, sr);
   x = run(x, biquad("hp", 70, sr));                 // rumble and plosive thumps
-  x = run(x, biquad("lowshelf", 180, sr, 2.5));     // body: a warmer, fuller voice
-  x = run(x, biquad("peak", 3200, sr, 1.2, 0.9));   // a touch of presence for clarity
-  x = run(x, biquad("highshelf", 6500, sr, -3));    // softer "s" and hiss, less synthetic edge
+  x = run(x, biquad("lowshelf", opts.announcer ? 150 : 180, sr, opts.announcer ? 5 : 2.5)); // body: a warmer, fuller voice (announcer: close-microphone bass)
+  x = run(x, biquad("peak", opts.announcer ? 2800 : 3200, sr, opts.announcer ? 2.2 : 1.2, 0.9)); // presence for clarity
+  x = run(x, biquad("highshelf", 6500, sr, opts.announcer ? -4.5 : -3)); // softer "s" and hiss, less synthetic edge
   // gentle dynamics: a slow gain follower brings quiet words up and loud ones down, so the voice sits at one comfortable level
   const target = Math.pow(10, (opts.rmsDb ?? -20) / 20), win = Math.max(1, Math.round(sr * 0.05));
   const out = new Float32Array(x.length);

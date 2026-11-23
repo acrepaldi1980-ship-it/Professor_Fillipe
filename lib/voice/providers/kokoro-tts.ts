@@ -3,7 +3,7 @@
 import { closeSync, existsSync, openSync, readFileSync, renameSync, writeSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { polishSpeech, pauseAfter } from "../polish";
+import { pauseAfter, polishSpeech, resample } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -26,7 +26,7 @@ function modelPath(): string {
 }
 /** Speaker ids of the Kokoro v1.0 voice table: pm_alex 44 and pm_santa 45 are the Brazilian Portuguese men. */
 const SPEAKER = Number(process.env.KOKORO_SPEAKER ?? 44);
-const SPEED = Number(process.env.KOKORO_SPEED ?? 0.93); // a calm, unhurried teacher
+const SPEED = Number(process.env.KOKORO_SPEED ?? 0.9); // a calm, unhurried teacher
 
 async function load(): Promise<Tts> {
   if (engine) return engine;
@@ -47,7 +47,7 @@ export class KokoroTtsProvider implements VoiceProvider {
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!kokoroAvailable()) throw new Error("kokoro_model_missing");
     const a = (await load()).generate({ text, sid: SPEAKER, speed: SPEED });
-    const x = polishSpeech(a.samples, a.sampleRate, { tail: pauseAfter(text) });
+    const x = polishSpeech(resample(a.samples, Number(process.env.KOKORO_DEEPEN ?? 1)), a.sampleRate, { tail: pauseAfter(text), announcer: true });
     const pcm = new Int16Array(x.length);
     for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
     return pcmToWav(new Uint8Array(pcm.buffer), a.sampleRate);

@@ -55,3 +55,23 @@ describe("cadence and fast start", () => {
     expect(shortFirstChunk(["Curta e direta.", "Outra."])).toEqual(["Curta e direta.", "Outra."]);
   });
 });
+
+import { readWav } from "@/lib/voice/providers/remote-tts";
+import { resample } from "@/lib/voice/polish";
+import { pcmToWav } from "@/lib/voice/wav";
+describe("announcer voice and remote server", () => {
+  it("lowering the voice by resampling makes it deeper and longer", () => {
+    const x = Float32Array.from({ length: 24000 }, (_, i) => Math.sin((2 * Math.PI * 200 * i) / 24000));
+    const y = resample(x, 0.92);
+    expect(y.length).toBeGreaterThan(x.length * 1.07);
+    let cross = 0; for (let i = 1; i < y.length; i++) if (y[i - 1] < 0 && y[i] >= 0) cross++;
+    expect(cross / (y.length / 24000)).toBeLessThan(195); // 200 Hz became about 184 Hz
+  });
+  it("reads back the WAV that the voice server sends", () => {
+    const pcm = new Int16Array([0, 16384, -16384, 32767]);
+    const { samples, sampleRate } = readWav(pcmToWav(new Uint8Array(pcm.buffer), 24000));
+    expect(sampleRate).toBe(24000);
+    expect(samples.length).toBe(4);
+    expect(samples[1]).toBeCloseTo(0.5, 2);
+  });
+});

@@ -2,6 +2,7 @@ import { ElevenLabsTtsProvider } from "./providers/elevenlabs-tts";
 import { GeminiTtsProvider } from "./providers/gemini-tts";
 import { GroqSttProvider } from "./providers/groq-stt";
 import { KokoroTtsProvider, kokoroAvailable } from "./providers/kokoro-tts";
+import { RemoteTtsProvider, remoteConfigured } from "./providers/remote-tts";
 import { PiperTtsProvider } from "./providers/piper-tts";
 import type { VoiceProvider } from "./types";
 
@@ -22,8 +23,10 @@ export const tts = (): VoiceProvider => {
 export function ttsChain(): VoiceProvider[] {
   const chain: VoiceProvider[] = [];
   // Piper (free, offline male voice) first when chosen, otherwise it is the last resort after the paid providers.
-  // Kokoro (free, more natural) leads whenever its model is shipped, unless a paid provider was chosen explicitly; Piper stays as the fallback.
   const choice = process.env.VOICE_PROVIDER;
+  // The narrator voice served by its own machine (voice-server/) leads when configured; Piper answers if it is slow or asleep.
+  if (remoteConfigured() && choice !== "piper") return [new RemoteTtsProvider(), new PiperTtsProvider()];
+  // Kokoro (free, more natural) leads whenever its model is shipped, unless a paid provider was chosen explicitly; Piper stays as the fallback.
   // (production ships Piper only: Kokoro measured 8-14 s per sentence on the Vercel Hobby CPU, ~1 s for Piper; Kokoro is for offline renders and faster hosts)
   if (choice === "piper" || choice === "kokoro" || (kokoroAvailable() && choice !== "gemini" && choice !== "elevenlabs")) return [...(kokoroAvailable() && choice !== "piper" ? [new KokoroTtsProvider()] : []), new PiperTtsProvider()];
   const first = tts();
