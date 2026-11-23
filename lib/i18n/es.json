@@ -1143,5 +1143,7 @@
   "account.voicesource.server": "Voz del profesor (la misma en todos los dispositivos)",
   "account.voicesource.device": "Voz del dispositivo (sin acento, empieza al instante; la calidad depende del teléfono)",
   "account.voicesource.help": "Prueba las dos y quédate con la que suene mejor en tu dispositivo.",
-  "account.voicesource.auto": "Automática (usa la voz natural del dispositivo, si la hay)"
+  "account.voicesource.auto": "Automática (usa la voz natural del dispositivo, si la hay)",
+  "study.external": "Búsqueda realizada fuera de la app.",
+  "study.external.help": "Esto no estaba en el acervo de la app. El profesor leyó la página de abajo y solo afirma lo que ella dice; conviene verificar en la fuente:"
 }

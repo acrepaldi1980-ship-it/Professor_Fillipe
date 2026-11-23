@@ -1143,5 +1143,7 @@
   "account.voicesource.server": "Voz do professor (a mesma em todos os aparelhos)",
   "account.voicesource.device": "Voz do aparelho (sem sotaque, começa na hora; a qualidade depende do celular)",
   "account.voicesource.help": "Teste as duas e fique com a que soar melhor no seu aparelho.",
-  "account.voicesource.auto": "Automática (usa a voz natural do aparelho, como a Antonio no Edge, se houver)"
+  "account.voicesource.auto": "Automática (usa a voz natural do aparelho, como a Antonio no Edge, se houver)",
+  "study.external": "Pesquisa realizada fora do app.",
+  "study.external.help": "Isto não estava no acervo do app. O professor leu a página abaixo e só afirma o que ela diz; vale conferir na fonte:"
 }

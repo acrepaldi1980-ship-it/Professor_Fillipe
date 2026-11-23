@@ -433,6 +433,16 @@ function TeacherExtras({ r, onRef, onVisual, onOption }: { r: TeacherResponse; o
       {works.length > 0 && (
         <p className="text-xs text-muted">{t("study.sources")}: {works.map((w) => (w.type === "work" ? w.label : "")).join("; ")}</p>
       )}
+      {r.external_sources && r.external_sources.length > 0 && (
+        <div role="note" data-testid="external-sources" className="rounded-control border border-line bg-surface p-2 text-xs">
+          <strong>{t("study.external")}</strong> {t("study.external.help")}
+          <ul className="mt-1 list-disc pl-4">
+            {r.external_sources.map((x) => (
+              <li key={x.url}><a className="underline" href={x.url} target="_blank" rel="noopener noreferrer">{x.site}: {x.title}</a> <span className="text-muted">({x.license})</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {r.next_options.map((o) => (
           <Button key={o.label} type="button" onClick={() => onOption(o.label, o.intent)} className="text-sm">{o.label}</Button>

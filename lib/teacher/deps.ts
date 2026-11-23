@@ -1,4 +1,5 @@
 // Real dependencies for the teacher pipeline (server only).
+import { webSearch, webSearchEnabled } from "../websearch";
 import { getStore } from "../knowledge/db";
 import { getVerses, searchChunks } from "../knowledge/search";
 import { AnthropicTeacherLlm } from "./anthropic";
@@ -26,6 +27,8 @@ export function createTurnDeps(): TurnDeps {
     // Claude first when there is a key; otherwise (or when Claude is unavailable) the pool of free endpoints, with automatic failover between them.
     llm: teacherProvider() === "anthropic" ? (buildEndpoints().length ? new FallbackLlm(new AnthropicTeacherLlm(), new RouterTeacherLlm()) : new AnthropicTeacherLlm()) : new RouterTeacherLlm(),
     search: (q, opts) => searchChunks(q, opts),
+    // research outside the app (spec 8.23): Wikipedia, and a general search when TAVILY_API_KEY is set; off with WEB_SEARCH=off
+    webSearch: webSearchEnabled() ? (req) => webSearch(req) : undefined,
     rewriteQuery: buildEndpoints().length && process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
     getVerses: (versionId, refs) => getVerses(versionId, refs),
     loadLayers: loadActiveLayers,

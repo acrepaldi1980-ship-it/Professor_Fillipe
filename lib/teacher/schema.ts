@@ -21,6 +21,10 @@ const visual = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("model3d"), model_id: z.string() }),
 ]);
 
+/** A page read OUTSIDE the app that the answer relies on (set by the server from the pages it really read, never by the model). */
+export const externalSource = z.object({ title: z.string(), url: z.string(), site: z.string(), lang: z.string(), license: z.string(), retrieved_at: z.string() });
+export type ExternalSource = z.infer<typeof externalSource>;
+
 export const teacherResponseSchema = z.object({
   speech: z.string().min(1),
   display_markdown: z.string().default(""),
@@ -32,6 +36,9 @@ export const teacherResponseSchema = z.object({
   level_signal: z.enum(["lower", "same", "higher"]).default("same"),
   avatar_cue: z.enum(AVATAR_CUES).optional(),
   mode_payload: z.record(z.string(), z.unknown()).nullable().default(null),
+  /** The model's own judgement: the passages it was given answer the question (false makes the server research outside the app, when allowed). */
+  sources_sufficient: z.boolean().optional(),
+  external_sources: z.array(externalSource).max(4).optional(),
 });
 
 export type TeacherResponse = z.infer<typeof teacherResponseSchema>;
@@ -65,6 +72,7 @@ export function teacherToolJsonSchema() {
       pastoral_flag: { type: "boolean" },
       level_signal: { enum: ["lower", "same", "higher"] },
       avatar_cue: { enum: [...AVATAR_CUES] },
+      sources_sufficient: { type: "boolean" },
     },
     required: ["speech", "next_options"],
   };

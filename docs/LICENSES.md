@@ -354,3 +354,8 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - **Modelo:** Opus-MT `opus-mt-tc-big-en-pt` (Helsinki-NLP, licença CC BY 4.0), na conversão CTranslate2 int8 de `gabrielsmash/opus-mt-tc-big-en-pt-ct2-int8`. Roda na CPU da própria máquina (`scripts/translate/mt-local.py`): sem chave, sem cota e sem custo.
 - **Uso:** só para gerar a versão em português das obras de domínio público já fichadas acima (Josefo/Whiston e os historiadores). O texto traduzido herda a situação do original (domínio público) e é rotulado na tela como tradução automática. Atribuição do modelo: Tiedemann e Thottingal (OPUS-MT), Helsinki-NLP.
 
+## Pesquisa fora do app: Wikipédia (M23)
+- **Fonte:** Wikipédia em português e em inglês, lidas na hora pela API pública (`lib/websearch/wikipedia.ts`); nada é copiado para a base.
+- **Licença:** texto sob **CC BY-SA 4.0** (Creative Commons Atribuição-CompartilhaIgual). **Crédito exigido:** nome do site, título do artigo e link, mostrados junto de cada resposta que usa a pesquisa (`external_sources`), com o rótulo "Pesquisa realizada fora do app". O professor cita trechos curtos e não republica artigos.
+- **Conteúdo próprio do app** (`app_*`): licença `licensed` (do dono do app), escrito a partir da Bíblia e de fontes de domínio público ou licença aberta já fichadas acima; imagens e créditos seguem em cada tela.
+

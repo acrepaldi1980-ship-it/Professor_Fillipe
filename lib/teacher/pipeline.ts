@@ -13,6 +13,9 @@ import { findUngroundedNames, groundingNotice } from "./grounding";
 import { ensureClosingQuestion } from "./speech";
 import { normalizeRaw } from "./normalize";
 import { injectionResponse, leaksPrompt, screenInput } from "../security/injection";
+import type { WebRequest, WebSource } from "../websearch/types";
+import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
+import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
 
 export interface TeacherLlm {
   /** Returns the raw `teacher_response` tool input (unvalidated). */
@@ -34,6 +37,8 @@ export interface TurnDeps {
   /** Optional: English keywords for the question, to reach English works from a Portuguese question. */
   rewriteQuery?(question: string): Promise<string | null>;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
+  /** Optional: research OUTSIDE the app (spec 8.23). Only called inside the biblical context, for adults, when the app's own sources do not answer. */
+  webSearch?(req: WebRequest): Promise<WebSource[]>;
   /** Optional: active prompt layers from prompt_versions (falls back to the built-in version 1). */
   loadLayers?(): Promise<import("./prompt-store").PromptLayers | null>;
 }
@@ -80,6 +85,10 @@ export interface TurnResult {
     degraded?: boolean;
     /** Short technical code of the failure (never user text). */
     degradedReason?: string;
+    /** Topic guardrail: what it decided and why (never the student's text). */
+    topic?: { verdict: TopicVerdict; why: string };
+    /** Research outside the app: whether it was tried, how many pages were read, whether the answer relies on them. */
+    external?: { tried: boolean; sources: number; used: boolean; ms: number; reason?: string };
     retrievalMs: number;
     /** Milliseconds per stage of the retrieval (diagnostics). */
     trace?: Record<string, number>;
@@ -98,6 +107,9 @@ export function salvageText(raw: unknown, name: string): TeacherResponse | null 
   const base = fallbackResponse(name);
   return { ...base, speech, next_options: [{ label: "Continuar", intent: "next" }, { label: "Encerrar por agora", intent: "stop" }] };
 }
+
+/** The question borrowed its subject from the conversation (the search text differs from what the student typed). */
+const followUp0 = (searchText: string, text: string) => searchText !== text;
 
 function fallbackResponse(name: string, verses: BibleVerse[] = [], chunks: Retrieved[] = []): TeacherResponse {
   // Something always comes back: when the model cannot answer, the teacher offers what was already found (a verse from the Bible text, never invented).
@@ -184,15 +196,43 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const retrievalMs = Date.now() - tSearch;
   trace.total = retrievalMs;
 
+  // 4b) Topic guardrail (owner's rule, 23/11/2026): the teacher answers only inside the biblical context. What is clearly outside gets a short, kind invitation back to
+  // the study: no model call, no outside research. What is unclear goes on, but never to the web.
+  const inStudyContext = !!input.extraSources || (!!input.mode && input.mode !== "free") || !!input.modeContext?.trail;
+  const gate = topicGate({ text: input.text, refs: wantedVerses, chunks, followUp: followUp0(searchText, input.text), inStudyContext, rewritten });
+  if (gate.verdict === "off") {
+    const response = offTopicResponse(student.preferred_name);
+    memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
+    return { response, retrieved: [], meta: { ...baseMeta, intent: "off_topic", tier: "none", pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, retrievalMs, trace, topic: gate } };
+  }
+
+  // 4c) Research outside the app: only for adults (RA-22), only inside the biblical context, only in the free and deep modes, and only when the app's own collection
+  // does not answer (checked before the model when nothing was found, and after it when the model says the passages do not answer).
+  const canWeb = !!deps.webSearch && gate.verdict === "in" && !student.is_minor && (!input.mode || input.mode === "free" || input.mode === "deep");
+  const coverage = assessCoverage({ chunks, verses });
+  let external: WebSource[] = [];
+  let externalTried = false, externalMs = 0;
+  const runWeb = async () => {
+    externalTried = true;
+    const tw = Date.now();
+    // the English keywords (from the model) help to find the English article; wait for them a moment, no longer
+    const english = rewritten ?? (await Promise.race([rewriteP, new Promise<null>((r) => setTimeout(() => r(null), 1500))]).catch(() => null));
+    external = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch(() => []);
+    externalMs = Date.now() - tw;
+  };
+  if (canWeb && coverage !== "ok") await runWeb();
+
   // 5) Prompt and 6) generation.
   const deepNote = DEEP_INTENTS.includes(intent)
     ? "MODO APROFUNDAR: o aluno quer a análise detalhada. Coloque o detalhamento em display_markdown (títulos curtos e listas, até 250 palavras por bloco, só com o que está nos trechos) e use speech para um resumo falado de até 250 palavras que convide a continuar. Se os trechos não cobrirem algum ponto, diga qual."
     : "";
   const baseNotice = groundingNotice(findUngroundedNames({ question: input.text, chunkTexts: [...chunks.map((c) => c.text), ...verses.map((v) => v.text)], rewritten }));
-  const notice = [baseNotice, deepNote].filter(Boolean).join("\n\n") || undefined;
+  const unsureNote = gate.verdict === "unsure" ? UNSURE_NOTICE : "";
+  const noticeFor = (ext: WebSource[]) => [baseNotice, deepNote, unsureNote, externalPrompt(ext)].filter(Boolean).join("\n\n") || undefined;
+  const notice = () => noticeFor(external); // read at each use: the outside research may arrive after the first attempt
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
-  let parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice, input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+  let parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
   const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   let lastRaw: unknown = null;
@@ -201,7 +241,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice: notice(), maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
       return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
     }
   };
@@ -252,6 +292,31 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     const shorter = shorterRaw ? teacherResponseSchema.safeParse(shorterRaw) : null;
     if (shorter?.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
   }
+  // 6b) The model says the app's passages do not answer (or admits it did not find the answer): research outside the app, once, and answer again with those pages.
+  if (canWeb && !externalTried && (parsed.data.sources_sufficient === false || looksUnanswered(parsed.data.speech))) {
+    await runWeb();
+    if (external.length) {
+      parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+      const againRaw = await tryGenerate(messages);
+      const again = againRaw ? teacherResponseSchema.safeParse(againRaw) : null;
+      if (again?.success) parsed = again;
+    }
+  }
+  // 6c) Numbers and measures spoken from outside pages must be in those pages (RA-09: never invent a number). One more attempt, then the plain words of the source.
+  if (external.length && usesOutside(parsed.data.speech, external)) {
+    let bad = ungroundedNumbers(parsed.data.speech, external, [input.text, ...chunks.map((c) => c.text), ...verses.map((v) => v.text)]);
+    if (bad.length) {
+      const hint = `Atenção: você falou números que não estão nas passagens externas (${bad.join(", ")}). Refaça usando exatamente os números que as passagens trazem, citando de qual fonte vem cada um.`;
+      const fixedRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
+      const fixed = fixedRaw ? teacherResponseSchema.safeParse(fixedRaw) : null;
+      if (fixed?.success) parsed = fixed;
+      bad = ungroundedNumbers(parsed.data.speech, external, [input.text, ...chunks.map((c) => c.text), ...verses.map((v) => v.text)]);
+    }
+    if (bad.length) {
+      const first = external[0];
+      parsed = teacherResponseSchema.safeParse({ ...parsed.data, speech: `${student.preferred_name}, pesquisei fora do app, em ${first.site}, no artigo "${first.title}", mas não consegui conferir esse número com segurança. Prefere que eu leia o trecho da fonte para você?`, display_markdown: first.passages.slice(0, 3).map((p) => `- ${p}`).join("\n") }) as typeof parsed;
+    }
+  }
   const llmMs = Date.now() - tLlm;
 
   // 7) Citation verification (8.5.6).
@@ -274,7 +339,11 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // Visuals: only catalog ids reach the screen (max 2 per turn).
   // An answer that copies the internal instructions is replaced by the fixed reply.
   if (leaksPrompt(`${ver.response.speech} ${ver.response.display_markdown ?? ""}`)) ver = { ...ver, response: injectionResponse("reveal_prompt", student.preferred_name) };
-  const response = { ...ver.response, speech: ensureClosingQuestion(ver.response.speech), visuals: sanitizeVisuals(ver.response.visuals as never) as typeof ver.response.visuals };
+  // The answer that relies on outside pages must SAY so and carry the sources (spec 8.23): the label is added here when the model forgot it; sources go in only when used.
+  const usedOutside = external.length > 0 && usesOutside(ver.response.speech, external);
+  let speech = ver.response.speech;
+  if (usedOutside && !/n[ãa]o est[áa] no acervo|fora do app/i.test(speech)) speech = `${outsideLabel(external)} ${speech}`;
+  const response = { ...ver.response, speech: ensureClosingQuestion(speech), visuals: sanitizeVisuals(ver.response.visuals as never) as typeof ver.response.visuals, external_sources: usedOutside ? toResponseSources(external) : [] };
   memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
 
   const words = countWords(response.speech);
@@ -288,6 +357,8 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       retrievedChunks: chunks.length,
       promptVersion: layers?.version ?? PROMPT_DB_VERSION,
       lensChunks: chunks.filter((c) => c.signals?.includes("lens")).length,
+      topic: gate,
+      external: { tried: externalTried, sources: external.length, used: usedOutside, ms: externalMs, ...(externalTried && !external.length ? { reason: "no_pages" } : {}) },
       removedCitations: ver.removed.length,
       schemaRetries,
       speechRewrites: speechRewrites + lengthRewrites,
