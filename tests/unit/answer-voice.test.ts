@@ -22,7 +22,7 @@ describe("one voice per answer", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("keeps the main voice for every sentence when it answers", async () => {
-    fakeServer((c) => ({ voice: "remote" }));
+    fakeServer(() => ({ voice: "remote" }));
     const v = answerVoice();
     const out = await Promise.all(["a", "b", "c"].map((s, i) => text(v(s, i))));
     expect(out).toEqual(["remote:a", "remote:b", "remote:c"]);

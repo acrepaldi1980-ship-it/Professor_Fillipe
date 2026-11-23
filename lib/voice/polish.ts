@@ -34,10 +34,19 @@ export function resample(x: Float32Array, ratio: number): Float32Array {
   return out;
 }
 
+/**
+ * Tone that brings the Kokoro narrator voice to the timbre of the welcome video's narrator. Measured on the same text: the raw voice is dark and boomy
+ * (brightness 1428 Hz, bass-to-treble 16.3 dB, a "giant" or cartoon colour); the video voice is at 1852 Hz and 10.8 dB. A little less bass and more presence
+ * and air gets 1775 Hz and 9.4 dB.
+ */
+export const NARRATOR_TONE = { bass: -2.5, presence: 2.5, air: 2.5 } as const;
+
 export interface PolishOptions {
   /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number;
   /** target RMS of the speech, dBFS */ rmsDb?: number;
   /** broadcast announcer style: more chest (proximity bass) and presence, a steadier level */ announcer?: boolean;
+  /** Explicit tone (dB). Overrides the presets: a negative `bass` lifts the boom off a voice that is already heavy, `presence` and `air` add clarity. */
+  tone?: { bass: number; presence: number; air: number };
 }
 
 /** Drops the silence before the first sound (keeps 25 ms), so the voice starts the moment the clip does. */
@@ -52,9 +61,9 @@ export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOpti
   if (samples.length === 0) return samples;
   let x = trimLead(samples, sr);
   x = run(x, biquad("hp", 70, sr));                 // rumble and plosive thumps
-  x = run(x, biquad("lowshelf", opts.announcer ? 150 : 180, sr, opts.announcer ? 5 : 2.5)); // body: a warmer, fuller voice (announcer: close-microphone bass)
-  x = run(x, biquad("peak", opts.announcer ? 2800 : 3200, sr, opts.announcer ? 2.2 : 1.2, 0.9)); // presence for clarity
-  x = run(x, biquad("highshelf", 6500, sr, opts.announcer ? -4.5 : -3)); // softer "s" and hiss, less synthetic edge
+  x = run(x, biquad("lowshelf", opts.tone ? 220 : opts.announcer ? 150 : 180, sr, opts.tone ? opts.tone.bass : opts.announcer ? 5 : 2.5)); // body: a warmer, fuller voice (announcer: close-microphone bass)
+  x = run(x, biquad("peak", opts.tone ? 3000 : opts.announcer ? 2800 : 3200, sr, opts.tone ? opts.tone.presence : opts.announcer ? 2.2 : 1.2, 0.9)); // presence for clarity
+  x = run(x, biquad("highshelf", opts.tone ? 5500 : 6500, sr, opts.tone ? opts.tone.air : opts.announcer ? -4.5 : -3)); // softer "s" and hiss, less synthetic edge (tone.air > 0: more brightness)
   // gentle dynamics: a slow gain follower brings quiet words up and loud ones down, so the voice sits at one comfortable level
   const target = Math.pow(10, (opts.rmsDb ?? -20) / 20), win = Math.max(1, Math.round(sr * 0.05));
   const out = new Float32Array(x.length);

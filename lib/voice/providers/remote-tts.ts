@@ -1,6 +1,6 @@
 // The narrator voice (Kokoro) served by a separate machine with more CPU than the app host (see voice-server/). The app adds the announcer finish.
 // If the machine is slow or down (free hosts sleep), the call gives up after a few seconds and the chain falls back to the on-board Piper voice.
-import { pauseAfter, polishSpeech, resample } from "../polish";
+import { NARRATOR_TONE, pauseAfter, polishSpeech, resample } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -27,11 +27,11 @@ export class RemoteTtsProvider implements VoiceProvider {
       method: "POST",
       signal: AbortSignal.timeout(Number(process.env.REMOTE_TTS_TIMEOUT_MS ?? 7000)),
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.REMOTE_TTS_TOKEN}` },
-      body: JSON.stringify({ text, speaker: Number(process.env.KOKORO_SPEAKER ?? 44), speed: Number(process.env.KOKORO_SPEED ?? 0.9) }),
+      body: JSON.stringify({ text, speaker: Number(process.env.KOKORO_SPEAKER ?? 44), speed: Number(process.env.KOKORO_SPEED ?? 0.97) }),
     });
     if (!res.ok) throw new Error(`remote_tts_${res.status}`);
     const { samples, sampleRate } = readWav(await res.arrayBuffer());
-    const x = polishSpeech(resample(samples, Number(process.env.KOKORO_DEEPEN ?? 1)), sampleRate, { tail: pauseAfter(text), announcer: true });
+    const x = polishSpeech(resample(samples, Number(process.env.KOKORO_DEEPEN ?? 0.96)), sampleRate, { tail: pauseAfter(text), tone: NARRATOR_TONE });
     const pcm = new Int16Array(x.length);
     for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
     return pcmToWav(new Uint8Array(pcm.buffer), sampleRate);
