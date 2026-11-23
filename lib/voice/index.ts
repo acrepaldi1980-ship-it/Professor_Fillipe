@@ -24,7 +24,7 @@ export function ttsChain(): VoiceProvider[] {
   // Piper (free, offline male voice) first when chosen, otherwise it is the last resort after the paid providers.
   // Kokoro (free, more natural) leads whenever its model is shipped, unless a paid provider was chosen explicitly; Piper stays as the fallback.
   const choice = process.env.VOICE_PROVIDER;
-  // (the voice function ships Kokoro only, to stay under the 250 MB function limit; Piper is for local scripts and as an opt-in with VOICE_PROVIDER=piper)
+  // (production ships Piper only: Kokoro measured 8-14 s per sentence on the Vercel Hobby CPU, ~1 s for Piper; Kokoro is for offline renders and faster hosts)
   if (choice === "piper" || choice === "kokoro" || (kokoroAvailable() && choice !== "gemini" && choice !== "elevenlabs")) return [...(kokoroAvailable() && choice !== "piper" ? [new KokoroTtsProvider()] : []), new PiperTtsProvider()];
   const first = tts();
   chain.push(first);
