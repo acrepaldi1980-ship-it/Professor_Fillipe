@@ -54,8 +54,19 @@ def translate(texts):
             if 0.55 * a <= len(alt.split()) <= 2.4 * a or abs(len(alt.split()) - a) < abs(b - a): out[i] = alt
     return out
 
+# The model leaks its language tag at the start of some sentences (">>por ⁇", "Por ⁇", "Por –") and prints an unknown mark (⁇) for letters its
+# vocabulary lacks (ü, æ, Ã, Ç, Ê...). Same fixes as scripts/translate/clean-pt.mjs (which cleans what is already in the database).
+LEAK = [(r">>\s*por\s*(<<)?\s*⁇?\s*", ""), (r"(^|[.;:!?”\"\)\]]\s+)Por\s*⁇\s*", r"\1"), (r"(^|[.;:!?”\"\)\]]\s+)Por\s[–-]\s+", r"\1"),
+        (r"q ⁇ ", "qu"), (r"C ⁇ sarea", "Cesareia"), (r"C ⁇ sar", "César"), (r"Iren ⁇ us", "Ireneu"), (r"(^|[.;:!?]\s+)⁇ s ", r"\1Às "),
+        (r"N ⁇ O", "NÃO"), (r"LI ⁇ O", "LIÇÃO"), (r"VOC ⁇ ", "VOCÊ"), (r"LICEN ⁇ A", "LICENÇA"), (r"SITUA ⁇ O", "SITUAÇÃO"),
+        (r" ⁇ ndia", " Índia"), (r" ⁇ dolos", " Ídolos"), (r" ⁇ xodo", " Êxodo"), (r" ⁇ sis", " Ísis"),
+        (r"Pant ⁇ nus", "Panteno"), (r"Ch ⁇ remon", "Querêmon"), (r"Pr ⁇ torian", "Pretoriano"), (r"Erythr ⁇ an", "Eritreia"), (r"C ⁇ cilianus", "Ceciliano"),
+        (r"Nic ⁇ a", "Niceia"), (r"Hymen ⁇ us", "Himeneu"), (r"Hex ⁇ meron", "Hexameron"), (r"Kalend ⁇ ", "Calendas"),
+        (r"(^|[^\w])(>>)?(Porpor|[Pp]or)\s*⁇\s*", r"\1"), (r"\s⁇\s", " ")]
+
 def fix(s: str) -> str:
     for a, b in FIX: s = re.sub(a, b, s)
+    for a, b in LEAK: s = re.sub(a, b, s)
     return s
 
 def do_request(secs):

@@ -56,9 +56,11 @@ async function main() {
   const st = load();
   if (step === "run" && PROVIDER === "local") {
     // Free local machine translation (scripts/translate/mt-local.py): no key, no quota. Exports the pending requests, runs the worker, merges its answers.
-    const todo = all.filter((u) => !st.done[u.id]);
+    // ids are positions inside the still-untranslated sections, so an old answer can describe a different pack today: only an answer that still matches counts
+    const todo = all.filter((u) => !st.done[u.id] || !parse(st.done[u.id], u.secs));
     const inF = `${DIR}/mt-in.jsonl`, outF = `${DIR}/mt-out.jsonl`;
     mkdirSync(DIR, { recursive: true });
+    writeFileSync(outF, ""); // answers are merged into the state at the end of each run; a stale answer must not make the worker skip a pack
     writeFileSync(inF, todo.map((u) => JSON.stringify({ id: u.id, secs: u.secs })).join("\n") + "\n");
     console.log(`${todo.length} requests to translate locally`);
     const { spawnSync } = await import("node:child_process");
