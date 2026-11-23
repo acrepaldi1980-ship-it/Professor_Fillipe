@@ -17,6 +17,18 @@ export function mergeShards(parts: ChunkRow[][], limit: number): ChunkRow[] {
   return [...best.values()].sort((a, b) => (b.rrf ?? 0) - (a.rrf ?? 0)).slice(0, limit);
 }
 
+/**
+ * Josephus exists in the index twice, in English and in Portuguese, with the same blocks (ids differ only by ":pt"). When both come back, only the Portuguese one is
+ * kept: the same passage twice would waste the teacher's context. The Portuguese block says in its title that it is a machine translation.
+ */
+export function dropEnglishTwins(rows: ChunkRow[]): ChunkRow[] {
+  const have = new Set(rows.map((r) => r.id));
+  return rows.filter((r) => {
+    const i = r.id.indexOf(":");
+    return r.language === "pt" || i < 0 || !have.has(`${r.id.slice(0, i)}:pt:${r.id.slice(i + 1)}`);
+  });
+}
+
 /** The library may live in several Neon databases (each free project has 1 GB): the same question goes to all of them at once and the answers are merged. A shard that fails is skipped. */
 export class NeonLibraryStore implements LibraryStore {
   constructor(private urls: string[] = shardUrls()) {}
@@ -29,9 +41,9 @@ export class NeonLibraryStore implements LibraryStore {
       a.workIds ? pgArray(a.workIds) : null,
     ];
     const run = (url: string) => refQuery<ChunkRow>("select * from library_search($1::vector, $2, $3::text[], $4, $5::text[])", params, url);
-    if (this.urls.length <= 1) return run(this.urls[0]);
+    if (this.urls.length <= 1) return dropEnglishTwins(await run(this.urls[0]));
     const parts = await Promise.all(this.urls.map((u) => run(u).catch(() => [] as ChunkRow[])));
-    return mergeShards(parts, params[3] as number * 3);
+    return dropEnglishTwins(mergeShards(parts, params[3] as number * 3));
   }
 }
 

@@ -77,3 +77,16 @@ describe("Historiadores", () => {
     expect(TESTIMONIES.length).toBeGreaterThanOrEqual(5);
   });
 });
+
+import { dropEnglishTwins } from "@/lib/knowledge/library-store";
+describe("Portuguese index", () => {
+  const r = (id: string, language: string) => ({ id, language, rrf: 1 }) as ChunkRow;
+  it("keeps only the Portuguese block when its English twin comes back too", () => {
+    const out = dropEnglishTwins([r("jos_ant:18.3.3", "en"), r("jos_ant:pt:18.3.3", "pt"), r("jos_war:2.9.2", "en")]);
+    expect(out.map((x) => x.id)).toEqual(["jos_ant:pt:18.3.3", "jos_war:2.9.2"]);
+  });
+  it("keeps an English block that has no Portuguese twin, and Portuguese blocks of other works", () => {
+    const out = dropEnglishTwins([r("jos_ant:1.1.1", "en"), r("pg_2811:pt:letters.4.0", "pt"), r("pg_2811:x", "en")]);
+    expect(out.length).toBe(3);
+  });
+});
