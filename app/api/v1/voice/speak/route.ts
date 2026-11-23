@@ -29,7 +29,8 @@ export async function POST(req: Request) {
   if (!parsed.success) return Response.json({ error: "invalid_request" }, { status: 400 });
   const spoken = prepareForSpeech(parsed.data.text);
   if (parsed.data.warm) {
-    for (const provider of ttsChain()) { try { await provider.synthesize!("Olá, tudo bem?"); break; } catch { /* try the next one */ } }
+    // The answer asks for a few sentences at once, and the voice machine serves one at a time: wake three, so they are ready together.
+    for (const provider of ttsChain()) { try { await Promise.all(Array.from({ length: provider.name === "remote" ? 3 : 1 }, (_, i) => provider.synthesize!(i ? `Olá, tudo bem${"?".repeat(i)}` : "Olá, tudo bem?"))); break; } catch { /* try the next one */ } }
     return new Response(null, { status: 204 });
   }
   // Providers in order; the first that answers wins. The cache is keyed by text and voice, so a repeated sentence costs nothing.

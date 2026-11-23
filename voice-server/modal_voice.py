@@ -24,8 +24,8 @@ image = (
 app = modal.App("voz-professor-filipe", image=image, secrets=[modal.Secret.from_dict({"VOICE_TOKEN": os.environ.get("VOICE_TOKEN", "")})])
 
 
-@app.function(cpu=4, memory=2048, scaledown_window=300, timeout=120)
+@app.function(cpu=8, memory=3072, scaledown_window=420, timeout=120)
 @modal.web_server(7860, startup_timeout=120, label="voz")
 def serve():
     # server.mjs listens on :7860 and checks the Bearer token itself
-    subprocess.Popen(["node", "/app/server.mjs"], cwd="/app", env={**os.environ, "THREADS": "4", "PORT": "7860"})
+    subprocess.Popen(["node", "/app/server.mjs"], cwd="/app", env={**os.environ, "THREADS": "8", "PORT": "7860"})
