@@ -52,3 +52,6 @@ Thumbs.db
 /models/
 backups/
 media-out/
+
+# Raw downloads and translation state (large, rebuilt by scripts/ingest and scripts/translate)
+/data/
