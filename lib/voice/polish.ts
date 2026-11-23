@@ -43,7 +43,7 @@ export function resample(x: Float32Array, ratio: number): Float32Array {
 export const NARRATOR_TONE = { bass: -6.5, presence: 3.5, air: 2.5 } as const;
 
 /** The Kokoro vocoder leaves a steady whistle at 4.8 kHz, at its double 9.6 kHz and near 10.6 kHz (tones 15 to 18 dB above their surroundings): it sounds like microphone feedback. */
-export const KOKORO_WHISTLE_HZ = [4800, 9600, 10600] as const;
+export const KOKORO_WHISTLE_HZ = [4800, 9609, 9887, 10083, 10600, 11059] as const;
 
 export interface PolishOptions {
   /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number;
