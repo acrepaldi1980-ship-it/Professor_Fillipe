@@ -349,3 +349,8 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - **Tácito**: *Anais* livros 1 a 6, Thomas Gordon (1728) e Arthur Galton, ed. (1896), Gutenberg nº 7959; *Germânia* e *Agrícola*, Gutenberg nº 7524 (tradutor a verificar). **Não entra:** *Histórias* na tradução de Fyfe (1912; falecido em 1965).
 - **Plínio, o Jovem**: *Cartas*, William Melmoth (1746), seleção Harvard Classics, Gutenberg nº 2811. A numeração é a de Melmoth (a carta sobre os cristãos é 10.97, e não 10.96).
 - **Suetônio**: *Vidas dos Doze Césares*, Alexander Thomson (c. 1796), revisto por Thomas Forester (1893), Gutenberg nº 6400. A triagem automática o mandou para revisão porque o Gutenberg não dá as datas de morte; conferi à mão (Thomson morreu em 1803 e Forester em 1850, ambos antes do corte do Brasil) e o liberei. **Confirmar com a assessoria jurídica.**
+
+## Tradutor automático local (ferramenta, não conteúdo) — M21
+- **Modelo:** Opus-MT `opus-mt-tc-big-en-pt` (Helsinki-NLP, licença CC BY 4.0), na conversão CTranslate2 int8 de `gabrielsmash/opus-mt-tc-big-en-pt-ct2-int8`. Roda na CPU da própria máquina (`scripts/translate/mt-local.py`): sem chave, sem cota e sem custo.
+- **Uso:** só para gerar a versão em português das obras de domínio público já fichadas acima (Josefo/Whiston e os historiadores). O texto traduzido herda a situação do original (domínio público) e é rotulado na tela como tradução automática. Atribuição do modelo: Tiedemann e Thottingal (OPUS-MT), Helsinki-NLP.
+

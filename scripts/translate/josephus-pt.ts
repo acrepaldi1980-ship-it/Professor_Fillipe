@@ -53,6 +53,25 @@ async function main() {
   const cost = (inTok / 1e6) * pi + (outTok / 1e6) * po;
   if (step === "plan") { console.log(`${all.length} requests, ${words} English words, ~${Math.round(inTok / 1000)}k input and ~${Math.round(outTok / 1000)}k output tokens; ${MODEL}: ~US$ ${cost.toFixed(2)} (batch: ~US$ ${(cost / 2).toFixed(2)})`); return; }
   const st = load();
+  if (step === "run" && PROVIDER === "local") {
+    // Free local machine translation (scripts/translate/mt-local.py): no key, no quota. Exports the pending requests, runs the worker, merges its answers.
+    const todo = all.filter((u) => !st.done[u.id]);
+    const inF = `${DIR}/mt-in.jsonl`, outF = `${DIR}/mt-out.jsonl`;
+    mkdirSync(DIR, { recursive: true });
+    writeFileSync(inF, todo.map((u) => JSON.stringify({ id: u.id, secs: u.secs })).join("\n") + "\n");
+    console.log(`${todo.length} requests to translate locally`);
+    const { spawnSync } = await import("node:child_process");
+    spawnSync(process.env.MT_PYTHON ?? "/opt/mt/bin/python", ["scripts/translate/mt-local.py", inF, outF], { stdio: "inherit" });
+    let merged = 0, bad = 0;
+    if (existsSync(outF)) for (const line of readFileSync(outF, "utf8").split("\n")) {
+      if (!line.trim()) continue;
+      const r = JSON.parse(line) as { id: string; answer: string }; const u = all.find((x) => x.id === r.id);
+      if (!u || st.done[u.id]) continue;
+      if (parse(r.answer, u.secs)) { st.done[u.id] = r.answer; merged++; } else bad++;
+    }
+    save(st); console.log(`merged ${merged} answers (${bad} did not match the markers); ${Object.keys(st.done).length} in total`);
+    return;
+  }
   if (step === "run") {
     // the key is never in the code: Gemini reads GEMINI_TRANSLATE_KEY (a free key from a project WITHOUT billing); Mistral gets it from the credential proxy
     const call = async (user: string): Promise<{ text?: string; stop?: "limit" | "retry"; wait?: number }> => {
@@ -112,9 +131,11 @@ async function main() {
       const text = st.done[u.id]; if (!text) continue;
       const map = parse(text, u.secs); if (!map) continue;
       if (u.id.startsWith("h.")) {
-        const [, w, o] = u.id.split("."); const prev = (await nsql("select text_pt from hist_units where work = $1 and ord = $2", [w, Number(o)]))[0]?.text_pt as string | null;
-        const piece = [...map.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v).join("\n\n");
-        await nsql("update hist_units set text_pt = $3 where work = $1 and ord = $2", [w, Number(o), prev ? `${prev}\n\n${piece}` : piece]); sections++;
+        const [, w, o] = u.id.split(".");
+        const packs = all.filter((x) => x.id.startsWith(`h.${w}.${o}.u`));
+        if (packs[0].id !== u.id || !packs.every((x) => st.done[x.id] && parse(st.done[x.id], x.secs))) continue; // a unit is written once, when all its packs are translated
+        const piece = packs.map((x) => [...parse(st.done[x.id], x.secs)!.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v).join("\n\n")).join("\n\n");
+        await nsql("update hist_units set text_pt = $3 where work = $1 and ord = $2", [w, Number(o), piece]); sections++;
       } else if (u.id.startsWith("htitles.")) {
         for (const [n, pt] of map) { const [key] = u.secs.find((s) => s.n === n)!.text.split(" || "); const [w, o] = key.split("."); await nsql("update hist_units set title_pt = $3 where work = $1 and ord = $2", [w, Number(o), pt.replace(/^[^|]*\|\|\s*/, "")]); titles++; }
       } else if (u.id.startsWith("titles.")) {
