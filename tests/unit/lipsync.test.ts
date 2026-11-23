@@ -32,3 +32,16 @@ describe("natural mouth", () => {
     expect(max).toBeLessThan(1.2);
   });
 });
+
+import { jawTaper } from "../../lib/avatar/lipsync";
+describe("jaw", () => {
+  it("is wider than the mouth, full under the middle and zero at the edge of the beard", () => {
+    expect(FACE_MOUTH.jawHalfW).toBeGreaterThan(FACE_MOUTH.halfW);
+    expect(jawTaper(FACE_MOUTH, FACE_MOUTH.cx)).toBeCloseTo(1, 5);
+    expect(jawTaper(FACE_MOUTH, FACE_MOUTH.cx + FACE_MOUTH.jawHalfW)).toBe(0);
+  });
+  it("opens wide enough to be seen (at least 30 px of an 800 px face) and stays above the neck", () => {
+    expect(FACE_MOUTH.maxDrop).toBeGreaterThanOrEqual(30);
+    expect(FACE_MOUTH.lipY + FACE_MOUTH.jawH + FACE_MOUTH.maxDrop).toBeLessThan(660);
+  });
+});

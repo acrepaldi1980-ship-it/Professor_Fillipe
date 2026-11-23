@@ -4,7 +4,7 @@
 // Quality is plainer than Gemini/ElevenLabs, so it is the last resort of ttsChain (or the first with VOICE_PROVIDER=piper).
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { pauseAfter, polishSpeech } from "../polish";
+import { pauseAfter, polishSpeech, splitPhrases } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -18,8 +18,8 @@ const onnx = () => `pt_BR-${voice()}-medium.onnx`;
 /** cadu has its own folder (its tokens differ from faber's); faber lives at the root of models/piper. */
 export const piperDir = () => (voice() === "faber" ? baseDir() : join(baseDir(), voice()));
 export const piperAvailable = () => existsSync(join(piperDir(), onnx()));
-/** Announcer settings: a touch more pitch variation than the default (0.667/0.8) and a slower, unhurried pace (length scale > 1). */
-const NOISE = Number(process.env.PIPER_NOISE ?? 0.8), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.9), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.07);
+/** Announcer settings: a touch more pitch variation than the default (0.667/0.8) and a slow, unhurried pace (length scale 1.2: about 15% slower than the first tuning, which the owner found too fast). */
+const NOISE = Number(process.env.PIPER_NOISE ?? 0.8), NOISE_W = Number(process.env.PIPER_NOISE_W ?? 0.9), LENGTH = Number(process.env.PIPER_LENGTH ?? 1.2);
 
 async function load(): Promise<Tts> {
   if (engine) return engine;
@@ -40,7 +40,21 @@ export class PiperTtsProvider implements VoiceProvider {
 
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!piperAvailable()) throw new Error("piper_model_missing");
-    const a = (await load()).generate({ text, sid: 0, speed: 1.0 });
+    const tts = await load();
+    // A breath at every comma, semicolon and colon: the phrases are spoken one by one and joined with a short silence (a calm, "compassed" cadence).
+    const phrases = splitPhrases(text);
+    const parts: Float32Array[] = [];
+    let sr = 22050;
+    phrases.forEach((ph, i) => {
+      const a = tts.generate({ text: ph, sid: 0, speed: 1.0 });
+      sr = a.sampleRate;
+      parts.push(a.samples);
+      if (i < phrases.length - 1) parts.push(new Float32Array(Math.round(sr * (/[;:]$/.test(ph) ? 0.3 : 0.2))));
+    });
+    const joined = new Float32Array(parts.reduce((t, p) => t + p.length, 0));
+    let at = 0;
+    for (const p of parts) { joined.set(p, at); at += p.length; }
+    const a = { samples: joined, sampleRate: sr };
     const x = polishSpeech(a.samples, a.sampleRate, { tail: pauseAfter(text) });
     const pcm = new Int16Array(x.length);
     for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;

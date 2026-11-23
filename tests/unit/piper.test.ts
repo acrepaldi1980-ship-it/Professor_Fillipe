@@ -17,5 +17,5 @@ describe("piper voice", () => {
     const head = new TextDecoder().decode(new Uint8Array(wav).slice(0, 4));
     expect(head).toBe("RIFF");
     expect(wav.byteLength).toBeGreaterThan(50_000); // more than ~1 s of 22 kHz audio
-  });
+  }, 30_000); // slow CPUs (and a busy build machine) need more than the default 5 s
 });

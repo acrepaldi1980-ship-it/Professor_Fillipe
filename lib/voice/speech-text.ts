@@ -79,3 +79,11 @@ export function splitSentences(text: string, minLen = 25): string[] {
 export function recognitionVocabulary(max = 120): string[] {
   return (lexicon.vocabulary as string[]).slice(0, max);
 }
+
+/** The first clip decides how soon the voice starts: when the first sentence is long, its first phrase goes alone (about 4 to 12 words) and the rest follows right behind. */
+export function shortFirstChunk(sentences: string[], maxWords = 12): string[] {
+  const first = sentences[0];
+  if (!first || first.split(/\s+/).length <= maxWords) return sentences;
+  const m = /^(\S+(?:\s+\S+){3,11}?[,;:])\s+([\s\S]+)$/.exec(first);
+  return m ? [m[1], m[2], ...sentences.slice(1)] : sentences;
+}

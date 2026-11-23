@@ -18,14 +18,14 @@ import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getJosephusChapter, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getJosephusChapter, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, warmVoice, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
 import type { TeacherResponse } from "@/lib/teacher/schema";
 import { byId } from "@/lib/historians/data";
-import { splitSentences } from "@/lib/voice/speech-text";
+import { shortFirstChunk, splitSentences } from "@/lib/voice/speech-text";
 import { speakQueue } from "@/lib/voice/speak-queue";
 
 const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
@@ -113,6 +113,7 @@ export default function StudyPage() {
     if (sessionReady) void getSessionDocument(sessionId.current).then((d) => setMode(d.mode)).catch(() => undefined);
   }, [sessionReady]);
   useEffect(() => getPlatform().audioPlayer.onLevel(setLevel), []);
+  useEffect(() => { warmVoice(); }, []); // the voice wakes up while the student reads
 
   const stopSpeaking = useCallback(() => {
     playId.current++;
@@ -126,7 +127,7 @@ export default function StudyPage() {
   const serverVoice = useRef<"unknown" | "ok" | "down">("unknown");
   const speak = useCallback(async (speech: string, cue?: AvatarState, onFirstSound?: () => void) => {
     const my = ++playId.current;
-    const sentences = splitSentences(speech);
+    const sentences = shortFirstChunk(splitSentences(speech));
     const platform = getPlatform();
     let first = false;
     const firstSound = () => { if (first) return; first = true; onFirstSound?.(); };
@@ -175,6 +176,7 @@ export default function StudyPage() {
       setError(null);
       setMessages((m) => [...m, { id: nextId.current++, role: "user", text: clean }]);
       setState("thinking");
+      warmVoice(); // the voice loads while the teacher thinks
       try {
         const tid = nextId.current++;
         // the answer arrives first; the message id (for the "wrong?" button) and the fair-use flag arrive when the server has saved it

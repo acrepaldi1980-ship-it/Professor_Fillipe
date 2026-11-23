@@ -137,6 +137,14 @@ export async function transcribeAudio(audio: Blob): Promise<{ text: string; conf
   return res.json();
 }
 
+let lastVoiceWarm = 0;
+/** Wakes the server voice (model load takes seconds on the first call after a pause) while the student reads or the teacher thinks. At most once every 4 minutes. */
+export function warmVoice(): void {
+  if (Date.now() - lastVoiceWarm < 4 * 60_000) return;
+  lastVoiceWarm = Date.now();
+  void apiFetch("/voice/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: "Olá.", warm: true }) }).catch(() => { lastVoiceWarm = 0; });
+}
+
 export async function speakSentence(text: string, signal?: AbortSignal): Promise<Blob> {
   const res = await apiFetch("/voice/speak", {
     method: "POST",

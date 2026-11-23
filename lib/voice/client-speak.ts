@@ -4,7 +4,7 @@ import { getLanguage } from "@/lib/i18n";
 import { speakSentence } from "@/lib/api-client";
 import { getPlatform } from "@/lib/platform";
 import { loadPrefs } from "@/lib/prefs";
-import { splitSentences } from "./speech-text";
+import { shortFirstChunk, splitSentences } from "./speech-text";
 import { speakQueue } from "./speak-queue";
 
 let server: "unknown" | "ok" | "down" = "unknown";
@@ -23,7 +23,7 @@ export async function speakText(text: string, onLevel?: (level: number) => void)
   const unsubscribe = onLevel ? platform.audioPlayer.onLevel(onLevel) : undefined;
   let spokeAny = false;
   try {
-    const sentences = splitSentences(text);
+    const sentences = shortFirstChunk(splitSentences(text));
     let from = 0;
     if (server !== "down" && getLanguage() === "pt-BR") { // the server voice (Piper) speaks Portuguese; in Spanish the device voice is used
       // the sentences are requested together and queued back to back: no pause between them

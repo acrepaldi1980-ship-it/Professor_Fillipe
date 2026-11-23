@@ -24,9 +24,17 @@ function run(x: Float32Array, c: Biquad): Float32Array {
 
 export interface PolishOptions { /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number; /** target RMS of the speech, dBFS */ rmsDb?: number }
 
+/** Drops the silence before the first sound (keeps 25 ms), so the voice starts the moment the clip does. */
+export function trimLead(x: Float32Array, sr: number): Float32Array {
+  const thr = 0.012, keep = Math.round(sr * 0.025);
+  let i = 0;
+  while (i < x.length && Math.abs(x[i]) < thr) i++;
+  return i > keep ? x.subarray(i - keep) : x;
+}
+
 export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOptions = {}): Float32Array {
   if (samples.length === 0) return samples;
-  let x = samples;
+  let x = trimLead(samples, sr);
   x = run(x, biquad("hp", 70, sr));                 // rumble and plosive thumps
   x = run(x, biquad("lowshelf", 180, sr, 2.5));     // body: a warmer, fuller voice
   x = run(x, biquad("peak", 3200, sr, 1.2, 0.9));   // a touch of presence for clarity
@@ -56,3 +64,16 @@ export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOpti
 
 /** Pause to leave after a sentence, by how it ends: a full stop breathes longer than a comma. */
 export const pauseAfter = (sentence: string): number => (/[.!]["”')\]]*\s*$/.test(sentence) ? 0.28 : /\?["”')\]]*\s*$/.test(sentence) ? 0.34 : /[;:]\s*$/.test(sentence) ? 0.2 : 0.12);
+
+/** Cuts a sentence at commas, semicolons and colons into phrases of at least 3 words (shorter bits stay with the next one). */
+export function splitPhrases(text: string): string[] {
+  const raw = text.split(/(?<=[,;:])\s+/).map((x) => x.trim()).filter(Boolean);
+  const out: string[] = [];
+  let carry = "";
+  for (const r of raw) {
+    const cur = carry ? `${carry} ${r}` : r;
+    if (cur.split(/\s+/).length < 3) carry = cur; else { out.push(cur); carry = ""; }
+  }
+  if (carry) { if (out.length) out[out.length - 1] += ` ${carry}`; else out.push(carry); }
+  return out.length ? out : [text];
+}

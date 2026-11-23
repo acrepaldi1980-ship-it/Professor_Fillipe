@@ -31,3 +31,27 @@ describe("speech polish", () => {
     expect(pauseAfter("Entendeu.")).toBeGreaterThan(pauseAfter("Veja, "));
   });
 });
+
+import { splitPhrases, trimLead } from "@/lib/voice/polish";
+import { shortFirstChunk } from "@/lib/voice/speech-text";
+describe("cadence and fast start", () => {
+  it("cuts a sentence at commas into phrases of at least 3 words", () => {
+    expect(splitPhrases("Antes de tudo, me conta o que você já sabe, tudo bem?")).toEqual(["Antes de tudo,", "me conta o que você já sabe, tudo bem?"]);
+    expect(splitPhrases("Olá, Ana. Vamos")).toEqual(["Olá, Ana. Vamos"]);
+    expect(splitPhrases("Sem vírgula nenhuma aqui")).toEqual(["Sem vírgula nenhuma aqui"]);
+  });
+  it("drops the silence before the first sound but keeps a little", () => {
+    const x = new Float32Array(24000); for (let i = 12000; i < 24000; i++) x[i] = 0.3;
+    const y = trimLead(x, 24000);
+    expect(y.length).toBeLessThan(13000);
+    expect(y.length).toBeGreaterThan(12000);
+  });
+  it("sends a long first sentence out in two so the voice starts sooner", () => {
+    const long = "Hoje vamos olhar para este texto de João com calma, porque ele fala de um amor que a gente demora para entender.";
+    const r = shortFirstChunk([long, "E você?"]);
+    expect(r.length).toBe(3);
+    expect(r[0].endsWith(",")).toBe(true);
+    expect(r.join(" ")).toBe(`${long} E você?`);
+    expect(shortFirstChunk(["Curta e direta.", "Outra."])).toEqual(["Curta e direta.", "Outra."]);
+  });
+});
