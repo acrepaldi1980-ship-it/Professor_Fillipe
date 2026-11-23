@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingExcludes: {
     // the voice function runs sherpa-onnx (its own runtime): the Node ONNX runtime used by search would only add weight (function limit: 250 MB)
-    "/api/v1/voice/**": ["models/kokoro/**", "node_modules/onnxruntime-node/**", "node_modules/onnxruntime-common/**"],
+    "/api/v1/voice/**": ["models/kokoro/**", "models/piper/pt_BR-faber-medium*", "node_modules/onnxruntime-node/**", "node_modules/onnxruntime-common/**"],
     "/api/v1/teacher/**": ["models/piper/**", "models/kokoro/**"],
     "/api/**": [
       "node_modules/onnxruntime-node/bin/napi-v6/darwin/**",
