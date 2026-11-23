@@ -40,8 +40,8 @@ async function load(): Promise<Tts> {
   return engine;
 }
 
-/** The voice is made younger by resampling up 8% (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.03 lighter, 1.13 younger still, 0.96 mature. */
-const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1.08);
+/** The voice is made younger by resampling up 3% (pitch and timbre rise, the pace quickens); the whistle frequencies move with it. KOKORO_DEEPEN: 1.08 younger, 1.13 younger still, 0.96 mature. */
+const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 1.03);
 
 export class KokoroTtsProvider implements VoiceProvider {
   readonly name = "kokoro";
