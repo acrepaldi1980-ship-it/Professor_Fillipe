@@ -69,7 +69,7 @@ async function main() {
     if (existsSync(outF)) for (const line of readFileSync(outF, "utf8").split("\n")) {
       if (!line.trim()) continue;
       const r = JSON.parse(line) as { id: string; answer: string }; const u = all.find((x) => x.id === r.id);
-      if (!u || st.done[u.id]) continue;
+      if (!u || (st.done[u.id] && parse(st.done[u.id], u.secs))) continue; // keep a valid answer; replace a stale one
       if (parse(r.answer, u.secs)) { st.done[u.id] = r.answer; merged++; } else bad++;
     }
     save(st); console.log(`merged ${merged} answers (${bad} did not match the markers); ${Object.keys(st.done).length} in total`);

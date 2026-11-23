@@ -25,8 +25,14 @@ export const FIXES = [
   ["\\s⁇\\s", " "],
 ];
 
+/** Proper names the translator left in English or Latin, in the form used in Portuguese. Whole words only. */
+const NAMES = { Livy: "Lívio", Josephus: "Josefo", Cornelius: "Cornélio", Tiberius: "Tibério", Augustus: "Augusto", Caesar: "César", Vespasian: "Vespasiano", Domitian: "Domiciano",
+  Titus: "Tito", Claudius: "Cláudio", Caligula: "Calígula", Vitellius: "Vitélio", Otho: "Otão", Herod: "Herodes", Pilate: "Pilatos", Trajan: "Trajano", Pliny: "Plínio",
+  Tacitus: "Tácito", Suetonius: "Suetônio", Eusebius: "Eusébio" };
+for (const [en, pt] of Object.entries(NAMES)) FIXES.push([`\\m${en}\\M`, pt]);
+
 const TARGETS = [["josephus_sections", "text_pt"], ["josephus_chapters", "title_pt"], ["hist_units", "text_pt"], ["hist_units", "title_pt"]];
-const bad = "text_pt ~ '>>|⁇|(^|[.;:!?”\"\\)\\]] )Por [–-] '";
+const bad = "text_pt ~ '>>|⁇|(^|[.;:!?”\"\\)\\]] )Por [–-] |\\m(" + Object.keys(NAMES).join("|") + ")\\M'";
 
 for (const [table, col] of TARGETS) {
   const cond = bad.replaceAll("text_pt", col);
