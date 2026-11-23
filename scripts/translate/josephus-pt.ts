@@ -39,7 +39,8 @@ async function units() {
   if (!ONLY || ONLY === "hist") {
     const hu = (await nsql("select work, ord, text, title from hist_units where text_pt is null order by work, ord")) as { work: string; ord: number; text: string; title: string }[];
     for (const u of hu) pack(u.text.split(/\n\s*\n/).map((p, i) => ({ n: i + 1, text: p }))).forEach((pk, i) => out.push({ id: `h.${u.work}.${u.ord}.u${i}`, secs: pk }));
-    const ht = hu.filter((u) => u.title);
+    // titles are queued on their own: a unit whose text is already translated still needs its title
+    const ht = (await nsql("select work, ord, title from hist_units where title <> '' and title_pt is null order by work, ord")) as { work: string; ord: number; title: string }[];
     for (let i = 0; i < ht.length; i += 60) out.push({ id: `htitles.${i / 60}`, secs: ht.slice(i, i + 60).map((u, k) => ({ n: k + 1, text: `${u.work}.${u.ord} || ${u.title}` })) });
   }
   return out.slice(0, LIMIT);

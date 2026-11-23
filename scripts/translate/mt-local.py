@@ -92,6 +92,7 @@ if os.path.exists(OUT):
 n = 0; t0 = time.time(); words = 0
 with open(OUT, "a") as out:
     for line in open(IN):
+        if not line.strip(): continue
         r = json.loads(line)
         if r["id"] in done: continue
         ans = do_request(r["secs"])
