@@ -3,7 +3,7 @@
 import type { AudioPlayer } from "@/lib/platform/types";
 
 export interface QueueOptions {
-  fetchAudio(sentence: string): Promise<Blob>;
+  fetchAudio(sentence: string, index: number): Promise<Blob>;
   player: Pick<AudioPlayer, "enqueue">;
   /** False when this answer was cancelled (the student interrupted or asked something else). */
   isCurrent(): boolean;
@@ -16,7 +16,7 @@ export interface QueueOptions {
 export async function speakQueue(sentences: string[], o: QueueOptions): Promise<{ played: number; failedAt: number | null }> {
   const conc = Math.max(1, o.concurrency ?? 3);
   const blobs: Promise<Blob>[] = [];
-  const start = (i: number) => { if (i < sentences.length && !blobs[i]) { blobs[i] = o.fetchAudio(sentences[i]); blobs[i].catch(() => undefined); } };
+  const start = (i: number) => { if (i < sentences.length && !blobs[i]) { blobs[i] = o.fetchAudio(sentences[i], i); blobs[i].catch(() => undefined); } };
   for (let i = 0; i < Math.min(conc, sentences.length); i++) start(i);
   const playing: Promise<void>[] = [];
   let played = 0, failedAt: number | null = null;

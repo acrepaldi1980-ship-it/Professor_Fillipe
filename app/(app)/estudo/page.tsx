@@ -18,7 +18,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getJosephusChapter, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, speakSentence, warmVoice, teacherTurn, transcribeAudio } from "@/lib/api-client";
+import { trackEvent, isPlanBlock, addBookmark, closeSessionFull, completePathDay, createSession, getJosephusChapter, getPathDetail, flagAnswer, getBibleVerses, getMe, getSessionDocument, answerVoice, warmVoice, teacherTurn, transcribeAudio } from "@/lib/api-client";
 import { defaultBibleVersion, t } from "@/lib/i18n";
 import { findReferences, formatRefPt } from "@/lib/knowledge/refs-parser";
 import { getPlatform } from "@/lib/platform";
@@ -137,7 +137,7 @@ export default function StudyPage() {
       if (serverVoice.current !== "down" && !deviceOnly) {
         // all the sentences are requested at once (3 in flight) and queued back to back on the audio clock: no gaps, and the mouth follows the audible sound
         const r = await speakQueue(sentences, {
-          fetchAudio: (sx) => speakSentence(sx),
+          fetchAudio: answerVoice(),
           player: platform.audioPlayer,
           isCurrent: () => my === playId.current,
           onFirstSound: () => { if (my === playId.current) { setState("speaking"); firstSound(); } },

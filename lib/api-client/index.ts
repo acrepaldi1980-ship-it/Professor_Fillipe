@@ -156,6 +156,35 @@ export async function speakSentence(text: string, signal?: AbortSignal): Promise
   return res.blob();
 }
 
+interface SpokenClip { blob: Blob; voice: string }
+async function fetchClip(text: string, only?: string): Promise<SpokenClip> {
+  const res = await apiFetch("/voice/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, ...(only ? { only } : {}) }) });
+  if (!res.ok) throw new Error(`api_error_${res.status}`);
+  return { blob: await res.blob(), voice: res.headers.get("x-voice") ?? "unknown" };
+}
+let lastVoice: string | null = null; // the voice that answered last time: the best guess for the next answer
+
+/**
+ * One voice for a whole answer. The sentences are requested in parallel; the first one may fall back to another voice when the main one is slow,
+ * and the others must then match it (a voice that changes in the middle of an answer sounds wrong). Create one per answer.
+ */
+export function answerVoice(): (sentence: string, index: number) => Promise<Blob> {
+  let decide!: (voice: string) => void;
+  const decided = new Promise<string>((r) => { decide = r; });
+  return async (sentence, index) => {
+    if (index === 0) {
+      try { const c = await fetchClip(sentence); lastVoice = c.voice; decide(c.voice); return c.blob; } catch (e) { decide("none"); throw e; }
+    }
+    const guess = lastVoice ?? "remote";
+    const attempt = guess === "piper" ? null : fetchClip(sentence, guess).catch(() => null); // started now, in parallel with the first sentence
+    const voice = await decided;
+    if (voice === "none") throw new Error("no_voice");
+    if (attempt && voice === guess) { const c = await attempt; if (c) return c.blob; }
+    for (let k = 0; k < 2; k++) { try { return (await fetchClip(sentence, voice)).blob; } catch { /* the slow voice may need one more try */ } }
+    return (await fetchClip(sentence)).blob; // last resort: any voice
+  };
+}
+
 export async function getBibleVerses(version: string, ref: string) {
   return apiJson<{ version: string; ref: string; verses: { ref: string; text: string }[] }>(`/bible/${version}/${ref}`);
 }

@@ -11,7 +11,7 @@ import { prepareForSpeech } from "@/lib/voice/speech-text";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
-const body = z.object({ text: z.string().min(1).max(450), voiceId: z.string().optional(), /** Only loads the voice (the first call after a pause is slow): nothing is returned or counted. */ warm: z.boolean().optional() });
+const body = z.object({ text: z.string().min(1).max(450), voiceId: z.string().optional(), /** Only loads the voice (the first call after a pause is slow): nothing is returned or counted. */ warm: z.boolean().optional(), /** Use only this voice (no fallback): the client keeps one voice for a whole answer. */ only: z.string().max(20).optional() });
 
 const cache = new Map<string, ArrayBuffer>();
 const MAX_CACHE = 60;
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     return new Response(null, { status: 204 });
   }
   // Providers in order; the first that answers wins. The cache is keyed by text and voice, so a repeated sentence costs nothing.
-  for (const provider of ttsChain()) {
+  for (const provider of ttsChain().filter((p) => !parsed.data.only || p.name === parsed.data.only)) {
     const key = createHash("sha1").update(`${provider.name}|${parsed.data.voiceId ?? ""}|${spoken}`).digest("hex");
     try {
       let audio = cache.get(key);
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value as string);
       }
       void addUsage(ctx.db, "voice_seconds", Math.max(1, Math.round(spoken.length / 14))); // ~14 characters per second of speech
-      return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store" } });
+      return new Response(audio, { headers: { "Content-Type": provider.audioType ?? "audio/mpeg", "Cache-Control": "private, no-store", "X-Voice": provider.name } });
     } catch (e) {
       logEvent("tts_provider_failed", { provider: provider.name, code: String((e as Error).message).slice(0, 120) });
     }
