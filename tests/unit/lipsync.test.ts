@@ -40,8 +40,9 @@ describe("jaw", () => {
     expect(jawTaper(FACE_MOUTH, FACE_MOUTH.cx)).toBeCloseTo(1, 5);
     expect(jawTaper(FACE_MOUTH, FACE_MOUTH.cx + FACE_MOUTH.jawHalfW)).toBe(0);
   });
-  it("opens wide enough to be seen (at least 30 px of an 800 px face) and stays above the neck", () => {
-    expect(FACE_MOUTH.maxDrop).toBeGreaterThanOrEqual(30);
+  it("opens enough to be seen but not too much (24 to 32 px of an 800 px face) and stays above the neck", () => {
+    expect(FACE_MOUTH.maxDrop).toBeGreaterThanOrEqual(24);
+    expect(FACE_MOUTH.maxDrop).toBeLessThanOrEqual(32);
     expect(FACE_MOUTH.lipY + FACE_MOUTH.jawH + FACE_MOUTH.maxDrop).toBeLessThan(660);
   });
 });

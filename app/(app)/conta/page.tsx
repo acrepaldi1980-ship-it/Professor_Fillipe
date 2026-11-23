@@ -225,6 +225,13 @@ export default function AccountPage() {
         <Card className="flex flex-col gap-3">
           <h2 className="text-lg">{t("account.voice")}</h2>
           <label className="flex flex-col gap-1">
+            <span className="text-sm text-muted">{t("account.voicesource.help")}</span>
+            <select className="h-12 rounded-control border border-line bg-surface px-3" aria-label={t("account.voicesource")} data-testid="voice-source" value={prefs.voiceSource ?? "server"} onChange={(e) => update({ ...prefs, voiceSource: e.target.value as "server" | "device" })}>
+              <option value="server">{t("account.voicesource.server")}</option>
+              <option value="device">{t("account.voicesource.device")}</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
             <span className="text-sm text-muted">{t("account.voice.help")}</span>
             <select className="h-12 rounded-control border border-line bg-surface px-3" value={prefs.voiceName ?? ""} onChange={(e) => update({ ...prefs, voiceName: e.target.value || null })}>
               <option value="">{t("account.voice.auto")}</option>

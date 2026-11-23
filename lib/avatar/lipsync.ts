@@ -21,7 +21,7 @@ export interface MouthSpec {
 }
 
 /** rosto-fechada.webp (800x800): closed mouth under the moustache, lip line at y~427, corners ~9 px higher. */
-export const FACE_MOUTH: MouthSpec = { w: 800, h: 800, cx: 404, lipY: 427, corner: 9, halfW: 64, maxDrop: 40, jawHalfW: 104, jawH: 160 };
+export const FACE_MOUTH: MouthSpec = { w: 800, h: 800, cx: 404, lipY: 427, corner: 9, halfW: 64, maxDrop: 28, jawHalfW: 104, jawH: 160 };
 
 const STRIP = 3;
 const lipLine = (m: MouthSpec, x: number) => {

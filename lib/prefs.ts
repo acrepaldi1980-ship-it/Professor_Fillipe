@@ -7,6 +7,8 @@ export interface Prefs {
   fontScale: number; // 1 to 2
   /** Device voice chosen for the teacher (null = best male pt-BR voice). */
   voiceName?: string | null;
+  /** Where the teacher's voice comes from: the app server (default) or the device's own voice (no accent, starts at once). */
+  voiceSource?: "server" | "device";
 }
 const KEY = "prefs.v1";
 export const DEFAULT_PREFS: Prefs = { theme: "auto", fontScale: 1 };

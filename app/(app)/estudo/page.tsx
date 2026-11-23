@@ -133,7 +133,8 @@ export default function StudyPage() {
     const firstSound = () => { if (first) return; first = true; onFirstSound?.(); };
     try {
       let from = 0;
-      if (serverVoice.current !== "down") {
+      const deviceOnly = (await loadPrefs()).voiceSource === "device" && platform.speech.isSupported(); // the student chose the device voice
+      if (serverVoice.current !== "down" && !deviceOnly) {
         // all the sentences are requested at once (3 in flight) and queued back to back on the audio clock: no gaps, and the mouth follows the audible sound
         const r = await speakQueue(sentences, {
           fetchAudio: (sx) => speakSentence(sx),
