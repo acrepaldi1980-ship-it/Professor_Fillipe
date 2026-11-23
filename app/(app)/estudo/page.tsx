@@ -133,8 +133,7 @@ export default function StudyPage() {
     const firstSound = () => { if (first) return; first = true; onFirstSound?.(); };
     try {
       let from = 0;
-      const source = (await loadPrefs()).voiceSource; // not chosen yet: a premium device voice (Edge "Antonio Natural", iOS enhanced) beats the server voice
-      const deviceOnly = platform.speech.isSupported() && (source === "device" || (source === undefined && (await platform.speech.hasPremiumVoice()))); // the student chose the device voice
+      const deviceOnly = (await loadPrefs()).voiceSource === "device" && platform.speech.isSupported(); // one voice for everything: the device voice only when the student chose it
       if (serverVoice.current !== "down" && !deviceOnly) {
         // all the sentences are requested at once (3 in flight) and queued back to back on the audio clock: no gaps, and the mouth follows the audible sound
         const r = await speakQueue(sentences, {

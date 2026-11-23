@@ -25,8 +25,7 @@ export async function speakText(text: string, onLevel?: (level: number) => void)
   try {
     const sentences = shortFirstChunk(splitSentences(text));
     let from = 0;
-    const source = (await loadPrefs()).voiceSource; // not chosen yet: a premium device voice (Edge "Antonio Natural", iOS enhanced) beats the server voice
-      const deviceOnly = platform.speech.isSupported() && (source === "device" || (source === undefined && (await platform.speech.hasPremiumVoice())));
+    const deviceOnly = (await loadPrefs()).voiceSource === "device" && platform.speech.isSupported(); // one voice for everything: the device voice only when the student chose it
     if (server !== "down" && !deviceOnly && getLanguage() === "pt-BR") { // the server voice (Piper) speaks Portuguese; in Spanish the device voice is used
       // the sentences are requested together and queued back to back: no pause between them
       const r = await speakQueue(sentences, { fetchAudio: answerVoice(), player: platform.audioPlayer, isCurrent: () => my === token });

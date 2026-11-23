@@ -1140,7 +1140,7 @@
   "paths.extra.sermon_outline": "Entrega de la semana: bosquejo de sermón",
   "paths.days.n": "días",
   "account.voicesource": "De dónde viene la voz",
-  "account.voicesource.server": "Voz de la app (más constante, con un poco de acento)",
+  "account.voicesource.server": "Voz del profesor (la misma en todos los dispositivos)",
   "account.voicesource.device": "Voz del dispositivo (sin acento, empieza al instante; la calidad depende del teléfono)",
   "account.voicesource.help": "Prueba las dos y quédate con la que suene mejor en tu dispositivo.",
   "account.voicesource.auto": "Automática (usa la voz natural del dispositivo, si la hay)"

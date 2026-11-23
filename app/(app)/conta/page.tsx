@@ -226,8 +226,7 @@ export default function AccountPage() {
           <h2 className="text-lg">{t("account.voice")}</h2>
           <label className="flex flex-col gap-1">
             <span className="text-sm text-muted">{t("account.voicesource.help")}</span>
-            <select className="h-12 rounded-control border border-line bg-surface px-3" aria-label={t("account.voicesource")} data-testid="voice-source" value={prefs.voiceSource ?? "auto"} onChange={(e) => update({ ...prefs, voiceSource: e.target.value === "auto" ? undefined : (e.target.value as "server" | "device") })}>
-              <option value="auto">{t("account.voicesource.auto")}</option>
+            <select className="h-12 rounded-control border border-line bg-surface px-3" aria-label={t("account.voicesource")} data-testid="voice-source" value={prefs.voiceSource ?? "server"} onChange={(e) => update({ ...prefs, voiceSource: e.target.value as "server" | "device" })}>
               <option value="server">{t("account.voicesource.server")}</option>
               <option value="device">{t("account.voicesource.device")}</option>
             </select>
