@@ -1,7 +1,7 @@
-// Free, offline male voice: Piper "cadu" (pt_BR, CC0 dataset) run with sherpa-onnx inside the API function. Chosen because it is the closest to the
-// narrator of the welcome video: median pitch 131 Hz (the video's), same warmth and brightness of timbre; tuned slower and more varied, like a calm announcer.
-// No key and no per-use cost; the model lives in models/piper (fetched by scripts/fetch-piper.mjs, shipped with the deploy).
-// Quality is plainer than Gemini/ElevenLabs, so it is the last resort of ttsChain (or the first with VOICE_PROVIDER=piper).
+// Free, offline male voice: Piper (pt_BR, CC0 datasets) run with sherpa-onnx inside the API function. No key and no per-use cost; the models live in
+// models/piper (fetched by scripts/fetch-piper.mjs, shipped with the deploy).
+// DEFAULT = "faber", the first voice the app ever used (owner's choice, 23/11/2026), spoken exactly as the model comes: no finishing filter, no pitch or pace change,
+// no pronunciation rules. PIPER_VOICE=cadu selects the tuned "announcer" variant (calmer pace, phrase pauses, finishing, pronunciation rules) kept for later use.
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { pauseAfter, polishSpeech, resample, splitPhrases } from "../polish";
@@ -13,7 +13,9 @@ let engine: Tts | null = null;
 
 const baseDir = () => process.env.PIPER_DIR ?? join(process.cwd(), "models", "piper");
 /** Voice file name (PIPER_VOICE=faber selects the older, higher-pitched voice). */
-const voice = () => process.env.PIPER_VOICE ?? "cadu";
+const voice = () => process.env.PIPER_VOICE ?? "faber";
+/** The first voice, untouched. */
+const original = () => voice() === "faber";
 const onnx = () => `pt_BR-${voice()}-medium.onnx`;
 /** cadu has its own folder (its tokens differ from faber's); faber lives at the root of models/piper. */
 export const piperDir = () => (voice() === "faber" ? baseDir() : join(baseDir(), voice()));
@@ -30,7 +32,7 @@ async function load(): Promise<Tts> {
   const sherpa = (mod.default ?? mod) as { OfflineTts: new (c: unknown) => Tts };
   const d = piperDir();
   engine = new sherpa.OfflineTts({
-    model: { vits: { model: join(d, onnx()), tokens: join(d, "tokens.txt"), dataDir: join(d, "espeak-ng-data"), noiseScale: NOISE, noiseScaleW: NOISE_W, lengthScale: LENGTH }, numThreads: 2, provider: "cpu" },
+    model: { vits: { model: join(d, onnx()), tokens: join(d, "tokens.txt"), dataDir: join(d, "espeak-ng-data"), ...(original() ? {} : { noiseScale: NOISE, noiseScaleW: NOISE_W, lengthScale: LENGTH }) }, numThreads: 2, provider: "cpu" },
     maxNumSentences: 1,
   });
   return engine;
@@ -43,6 +45,12 @@ export class PiperTtsProvider implements VoiceProvider {
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!piperAvailable()) throw new Error("piper_model_missing");
     const tts = await load();
+    if (original()) {
+      const o = tts.generate({ text, sid: 0, speed: 1.0 });
+      const raw = new Int16Array(o.samples.length);
+      for (let i = 0; i < o.samples.length; i++) raw[i] = Math.max(-1, Math.min(1, o.samples[i])) * 32767;
+      return pcmToWav(new Uint8Array(raw.buffer), o.sampleRate);
+    }
     // A breath at every comma, semicolon and colon: the phrases are spoken one by one and joined with a short silence (a calm, "compassed" cadence).
     const phrases = splitPhrases(text);
     const parts: Float32Array[] = [];

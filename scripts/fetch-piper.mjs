@@ -14,7 +14,7 @@ export function patchPronunciation(file) {
 
 for (const v of ["cadu", "faber"]) {
   const OUT = v === "faber" ? "models/piper" : `models/piper/${v}`; // each voice has its own tokens and phonemizer data
-  if (existsSync(`${OUT}/pt_BR-${v}-medium.onnx`)) { patchPronunciation(`${OUT}/espeak-ng-data/lang/roa/pt-BR`); console.log(`piper ${v} already there (pronunciation checked)`); continue; }
+  if (existsSync(`${OUT}/pt_BR-${v}-medium.onnx`)) { if (v === "cadu") patchPronunciation(`${OUT}/espeak-ng-data/lang/roa/pt-BR`); console.log(`piper ${v} already there`); continue; }
   const tmp = `/tmp/pf-piper-${v}`;
   mkdirSync(tmp, { recursive: true });
   execSync(`curl -sL -o ${tmp}/m.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-pt_BR-${v}-medium.tar.bz2 && tar xjf ${tmp}/m.tar.bz2 -C ${tmp}`, { stdio: "inherit" });
@@ -22,6 +22,6 @@ for (const v of ["cadu", "faber"]) {
   for (const f of readdirSync(`${src}/espeak-ng-data`)) if (f.endsWith("_dict") && !["pt_dict", "en_dict", "es_dict"].includes(f)) rmSync(`${src}/espeak-ng-data/${f}`);
   mkdirSync(OUT, { recursive: true });
   cpSync(src, OUT, { recursive: true });
-  patchPronunciation(`${OUT}/espeak-ng-data/lang/roa/pt-BR`);
+  if (v === "cadu") patchPronunciation(`${OUT}/espeak-ng-data/lang/roa/pt-BR`); // faber stays exactly as the model ships
   console.log(`piper ${v} ready in`, OUT);
 }
