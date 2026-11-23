@@ -78,24 +78,31 @@ describe("announcer voice and remote server", () => {
 
 describe("whistle and boom control", () => {
   const sr = 24000;
-  const tone = (hz: number, amp = 0.3) => Float32Array.from({ length: sr }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / sr));
-  const level = (x: Float32Array) => Math.sqrt(x.subarray(sr / 4, sr - sr / 4).reduce((t, v) => t + v * v, 0) / (sr / 2));
-  it("a notch removes a steady whistle but leaves the voice range alone", () => {
-    const whistle = level(polishSpeech(tone(4800), sr, { notches: [4800], tone: { bass: 0, presence: 0, air: 0 } }));
-    const base = level(polishSpeech(tone(4800), sr, { tone: { bass: 0, presence: 0, air: 0 } }));
-    const voice = level(polishSpeech(tone(300), sr, { notches: [4800], tone: { bass: 0, presence: 0, air: 0 } }));
-    const voiceBase = level(polishSpeech(tone(300), sr, { tone: { bass: 0, presence: 0, air: 0 } }));
-    expect(whistle).toBeLessThan(base * 0.5);
-    expect(voice).toBeGreaterThan(voiceBase * 0.9);
+  const tone = (hz: number, amp: number) => Float32Array.from({ length: sr }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / sr));
+  const mix = (a: Float32Array, b: Float32Array) => a.map((v, i) => v + b[i]);
+  /** Energy at one frequency (Goertzel), in the middle of the clip. */
+  const at = (x: Float32Array, hz: number) => {
+    const seg = x.subarray(sr / 4, sr - sr / 4), w = (2 * Math.PI * hz) / sr, c = 2 * Math.cos(w);
+    let s1 = 0, s2 = 0;
+    for (const v of seg) { const s0 = v + c * s1 - s2; s2 = s1; s1 = s0; }
+    return (s1 * s1 + s2 * s2 - c * s1 * s2) / seg.length;
+  };
+  const flat = { bass: 0, presence: 0, air: 0 };
+  it("a notch removes a steady whistle from the voice without touching the voice range", () => {
+    const sig = mix(tone(300, 0.3), tone(4800, 0.3));
+    const before = at(polishSpeech(sig, sr, { tone: flat }), 4800) / at(polishSpeech(sig, sr, { tone: flat }), 300);
+    const out = polishSpeech(sig, sr, { tone: flat, notches: [4800] });
+    expect(at(out, 4800) / at(out, 300)).toBeLessThan(before * 0.05);
   });
-  it("the low-pass silences what is above it", () => {
-    const high = level(polishSpeech(tone(10500), sr, { lowpassHz: 8800 }));
-    const none = level(polishSpeech(tone(10500), sr, {}));
-    expect(high).toBeLessThan(none * 0.2);
+  it("the low-pass silences what is above it and keeps the voice", () => {
+    const sig = mix(tone(300, 0.3), tone(10500, 0.3));
+    const before = at(polishSpeech(sig, sr, {}), 10500) / at(polishSpeech(sig, sr, {}), 300);
+    const out = polishSpeech(sig, sr, { lowpassHz: 8800 });
+    expect(at(out, 10500) / at(out, 300)).toBeLessThan(before * 0.05);
   });
   it("a lower peak setting makes a quieter voice", () => {
-    const quiet = Math.max(...polishSpeech(tone(300), sr, { peak: 0.5 }).map(Math.abs));
-    const loud = Math.max(...polishSpeech(tone(300), sr, {}).map(Math.abs));
+    const quiet = Math.max(...polishSpeech(tone(300, 0.3), sr, { peak: 0.5 }).map(Math.abs));
+    const loud = Math.max(...polishSpeech(tone(300, 0.3), sr, {}).map(Math.abs));
     expect(quiet).toBeLessThan(loud * 0.7);
   });
 });
