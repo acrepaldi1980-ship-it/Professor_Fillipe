@@ -1,9 +1,9 @@
 // POST /api/v1/sessions { mode, topic? } -> { sessionId } (spec 10.5).
+import { resolvePath } from "@/lib/engagement/handler";
 import { z } from "zod";
 import { track } from "@/lib/analytics/track";
 import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
 import { enforceLimit, requireFeature } from "@/lib/entitlements/guard";
-import { getPath } from "@/lib/paths/data";
 import { DeepContext, LessonContext, SermonContext } from "@/lib/modes/schema";
 
 export const runtime = "nodejs";
@@ -42,10 +42,10 @@ export async function POST(req: Request) {
     }
     // A day of a guided path: the teacher leads this day (passage and goal come from our own content, not from the request).
     if (parsed.data.pathId && parsed.data.pathDay) {
-      const p = getPath(parsed.data.pathId);
+      const p = await resolvePath(db, user.id, parsed.data.pathId);
       const day = p?.days.find((x) => x.day === parsed.data.pathDay);
       if (!p || !day) throw new HttpError(404, "path_not_found");
-      context = { ...context, trail: { path: p.title, day: day.day, total: p.days.length, title: day.title, ref: day.ref, goal: day.goal } };
+      context = { ...context, trail: { path: p.title, day: day.day, total: p.days.length, title: day.title, ref: day.ref, goal: day.goal, kind: day.kind, week: day.week, key_verse: day.key_verse, question: day.question, action: day.action, prayer: day.prayer, visual: day.visual, review: p.weeks?.find((w) => w.week === day.week)?.review, extra: p.weeks?.find((w) => w.week === day.week)?.extra } };
       lessonTopic = `${p.title}: dia ${day.day}, ${day.title}`;
     }
     const { data, error } = await db.from("sessions").insert({ user_id: user.id, mode: parsed.data.mode, topic: lessonTopic ?? topic, context, church_lesson_id: churchLessonId }).select("id").single();

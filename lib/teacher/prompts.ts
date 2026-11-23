@@ -148,12 +148,19 @@ export function layerChurchLesson(ctx?: Record<string, unknown>): string {
 Ajude ESTE aluno a se preparar para a aula: explique no nível dele (veja o perfil do aluno), parta do texto-base, pergunte o que ele já sabe e devolva a palavra a ele. Não revele nem peça nada sobre os outros alunos da turma; o professor da EBD não lê esta conversa, e você pode dizer isso se o aluno perguntar.`;
 }
 
-/** A day of a guided path (trail): the teacher leads this one step, in order, and keeps it short. */
+/** A day of a guided path (trail): the teacher leads this one step, in order, and keeps it short. Personalised paths add the Module 2/3 structure of the guide. */
 export function layerTrail(ctx?: Record<string, unknown>): string {
-  const l = ctx?.trail as { path?: string; day?: number; total?: number; title?: string; ref?: string; goal?: string } | undefined;
+  const l = ctx?.trail as { path?: string; day?: number; total?: number; title?: string; ref?: string; goal?: string; kind?: string; week?: number; key_verse?: string; question?: string; action?: string; prayer?: string; visual?: string; review?: string; extra?: string } | undefined;
   if (!l?.title) return "";
-  return `TRILHA GUIADA: "${l.path}", dia ${l.day} de ${l.total}: "${l.title}", texto-base ${l.ref}. Objetivo do dia: ${l.goal}
-Conduza ESTE passo da trilha: comece dizendo em uma frase por que o dia importa, parta do texto-base citado, pergunte o que o aluno já sabe e devolva a palavra a ele. Fique no tema do dia; quando o objetivo estiver cumprido, ofereça um resumo em até 3 frases e diga que ele pode marcar o dia como concluído. Não adiante os próximos dias.`;
+  if (l.kind === "review") {
+    return `TRILHA PERSONALIZADA: "${l.path}", dia ${l.day} de ${l.total}: REVISÃO DA SEMANA ${l.week}.
+Hoje é dia de conversa, não de texto novo. Pergunte, uma coisa de cada vez: o que tocou o aluno nesta semana, o que ficou difícil e se a vida dele mudou. Se ele faltou dias, não o culpe: reorganize sem perder o objetivo; nunca dê nota, reconheça o progresso. ${l.extra === "lesson_outline" ? "Ofereça transformar a semana em um esboço de aula." : l.extra === "sermon_outline" ? "Ofereça transformar a semana em um esboço de sermão." : ""} Ao final, diga que ele pode marcar o dia como concluído e que pode pedir ajuste do ritmo ou do foco da trilha.`;
+  }
+  const rich = l.question || l.action;
+  return `TRILHA ${l.week ? "PERSONALIZADA" : "GUIADA"}: "${l.path}", dia ${l.day} de ${l.total}: "${l.title}", texto-base ${l.ref}. Objetivo do dia: ${l.goal}
+Conduza ESTE passo da trilha: comece dizendo em uma frase por que o dia importa, parta do texto-base citado, pergunte o que o aluno já sabe e devolva a palavra a ele. Fique no tema do dia; quando o objetivo estiver cumprido, ofereça um resumo em até 3 frases e diga que ele pode marcar o dia como concluído. Não adiante os próximos dias.${rich ? `
+Siga a ordem: o texto e o cenário; o fio do texto (o que vem antes e depois); a palavra que pesa; o que significou para quem ouviu primeiro; a Bíblia explicando a Bíblia, mostrando como o texto aponta para Cristo sem forçar alegorias. Depois o ESPELHO: deixe o texto examinar o aluno com a pergunta do dia, com amor e sem humilhar; e logo em seguida a GRAÇA, o consolo que nasce do próprio texto (nunca confronte sem consolar). Por fim, a resposta prática e uma oração curta. Uma camada por fala, sempre devolvendo a palavra ao aluno.
+Pergunta do dia: ${l.question}. Passo prático sugerido: ${l.action}. Tema da oração: ${l.prayer}.${l.key_verse ? ` Versículo central: ${l.key_verse} (cite o texto na versão do aluno, a partir das fontes recuperadas).` : ""}${l.visual && l.visual !== "none" ? ` Se ajudar, ofereça um recurso visual (${l.visual === "map" ? "mapa" : l.visual === "timeline" ? "linha do tempo" : "cenário 3D"}).` : ""}` : ""}`;
 }
 
 /** Layers 1-5 concatenated (mode = Estudo livre in Phase 0). */

@@ -14,7 +14,7 @@ import { charactersGet } from "@/lib/characters/handler";
 import { historiansGet } from "@/lib/historians/handler";
 import { josephusGet } from "@/lib/josephus/handler";
 import { envDelete, envGet, envPost } from "@/lib/immersive/handler";
-import { pathsGet, pathsPost, streakGet } from "@/lib/engagement/handler";
+import { pathsGet, pathsPost, personalPathPost, streakGet } from "@/lib/engagement/handler";
 import { referralClaim, referralGet } from "@/lib/engagement/referral";
 import { notificationsGet, notificationsPut, notificationsSubscribe, notifyTick } from "@/lib/notify/handler";
 import { analyze, listOrGet, remove } from "@/lib/rehearsal/handler";
@@ -50,6 +50,7 @@ export async function POST(req: Request, ctx: Ctx) {
   if (p[0] === "environments" && !p[1]) return envPost(req);
   if (p[0] === "notifications" && p[1] === "subscribe") return notificationsSubscribe(req);
   if (p[0] === "notify-tick" && !p[1]) return notifyTick(req);
+  if (p[0] === "paths" && p[1] === "personal") return personalPathPost(req);
   if (p[0] === "paths" && (p[1] === "start" || p[1] === "day")) return pathsPost(req, p[1]);
   return notFound();
 }

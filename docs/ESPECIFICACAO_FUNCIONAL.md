@@ -957,6 +957,16 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Ligação com o professor:** cada autor, cada passagem e a tabela abrem o estudo (`/estudo?hist=autor.passagem`); o servidor monta o contexto com a ficha e as regras. O professor **apresenta** o historiador como fonte e não fala como ele (RA-21). Josefo tem leitor próprio (`/josefo`, M20).
 - **Português:** o texto original em inglês de cada obra é de domínio público; a versão em português é tradução automática (pipeline em `scripts/translate`). Obras ainda sem leitor ficam na busca do professor, em inglês, marcadas "em preparação".
 
+### 8.22 M22 — Trilha personalizada (P0, pedido do dono em 23/11/2026)
+
+- **Objetivo:** além das trilhas prontas (2.7), cada aluno tem **a sua trilha**, montada a partir do perfil, seguindo o Módulo 2 do guia do professor.
+- **Entrada:** objetivo (conhecer a Bíblia inteira, entender os textos, intimidade com Deus, vencer uma luta, preparar aulas, teologia, conhecer Jesus), papel (aluno, professor de EBD, estudante de teologia, pastor, novo convertido, buscando a fé), nível 1 a 5, minutos por dia, duração (14, 30 ou 60 dias). Os padrões vêm do perfil.
+- **Regras do plano:** começa pelos textos claros e curtos (vitória rápida); alterna narrativa, ensino e poesia; toda trilha passa por Cristo; **um dia de revisão a cada 7 dias**, em conversa; cada dia tem leitura, versículo central (só a referência, o texto vem da Bíblia), foco, pergunta-chave, ação prática, tema de oração e recurso visual (mapa, linha do tempo, cenário 3D ou nenhum); cada semana tem tema, pergunta de revisão e entrega extra (professor de EBD: esboço de aula; pastor: esboço de sermão); o plano traz a promessa e o **critério de ajuste**. Só entram passagens já conferidas contra a Bíblia: o compositor (`lib/paths/personal.ts`) não inventa referência.
+- **Revisão semanal:** "Refazer minha trilha" mantém os dias já feitos e recompõe o resto com o que o aluno pediu agora, sem repetir passagens (o plano guarda a versão).
+- **Professor (três chamadas com o mesmo núcleo de identidade):** (1) entrevista de perfil, só no primeiro acesso (onboarding existente); (2) gerador de trilha, chamado de novo a cada revisão; (3) explicação do dia, a chamada mais frequente, recebe o perfil, o dia e os trechos recuperados. No dia de leitura o professor segue as camadas texto, cenário, fio, palavras, primeiros ouvintes, Bíblia explica a Bíblia, **espelho** (confronto amoroso) e logo depois **graça** (consolo), resposta prática e oração, uma camada por fala. No dia de revisão pergunta o que tocou, o que ficou difícil e se a vida mudou, sem culpa e sem nota.
+- **Dados:** tabela `personal_paths` (uma por aluno, com RLS), progresso em `path_progress` com `path_id = 'meu'`. Rotas: `POST /api/v1/study/paths/personal`, e as de trilha existentes aceitam o id `meu`.
+- **Diferença assumida:** o compositor é determinístico (sem modelo), para nunca inventar referência e funcionar sem crédito; a redação personalizada dos textos de cada dia por modelo fica como evolução.
+
 ## 9. Modelo de dados
 
 Postgres (Supabase), com Row Level Security em **todas** as tabelas de usuário. Tipos simplificados; o Claude Code escreve as migrations completas com índices, chaves estrangeiras e `created_at` e `updated_at`.

@@ -419,8 +419,14 @@ export async function saveModel3d(meta: Record<string, unknown>, file?: File | n
 export const deleteModel3d = (id: string) => apiJson<{ ok: true }>(`/visuals/models?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 
 // ---- Guided paths and study streak (Prompt 2.7) ----
-export interface PathSummary { id: string; title: string; description: string; level: string; total: number; done: number; started: boolean; completed: boolean; next_day: { day: number; title: string } | null }
-export interface PathDetail extends PathSummary { days: { day: number; title: string; ref: string; goal: string; done: boolean }[] }
+export interface PathSummary { personal?: boolean; id: string; title: string; description: string; level: string; total: number; done: number; started: boolean; completed: boolean; next_day: { day: number; title: string } | null }
+export interface PathDetail extends PathSummary {
+  promise?: string | null; adjust?: string | null;
+  weeks?: { week: number; theme: string; review: string; extra: "lesson_outline" | "sermon_outline" | "none" }[];
+  days: { day: number; title: string; ref: string; goal: string; done: boolean; week?: number; kind?: "reading" | "review"; key_verse?: string; question?: string; action?: string; prayer?: string; visual?: string }[];
+}
+export interface PersonalPathInput { goal: "whole_bible" | "understand_book" | "intimacy" | "overcome" | "prepare" | "theology" | "know_jesus"; role: "student" | "ebd_teacher" | "theology_student" | "pastor" | "new_convert" | "seeking"; level: number; minutes: number; days: 14 | 30 | 60 }
+export const createPersonalPath = (input: PersonalPathInput) => apiJson<{ ok: true; id: string; total: number; version: number }>("/study/paths/personal", { method: "POST", body: JSON.stringify(input) });
 export interface StreakData { current: number; best: number; total_days: number; studied_today: boolean; new_milestones: string[] }
 export const listPaths = () => apiJson<{ paths: PathSummary[] }>("/study/paths");
 export const getPathDetail = (id: string) => apiJson<PathDetail>(`/study/paths/${encodeURIComponent(id)}`);

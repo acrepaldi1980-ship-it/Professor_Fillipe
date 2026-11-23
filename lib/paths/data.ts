@@ -1,7 +1,16 @@
 // Guided paths (Prompt 2.7): optional study paths led by the teacher, one short step a day. The content is ours (title, goal, passage); the
 // teacher opens each day from the passage and the goal, with sources, like any other study. Passages are canonical references checked against the Bible.
-export interface PathDay { day: number; title: string; ref: string; goal: string }
-export interface PathDef { id: string; title: string; description: string; level: "iniciante" | "intermediário"; days: PathDay[] }
+/** A day of a path. The optional fields exist on personalised paths (Module 2 of the teacher's guide): week, kind and the daily prompts. */
+export interface PathDay {
+  day: number; title: string; ref: string; goal: string;
+  week?: number;
+  kind?: "reading" | "review";
+  key_verse?: string; // canonical ref of the central verse (never the verse text: the text comes from the Bible)
+  question?: string; action?: string; prayer?: string;
+  visual?: "map" | "timeline" | "scene3d" | "none";
+}
+export interface PathWeek { week: number; theme: string; review: string; extra: "lesson_outline" | "sermon_outline" | "none" }
+export interface PathDef { id: string; title: string; description: string; level: "iniciante" | "intermediário"; days: PathDay[]; promise?: string; weeks?: PathWeek[]; adjust?: string; personal?: boolean }
 
 const d = (day: number, title: string, ref: string, goal: string): PathDay => ({ day, title, ref, goal });
 
