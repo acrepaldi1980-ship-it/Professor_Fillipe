@@ -33,6 +33,8 @@ const MALE = /antonio|ant[oô]nio|felipe|ricardo|daniel|thiago|jorge|luiz|fabio|
 const FEMALE = /francisca|luciana|fernanda|maria|vitoria|vit[oó]ria|camila|helena|giovanna|brenda|leila|monica|m[oó]nica|paulina|laura|sabina|elvira|dalia|lucia|luc[ií]a|marisol|elena|valentina|\bfemale\b|feminin|[-_]afs[-_]|\bafs\b/i;
 
 /** The teacher is a man: every spoken line must come from a male voice (owner's rule, 21/11/2026). Names and ids that tell the gender are matched. */
+/** A male Portuguese voice whose name says it is a neural or enhanced one (for example "Microsoft Antonio Online (Natural)" in Edge, "Felipe (Enhanced)" on iOS). */
+export const isPremiumVoice = (v: { name: string; lang?: string; voiceURI?: string }) => isMaleVoice(v) && GOOD.test(v.name) && /^pt/i.test(v.lang ?? "pt");
 export const isMaleVoice = (v: { name: string; voiceURI?: string }) => {
   const id = `${v.name} ${v.voiceURI ?? ""}`;
   return MALE.test(id) && !FEMALE.test(id);
@@ -95,6 +97,10 @@ export class WebSpeech implements Speech {
   /** Male Portuguese voices installed on the device, best first. */
   private async maleList(): Promise<SpeechSynthesisVoice[]> {
     return (await this.loadVoices()).filter(isMaleVoice);
+  }
+
+  async hasPremiumVoice(): Promise<boolean> {
+    return this.isSupported() && (await this.maleList()).some(isPremiumVoice);
   }
 
   async hasMaleVoice(): Promise<boolean> {

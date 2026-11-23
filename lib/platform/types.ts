@@ -96,6 +96,8 @@ export interface Speech {
   cancel(): void;
   /** True when the device has at least one male Portuguese voice (the teacher never speaks with a female voice). */
   hasMaleVoice(): Promise<boolean>;
+  /** A male Portuguese voice of premium quality is installed (neural, "natural", "online", enhanced): worth using instead of the server voice. */
+  hasPremiumVoice(): Promise<boolean>;
   /** Portuguese voices installed on the device, best first (male voices first: the teacher is a mature man). */
   voices(): Promise<{ name: string; lang: string }[]>;
 }

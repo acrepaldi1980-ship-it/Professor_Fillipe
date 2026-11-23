@@ -106,3 +106,17 @@ describe("whistle and boom control", () => {
     expect(quiet).toBeLessThan(loud * 0.7);
   });
 });
+
+import { isMaleVoice, isPremiumVoice } from "@/lib/platform/web/speech";
+describe("premium device voices", () => {
+  it("recognises the Edge neural voice Antonio and iOS enhanced male voices as premium", () => {
+    expect(isPremiumVoice({ name: "Microsoft Antonio Online (Natural) - Portuguese (Brazil)", lang: "pt-BR" })).toBe(true);
+    expect(isMaleVoice({ name: "Microsoft Antonio Online (Natural) - Portuguese (Brazil)" })).toBe(true);
+    expect(isPremiumVoice({ name: "Felipe (Enhanced)", lang: "pt-BR" })).toBe(true);
+  });
+  it("does not call a basic male voice, a female neural voice or another language premium", () => {
+    expect(isPremiumVoice({ name: "Microsoft Daniel - Portuguese (Brazil)", lang: "pt-BR" })).toBe(false);
+    expect(isPremiumVoice({ name: "Microsoft Francisca Online (Natural) - Portuguese (Brazil)", lang: "pt-BR" })).toBe(false);
+    expect(isPremiumVoice({ name: "Microsoft Alvaro Online (Natural) - Spanish (Spain)", lang: "es-ES" })).toBe(false);
+  });
+});

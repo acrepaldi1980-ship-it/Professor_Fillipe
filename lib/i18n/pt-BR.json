@@ -1142,5 +1142,6 @@
   "account.voicesource": "De onde vem a voz",
   "account.voicesource.server": "Voz do app (mais constante, tem um pouco de sotaque)",
   "account.voicesource.device": "Voz do aparelho (sem sotaque, começa na hora; a qualidade depende do celular)",
-  "account.voicesource.help": "Teste as duas e fique com a que soar melhor no seu aparelho."
+  "account.voicesource.help": "Teste as duas e fique com a que soar melhor no seu aparelho.",
+  "account.voicesource.auto": "Automática (usa a voz natural do aparelho, como a Antonio no Edge, se houver)"
 }

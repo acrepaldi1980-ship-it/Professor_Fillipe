@@ -8,7 +8,7 @@ export function createMockPlatform(overrides: Partial<Platform> = {}): Platform 
     name: "web",
     microphone: { isSupported: () => true, start: async () => void calls.push("mic.start"), stop: async () => new Blob(["x"]), onLevel: () => () => {} },
     audioPlayer: { play: async () => void calls.push("audio.play"), enqueue: async () => void calls.push("audio.enqueue"), stop: () => void calls.push("audio.stop"), isPlaying: () => false, setRate: () => {}, onLevel: () => () => {} },
-    speech: { isSupported: () => true, unlock: () => {}, speak: async (t) => void calls.push(`speech.speak:${t}`), cancel: () => void calls.push("speech.cancel"), voices: async () => [{ name: "Mock", lang: "pt-BR" }], hasMaleVoice: async () => true },
+    speech: { isSupported: () => true, hasPremiumVoice: async () => false, unlock: () => {}, speak: async (t) => void calls.push(`speech.speak:${t}`), cancel: () => void calls.push("speech.cancel"), voices: async () => [{ name: "Mock", lang: "pt-BR" }], hasMaleVoice: async () => true },
     ambience: { isSupported: () => true, start: async () => void calls.push("ambience.start"), setListener: () => {}, setMuted: () => {}, stop: () => void calls.push("ambience.stop") },
     push: { isSupported: () => true, requestPermission: async () => "granted", getToken: async () => "mock-token" },
     store: {

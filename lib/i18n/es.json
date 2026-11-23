@@ -1142,5 +1142,6 @@
   "account.voicesource": "De dónde viene la voz",
   "account.voicesource.server": "Voz de la app (más constante, con un poco de acento)",
   "account.voicesource.device": "Voz del dispositivo (sin acento, empieza al instante; la calidad depende del teléfono)",
-  "account.voicesource.help": "Prueba las dos y quédate con la que suene mejor en tu dispositivo."
+  "account.voicesource.help": "Prueba las dos y quédate con la que suene mejor en tu dispositivo.",
+  "account.voicesource.auto": "Automática (usa la voz natural del dispositivo, si la hay)"
 }
