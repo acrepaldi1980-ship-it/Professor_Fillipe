@@ -75,3 +75,27 @@ describe("announcer voice and remote server", () => {
     expect(samples[1]).toBeCloseTo(0.5, 2);
   });
 });
+
+describe("whistle and boom control", () => {
+  const sr = 24000;
+  const tone = (hz: number, amp = 0.3) => Float32Array.from({ length: sr }, (_, i) => amp * Math.sin((2 * Math.PI * hz * i) / sr));
+  const level = (x: Float32Array) => Math.sqrt(x.subarray(sr / 4, sr - sr / 4).reduce((t, v) => t + v * v, 0) / (sr / 2));
+  it("a notch removes a steady whistle but leaves the voice range alone", () => {
+    const whistle = level(polishSpeech(tone(4800), sr, { notches: [4800], tone: { bass: 0, presence: 0, air: 0 } }));
+    const base = level(polishSpeech(tone(4800), sr, { tone: { bass: 0, presence: 0, air: 0 } }));
+    const voice = level(polishSpeech(tone(300), sr, { notches: [4800], tone: { bass: 0, presence: 0, air: 0 } }));
+    const voiceBase = level(polishSpeech(tone(300), sr, { tone: { bass: 0, presence: 0, air: 0 } }));
+    expect(whistle).toBeLessThan(base * 0.5);
+    expect(voice).toBeGreaterThan(voiceBase * 0.9);
+  });
+  it("the low-pass silences what is above it", () => {
+    const high = level(polishSpeech(tone(10500), sr, { lowpassHz: 8800 }));
+    const none = level(polishSpeech(tone(10500), sr, {}));
+    expect(high).toBeLessThan(none * 0.2);
+  });
+  it("a lower peak setting makes a quieter voice", () => {
+    const quiet = Math.max(...polishSpeech(tone(300), sr, { peak: 0.5 }).map(Math.abs));
+    const loud = Math.max(...polishSpeech(tone(300), sr, {}).map(Math.abs));
+    expect(quiet).toBeLessThan(loud * 0.7);
+  });
+});

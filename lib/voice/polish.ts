@@ -3,10 +3,11 @@
 interface Biquad { b0: number; b1: number; b2: number; a1: number; a2: number }
 
 /** RBJ audio-EQ-cookbook filters. */
-function biquad(kind: "hp" | "lowshelf" | "highshelf" | "peak", f0: number, sr: number, gainDb = 0, q = 0.707): Biquad {
+function biquad(kind: "hp" | "lp" | "lowshelf" | "highshelf" | "peak", f0: number, sr: number, gainDb = 0, q = 0.707): Biquad {
   const A = Math.pow(10, gainDb / 40), w = (2 * Math.PI * f0) / sr, cos = Math.cos(w), sin = Math.sin(w), alpha = sin / (2 * q), sq = 2 * Math.sqrt(A) * alpha;
   let b0: number, b1: number, b2: number, a0: number, a1: number, a2: number;
-  if (kind === "hp") { b0 = (1 + cos) / 2; b1 = -(1 + cos); b2 = (1 + cos) / 2; a0 = 1 + alpha; a1 = -2 * cos; a2 = 1 - alpha; }
+  if (kind === "lp") { b0 = (1 - cos) / 2; b1 = 1 - cos; b2 = (1 - cos) / 2; a0 = 1 + alpha; a1 = -2 * cos; a2 = 1 - alpha; }
+  else if (kind === "hp") { b0 = (1 + cos) / 2; b1 = -(1 + cos); b2 = (1 + cos) / 2; a0 = 1 + alpha; a1 = -2 * cos; a2 = 1 - alpha; }
   else if (kind === "lowshelf") { b0 = A * ((A + 1) - (A - 1) * cos + sq); b1 = 2 * A * ((A - 1) - (A + 1) * cos); b2 = A * ((A + 1) - (A - 1) * cos - sq); a0 = (A + 1) + (A - 1) * cos + sq; a1 = -2 * ((A - 1) + (A + 1) * cos); a2 = (A + 1) + (A - 1) * cos - sq; }
   else if (kind === "highshelf") { b0 = A * ((A + 1) + (A - 1) * cos + sq); b1 = -2 * A * ((A - 1) + (A + 1) * cos); b2 = A * ((A + 1) + (A - 1) * cos - sq); a0 = (A + 1) - (A - 1) * cos + sq; a1 = 2 * ((A - 1) - (A + 1) * cos); a2 = (A + 1) - (A - 1) * cos - sq; }
   else { b0 = 1 + alpha * A; b1 = -2 * cos; b2 = 1 - alpha * A; a0 = 1 + alpha / A; a1 = -2 * cos; a2 = 1 - alpha / A; }
@@ -39,7 +40,10 @@ export function resample(x: Float32Array, ratio: number): Float32Array {
  * (brightness 1428 Hz, bass-to-treble 16.3 dB, a "giant" or cartoon colour); the video voice is at 1852 Hz and 10.8 dB. A little less bass and more presence
  * and air gets 1775 Hz and 9.4 dB.
  */
-export const NARRATOR_TONE = { bass: -2.5, presence: 2.5, air: 2.5 } as const;
+export const NARRATOR_TONE = { bass: -6.5, presence: 3.5, air: 2.5 } as const;
+
+/** The Kokoro vocoder leaves a steady whistle at 4.8 kHz, at its double 9.6 kHz and near 10.6 kHz (tones 15 to 18 dB above their surroundings): it sounds like microphone feedback. */
+export const KOKORO_WHISTLE_HZ = [4800, 9600, 10600] as const;
 
 export interface PolishOptions {
   /** silence kept after the clip, seconds (a breath between sentences) */ tail?: number;
@@ -47,6 +51,12 @@ export interface PolishOptions {
   /** broadcast announcer style: more chest (proximity bass) and presence, a steadier level */ announcer?: boolean;
   /** Explicit tone (dB). Overrides the presets: a negative `bass` lifts the boom off a voice that is already heavy, `presence` and `air` add clarity. */
   tone?: { bass: number; presence: number; air: number };
+  /** Narrow cuts (Hz) for steady whistles; give them at the sample's own pitch scale (after any resampling the frequencies move). */
+  notches?: readonly number[];
+  /** Steep low-pass (Hz), two stages (24 dB per octave): speech has nothing useful above it, and the vocoder's whistles live there. */
+  lowpassHz?: number;
+  /** Highest peak of the result (0 to 1); default 0.89. Lower for a quieter voice. */
+  peak?: number;
 }
 
 /** Drops the silence before the first sound (keeps 25 ms), so the voice starts the moment the clip does. */
@@ -60,6 +70,8 @@ export function trimLead(x: Float32Array, sr: number): Float32Array {
 export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOptions = {}): Float32Array {
   if (samples.length === 0) return samples;
   let x = trimLead(samples, sr);
+  if (opts.lowpassHz) { x = run(x, biquad("lp", opts.lowpassHz, sr, 0, 0.707)); x = run(x, biquad("lp", opts.lowpassHz, sr, 0, 0.707)); }
+  for (const f of opts.notches ?? []) if (f < sr / 2.1) { x = run(x, biquad("peak", f, sr, -24, 18)); x = run(x, biquad("peak", f, sr, -12, 6)); }
   x = run(x, biquad("hp", 70, sr));                 // rumble and plosive thumps
   x = run(x, biquad("lowshelf", opts.tone ? 220 : opts.announcer ? 150 : 180, sr, opts.tone ? opts.tone.bass : opts.announcer ? 5 : 2.5)); // body: a warmer, fuller voice (announcer: close-microphone bass)
   x = run(x, biquad("peak", opts.tone ? 3000 : opts.announcer ? 2800 : 3200, sr, opts.tone ? opts.tone.presence : opts.announcer ? 2.2 : 1.2, 0.9)); // presence for clarity
@@ -80,7 +92,7 @@ export function polishSpeech(samples: Float32Array, sr: number, opts: PolishOpti
   // soft limiter and peak guard, then short fades so clips join without clicks
   let peak = 0;
   for (let i = 0; i < out.length; i++) { out[i] = Math.tanh(out[i] * 1.1) / Math.tanh(1.1); peak = Math.max(peak, Math.abs(out[i])); }
-  const g = peak > 0 ? 0.89 / peak : 1;
+  const g = peak > 0 ? (opts.peak ?? 0.89) / peak : 1;
   const fade = Math.round(sr * 0.008), tail = Math.round(sr * (opts.tail ?? 0.12));
   const res = new Float32Array(out.length + tail);
   for (let i = 0; i < out.length; i++) res[i] = out[i] * g * Math.min(1, i / fade, (out.length - i) / fade);

@@ -3,7 +3,7 @@
 import { closeSync, existsSync, openSync, readFileSync, renameSync, writeSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { NARRATOR_TONE, pauseAfter, polishSpeech, resample } from "../polish";
+import { KOKORO_WHISTLE_HZ, NARRATOR_TONE, pauseAfter, polishSpeech, resample } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -40,6 +40,9 @@ async function load(): Promise<Tts> {
   return engine;
 }
 
+/** The voice is lowered a little by resampling (0.96); the whistle frequencies move with it. */
+const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 0.96);
+
 export class KokoroTtsProvider implements VoiceProvider {
   readonly name = "kokoro";
   readonly audioType = "audio/wav";
@@ -47,7 +50,7 @@ export class KokoroTtsProvider implements VoiceProvider {
   async synthesize(text: string): Promise<ArrayBuffer> {
     if (!kokoroAvailable()) throw new Error("kokoro_model_missing");
     const a = (await load()).generate({ text, sid: SPEAKER, speed: SPEED });
-    const x = polishSpeech(resample(a.samples, Number(process.env.KOKORO_DEEPEN ?? 0.96)), a.sampleRate, { tail: pauseAfter(text), tone: NARRATOR_TONE });
+    const x = polishSpeech(resample(a.samples, DEEPEN), a.sampleRate, { tail: pauseAfter(text), tone: NARRATOR_TONE, rmsDb: -26, peak: 0.6, lowpassHz: 8800, notches: KOKORO_WHISTLE_HZ.map((f) => f * DEEPEN) });
     const pcm = new Int16Array(x.length);
     for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
     return pcmToWav(new Uint8Array(pcm.buffer), a.sampleRate);

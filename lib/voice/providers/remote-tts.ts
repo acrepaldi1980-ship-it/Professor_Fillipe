@@ -1,6 +1,6 @@
 // The narrator voice (Kokoro) served by a separate machine with more CPU than the app host (see voice-server/). The app adds the announcer finish.
 // If the machine is slow or down (free hosts sleep), the call gives up after a few seconds and the chain falls back to the on-board Piper voice.
-import { NARRATOR_TONE, pauseAfter, polishSpeech, resample } from "../polish";
+import { KOKORO_WHISTLE_HZ, NARRATOR_TONE, pauseAfter, polishSpeech, resample } from "../polish";
 import { pcmToWav } from "../wav";
 import type { VoiceProvider } from "../types";
 
@@ -15,6 +15,9 @@ export function readWav(buf: ArrayBuffer): { samples: Float32Array; sampleRate: 
   for (let i = 0; i < n; i++) samples[i] = v.getInt16(44 + i * 2, true) / 32768;
   return { samples, sampleRate };
 }
+
+/** The voice is lowered a little by resampling (0.96); the whistle frequencies move with it. */
+const DEEPEN = Number(process.env.KOKORO_DEEPEN ?? 0.96);
 
 export class RemoteTtsProvider implements VoiceProvider {
   readonly name = "remote";
@@ -31,7 +34,7 @@ export class RemoteTtsProvider implements VoiceProvider {
     });
     if (!res.ok) throw new Error(`remote_tts_${res.status}`);
     const { samples, sampleRate } = readWav(await res.arrayBuffer());
-    const x = polishSpeech(resample(samples, Number(process.env.KOKORO_DEEPEN ?? 0.96)), sampleRate, { tail: pauseAfter(text), tone: NARRATOR_TONE });
+    const x = polishSpeech(resample(samples, DEEPEN), sampleRate, { tail: pauseAfter(text), tone: NARRATOR_TONE, rmsDb: -26, peak: 0.6, lowpassHz: 8800, notches: KOKORO_WHISTLE_HZ.map((f) => f * DEEPEN) });
     const pcm = new Int16Array(x.length);
     for (let i = 0; i < x.length; i++) pcm[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
     return pcmToWav(new Uint8Array(pcm.buffer), sampleRate);
