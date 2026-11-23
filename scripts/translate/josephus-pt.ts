@@ -6,7 +6,7 @@
 //   plan    -> counts requests and estimates tokens and cost (no calls)
 //   submit  -> (anthropic) sends the batches; collect -> waits and reads them
 //   run     -> (mistral, gemini) translates unit by unit; stops cleanly on a daily limit and resumes later
-//   apply   -> writes text_pt and title_pt in the database
+//   apply   -> writes text_pt and title_pt in the database (Josephus and, with --work hist, the historians' books)
 import Anthropic from "@anthropic-ai/sdk";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pack, parse, render, SYSTEM, type Sec } from "../../lib/josephus/translate";
@@ -27,7 +27,7 @@ const load = (): State => (existsSync(STATE) ? JSON.parse(readFileSync(STATE, "u
 const save = (s: State) => { mkdirSync(DIR, { recursive: true }); writeFileSync(STATE, JSON.stringify(s)); };
 
 async function units() {
-  const rows = (await nsql("select work, book, chapter, n, text from josephus_sections where text_pt is null order by work, book, chapter, n")) as { work: string; book: number; chapter: number; n: number; text: string }[];
+  const rows = ONLY === "hist" ? [] : (await nsql("select work, book, chapter, n, text from josephus_sections where text_pt is null order by work, book, chapter, n")) as { work: string; book: number; chapter: number; n: number; text: string }[];
   const by = new Map<string, Sec[]>();
   for (const r of rows) { if (ONLY && r.work !== ONLY) continue; (by.get(`${r.work}.${r.book}.${r.chapter}`) ?? by.set(`${r.work}.${r.book}.${r.chapter}`, []).get(`${r.work}.${r.book}.${r.chapter}`)!).push({ n: r.n, text: r.text }); }
   const out: { id: string; secs: Sec[] }[] = [];
@@ -35,6 +35,13 @@ async function units() {
   const titles = (await nsql("select work, book, chapter, title from josephus_chapters where title <> '' and title_pt is null")) as { work: string; book: number; chapter: number; title: string }[];
   const tsecs: Sec[] = titles.filter((t) => !ONLY || t.work === ONLY).map((t, i) => ({ n: i + 1, text: `${t.work}.${t.book}.${t.chapter} || ${t.title}` }));
   for (let i = 0; i < tsecs.length; i += 60) out.push({ id: `titles.${i / 60}`, secs: tsecs.slice(i, i + 60) });
+  // the historians' books (hist_units): a unit is translated whole, cut into paragraph packs only when it is long
+  if (!ONLY || ONLY === "hist") {
+    const hu = (await nsql("select work, ord, text, title from hist_units where text_pt is null order by work, ord")) as { work: string; ord: number; text: string; title: string }[];
+    for (const u of hu) pack(u.text.split(/\n\s*\n/).map((p, i) => ({ n: i + 1, text: p }))).forEach((pk, i) => out.push({ id: `h.${u.work}.${u.ord}.u${i}`, secs: pk }));
+    const ht = hu.filter((u) => u.title);
+    for (let i = 0; i < ht.length; i += 60) out.push({ id: `htitles.${i / 60}`, secs: ht.slice(i, i + 60).map((u, k) => ({ n: k + 1, text: `${u.work}.${u.ord} || ${u.title}` })) });
+  }
   return out.slice(0, LIMIT);
 }
 
@@ -104,7 +111,13 @@ async function main() {
     for (const u of all) {
       const text = st.done[u.id]; if (!text) continue;
       const map = parse(text, u.secs); if (!map) continue;
-      if (u.id.startsWith("titles.")) {
+      if (u.id.startsWith("h.")) {
+        const [, w, o] = u.id.split("."); const prev = (await nsql("select text_pt from hist_units where work = $1 and ord = $2", [w, Number(o)]))[0]?.text_pt as string | null;
+        const piece = [...map.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v).join("\n\n");
+        await nsql("update hist_units set text_pt = $3 where work = $1 and ord = $2", [w, Number(o), prev ? `${prev}\n\n${piece}` : piece]); sections++;
+      } else if (u.id.startsWith("htitles.")) {
+        for (const [n, pt] of map) { const [key] = u.secs.find((s) => s.n === n)!.text.split(" || "); const [w, o] = key.split("."); await nsql("update hist_units set title_pt = $3 where work = $1 and ord = $2", [w, Number(o), pt.replace(/^[^|]*\|\|\s*/, "")]); titles++; }
+      } else if (u.id.startsWith("titles.")) {
         for (const [n, pt] of map) { const [key] = u.secs.find((s) => s.n === n)!.text.split(" || "); const [w, b, c] = key.split("."); await nsql("update josephus_chapters set title_pt = $4 where work = $1 and book = $2 and chapter = $3", [w, Number(b), Number(c), pt.replace(/^[^|]*\|\|\s*/, "")]); titles++; }
       } else {
         const [w, b, c] = u.id.split(".");

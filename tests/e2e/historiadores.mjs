@@ -36,5 +36,24 @@ try {
   await p.goto(`${BASE}/historiadores?a=josefo`, { waitUntil: "domcontentloaded" });
   await p.waitForSelector("text=Ler os 30 livros de Josefo", { timeout: 15000 });
   say("Josephus links to his reader inside the section", true);
+  await p.goto(`${BASE}/historiadores?a=eusebio`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=História Eclesiástica", { timeout: 15000 });
+  await p.waitForTimeout(2500);
+  say("Eusebius: his books have a Read button inside the section", (await p.getByRole("link", { name: "Ler", exact: true }).count()) >= 1);
+  await p.goto(`${BASE}/historiadores/ler?w=he`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Livro 3", { timeout: 40000 });
+  say("table of contents by book", (await p.locator("section ul li a").count()) > 200);
+  await p.goto(`${BASE}/historiadores/ler?w=he&o=1`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=HE 1.1", { timeout: 40000 });
+  say("reader shows the chapter and the teacher link", (await p.locator("a[href^='/estudo?hu=eusebio.he.']").count()) === 1);
+  say("reader says the translation status", (await p.getByText(/tradução para o português/i).count()) > 0);
+  await p.getByRole("link", { name: /HE 1\.2/ }).first().click(); await p.waitForSelector("text=HE 1.2", { timeout: 15000 });
+  say("next chapter opens without reload", p.url().includes("o=2"));
+  await p.goto(`${BASE}/historiadores/ler?w=trajan`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("text=Livro 10", { timeout: 40000 });
+  say("Pliny's letters to Trajan are readable", (await p.locator("section ul li a").count()) > 50);
+  await p.goto(`${BASE}/estudo?hu=eusebio.he.1`, { waitUntil: "domcontentloaded" });
+  await p.waitForSelector("[data-testid=hist-banner]", { timeout: 40000 });
+  say("study of a unit shows what is being read", (await p.getByTestId("hist-banner").innerText()).includes("Eusébio"));
   say("no page errors", errs.length === 0, errs.join(" | "));
 } catch (e) { ok = false; console.log("ERROR", String(e).slice(0, 300)); } finally { await sql(`delete from auth.users where id='${id}'`).catch(() => undefined); await browser.close(); process.exit(ok ? 0 : 1); }

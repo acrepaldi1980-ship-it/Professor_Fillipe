@@ -69,11 +69,11 @@ describe("Historiadores", () => {
     expect(HISTORIANS.reduce((t, h) => t + h.works.length, 0)).toBe(20);
     for (const h of HISTORIANS) for (const p of h.passages) { expect(p.cite.length, p.id).toBeGreaterThan(3); for (const r of p.refs) expect(r, p.id).toMatch(/^[0-9A-Z]{3}\.\d+(\.\d+)?(-[0-9A-Z]{3}\.\d+(\.\d+)?)?$/); }
   });
-  it("never lets the teacher speak as the historian and says the debates", () => {
-    const c = historianContext({ id: "tacito", passage: "ann1544" })!;
+  it("never lets the teacher speak as the historian and says the debates", async () => {
+    const c = (await historianContext({ id: "tacito", passage: "ann1544" }))!;
     expect(c.text).toMatch(/NÃO é o historiador/); expect(c.text).toMatch(/Anais 15\.44/); expect(c.text).toMatch(/DISCUSSÃO/);
-    expect(historianContext({ id: "testemunhos" })!.text).toMatch(/Independência/);
-    expect(historianContext({ id: "nao_existe" })).toBeNull(); expect(byId("filon")?.passages.length).toBeGreaterThan(0);
+    expect((await historianContext({ id: "testemunhos" }))!.text).toMatch(/Independência/);
+    expect(await historianContext({ id: "nao_existe" })).toBeNull(); expect(byId("filon")?.passages.length).toBeGreaterThan(0);
     expect(TESTIMONIES.length).toBeGreaterThanOrEqual(5);
   });
 });

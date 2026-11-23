@@ -11,6 +11,7 @@ import { POST as explain } from "@/lib/knowledge/study-routes/explain";
 import { GET as interlinear } from "@/lib/knowledge/study-routes/interlinear";
 import { GET as word } from "@/lib/knowledge/study-routes/word";
 import { charactersGet } from "@/lib/characters/handler";
+import { historiansGet } from "@/lib/historians/handler";
 import { josephusGet } from "@/lib/josephus/handler";
 import { envDelete, envGet, envPost } from "@/lib/immersive/handler";
 import { pathsGet, pathsPost, streakGet } from "@/lib/engagement/handler";
@@ -32,6 +33,7 @@ export async function GET(req: Request, ctx: Ctx) {
   if (kind === "rehearsals" && !arg) return listOrGet(req);
   if (kind === "paths") return pathsGet(req, arg);
   if (kind === "characters") return charactersGet(req, arg && (await ctx.params).path[2] ? `${arg}/${(await ctx.params).path[2]}` : arg);
+  if (kind === "historians") { const p = (await ctx.params).path; return historiansGet(req, p[1], p[2]); }
   if (kind === "josephus") { const p = (await ctx.params).path; return josephusGet(req, p[1], p[2], p[3]); }
   if (kind === "streak" && !arg) return streakGet(req);
   if (kind === "referral" && !arg) return referralGet(req);

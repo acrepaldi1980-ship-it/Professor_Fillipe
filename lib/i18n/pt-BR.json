@@ -1089,5 +1089,20 @@
   "hist.banner": "Estudando: {who}",
   "hist.seed.author": "Vamos estudar {name}. Apresente quem foi, o que escreveu e por que importa para a Bíblia.",
   "hist.seed.passage": "Vamos estudar {cite}, de {name}: {topic}. Explique o contexto, o que o texto diz, o limite da fonte e o que se discute.",
-  "hist.seed.testimonies": "Compare os testemunhos fora da Bíblia sobre Jesus e os primeiros cristãos (Josefo, Tácito, Suetônio, Plínio): o que cada um diz, o que é independente e o que se discute."
+  "hist.seed.testimonies": "Compare os testemunhos fora da Bíblia sobre Jesus e os primeiros cristãos (Josefo, Tácito, Suetônio, Plínio): o que cada um diz, o que é independente e o que se discute.",
+  "hist.seed.unit": "Vamos estudar o trecho de {name} que estou lendo. Apresente o contexto, o que o texto diz, o limite da fonte e como isso se liga à Bíblia.",
+  "hist.books": "Livros para ler",
+  "hist.toc": "Índice",
+  "hist.read.work": "Ler",
+  "hist.translated": "{n} de {m} trechos em português",
+  "hist.lang.pt": "Tradução automática para o português a partir da tradução inglesa de domínio público. Pode ter imperfeições; confira o original ao citar.",
+  "hist.lang.wait": "A tradução para o português deste trecho está em preparação; por enquanto o texto aparece em inglês (tradução de domínio público). O professor explica em português.",
+  "hist.prev": "Anterior",
+  "hist.next": "Próximo",
+  "hist.ask.unit": "Explicar com o professor",
+  "hist.show.en": "Ver o original em inglês",
+  "hist.show.pt": "Ver em português",
+  "hist.note": "Sobre esta edição",
+  "hist.credit": "Texto de domínio público; ver a edição usada e os créditos em docs/LICENSES.md.",
+  "hist.status.reader.n": "Leitor no aplicativo ({n} trechos)"
 }

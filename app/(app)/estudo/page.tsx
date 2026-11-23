@@ -58,7 +58,7 @@ export default function StudyPage() {
   const [trailDone, setTrailDone] = useState(false);
   const josRef = useRef<{ work: "ant" | "war" | "life" | "apion"; book: number; chapter: number } | null>(null); // studying Josephus (?jos=work.book.chapter)
   const [josBanner, setJosBanner] = useState<string | null>(null);
-  const histRef = useRef<{ id: string; passage?: string } | null>(null); // studying a historian (?hist=id or ?hist=id.passage)
+  const histRef = useRef<{ id: string; passage?: string; unit?: { work: string; ord: number } } | null>(null); // studying a historian (?hist=id or ?hist=id.passage)
   const [histBanner, setHistBanner] = useState<string | null>(null);
   const themeRef = useRef<string | null>(null); // a topic suggested by the home screen (?tema=)
   const [sessionReady, setSessionReady] = useState(false);
@@ -79,8 +79,10 @@ export default function StudyPage() {
     if (tp && td > 0) { trailRef.current = { pathId: tp, day: td }; setTrailBanner({ pathId: tp, day: td }); firstLesson.current = true; }
     const jp = /^(ant|war|life|apion)\.(\d+)\.(\d+)$/.exec(query.get("jos") ?? "");
     if (jp) { josRef.current = { work: jp[1] as "ant" | "war" | "life" | "apion", book: Number(jp[2]), chapter: Number(jp[3]) }; setJosBanner(query.get("jos")); firstLesson.current = true; }
+    const hu = /^([a-z]{3,12})\.([a-z]{2,12})\.(\d{1,4})$/.exec(query.get("hu") ?? ""); // reading a unit of a historian's book (?hu=author.work.ord)
+    if (hu) { histRef.current = { id: hu[1], unit: { work: hu[2], ord: Number(hu[3]) } }; setHistBanner(`${byId(hu[1])?.name ?? hu[1]} (${hu[2]} ${hu[3]})`); firstLesson.current = true; }
     const hp = /^([a-z]{3,12})(?:\.([a-z0-9]{3,12}))?$/.exec(query.get("hist") ?? "");
-    if (hp) { histRef.current = { id: hp[1], passage: hp[2] }; const h = byId(hp[1]); setHistBanner(hp[1] === "testemunhos" ? t("hist.testimonies") : h ? `${h.name}${hp[2] ? `: ${h.passages.find((x) => x.id === hp[2])?.cite ?? ""}` : ""}` : null); firstLesson.current = true; }
+    if (hp && !hu) { histRef.current = { id: hp[1], passage: hp[2] }; const h = byId(hp[1]); setHistBanner(hp[1] === "testemunhos" ? t("hist.testimonies") : h ? `${h.name}${hp[2] ? `: ${h.passages.find((x) => x.id === hp[2])?.cite ?? ""}` : ""}` : null); firstLesson.current = true; }
     const lessonId = query.get("lesson"); // a lesson published by the church (home card)
     if (lessonId) { firstLesson.current = true; themeRef.current = query.get("titulo") ?? t("study.church.default"); }
     const existing = query.get("s");
@@ -92,7 +94,7 @@ export default function StudyPage() {
     void createSession("free", undefined, lessonId ?? undefined, trailRef.current ? { pathId: trailRef.current.pathId, pathDay: trailRef.current.day } : undefined)
       .then(({ sessionId: id }) => {
         sessionId.current = id;
-        router.replace(`/estudo?s=${id}${trailRef.current ? `&trilha=${trailRef.current.pathId}&dia=${trailRef.current.day}` : ""}${josRef.current ? `&jos=${josRef.current.work}.${josRef.current.book}.${josRef.current.chapter}` : ""}${histRef.current ? `&hist=${histRef.current.id}${histRef.current.passage ? `.${histRef.current.passage}` : ""}` : ""}`);
+        router.replace(`/estudo?s=${id}${trailRef.current ? `&trilha=${trailRef.current.pathId}&dia=${trailRef.current.day}` : ""}${josRef.current ? `&jos=${josRef.current.work}.${josRef.current.book}.${josRef.current.chapter}` : ""}${histRef.current ? `&${histRef.current.unit ? `hu=${histRef.current.id}.${histRef.current.unit.work}.${histRef.current.unit.ord}` : `hist=${histRef.current.id}${histRef.current.passage ? `.${histRef.current.passage}` : ""}`}` : ""}`);
         setSessionReady(true);
       })
       .catch(() => router.replace("/login"));
@@ -221,7 +223,7 @@ export default function StudyPage() {
     }
     if (histRef.current) {
       const hr = histRef.current, h = byId(hr.id), p = h?.passages.find((x) => x.id === hr.passage);
-      return void send(hr.id === "testemunhos" ? t("hist.seed.testimonies") : p ? t("hist.seed.passage").replace("{name}", h!.name).replace("{cite}", p.cite).replace("{topic}", p.topic) : t("hist.seed.author").replace("{name}", h?.name ?? hr.id));
+      return void send(hr.unit ? t("hist.seed.unit").replace("{name}", h?.name ?? hr.id) : hr.id === "testemunhos" ? t("hist.seed.testimonies") : p ? t("hist.seed.passage").replace("{name}", h!.name).replace("{cite}", p.cite).replace("{topic}", p.topic) : t("hist.seed.author").replace("{name}", h?.name ?? hr.id));
     }
     if (josRef.current) {
       const j = josRef.current;

@@ -8,7 +8,7 @@ import { SceneArt } from "@/components/characters/SceneArt";
 import { soft } from "@/components/characters/nav";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { getBibleVerses } from "@/lib/api-client";
+import { getBibleVerses, listHistBooks, type HistBook } from "@/lib/api-client";
 import { sc } from "@/lib/characters/data/helpers";
 import { byId, HISTORIANS, TESTIMONIES, type Status } from "@/lib/historians/data";
 import { defaultBibleVersion, t, type MessageKey } from "@/lib/i18n";
@@ -19,6 +19,8 @@ const STATUS: Record<Status, MessageKey> = { reader: "hist.status.reader", libra
 
 export default function HistoriansPage() {
   const [a, setA] = useState<string | null>(null);
+  const [books, setBooks] = useState<HistBook[]>([]);
+  useEffect(() => { void listHistBooks().then((r) => setBooks(r.works)).catch(() => undefined); }, []);
   const [verse, setVerse] = useState<{ title: string; lines: { ref: string; text: string }[] } | null>(null);
   useEffect(() => { const sync = () => setA(new URLSearchParams(window.location.search).get("a")); sync(); window.addEventListener("popstate", sync); return () => window.removeEventListener("popstate", sync); }, []);
   useEffect(() => { window.scrollTo({ top: 0 }); }, [a]);
@@ -38,7 +40,7 @@ export default function HistoriansPage() {
           {h.id === "josefo" && <Link href="/josefo" className="rounded-control border border-line bg-surface px-3 py-2">{t("hist.read")}</Link>}
         </div>
         <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("hist.works")}</h2>
-          {h.works.map((w) => <div key={w.id} className="rounded-control border border-line bg-surface p-3"><strong>{w.title}</strong> <span className="text-sm text-muted">({w.original})</span><p className="text-sm">{w.what}</p><p className="mt-1 text-xs text-muted">{t(STATUS[w.status])} · {w.edition}</p></div>)}
+          {h.works.map((w) => { const bk = books.find((b) => b.author === h.id && (b.id === w.id || b.title.toLowerCase().startsWith(w.title.toLowerCase().slice(0, 8)))); return <div key={w.id} className="rounded-control border border-line bg-surface p-3"><strong>{w.title}</strong> <span className="text-sm text-muted">({w.original})</span><p className="text-sm">{w.what}</p><p className="mt-1 text-xs text-muted">{bk ? t("hist.status.reader.n").replace("{n}", String(bk.units)) : t(STATUS[w.status])} · {bk?.edition ?? w.edition}</p>{bk && <Link href={`/historiadores/ler?w=${bk.id}`} className="mt-1 inline-block rounded-control bg-primary px-3 py-1 text-sm text-white">{t("hist.read.work")}</Link>}</div>; })}
         </section>
         <section className="flex flex-col gap-2"><h2 className="font-serif text-xl font-bold">{t("hist.passages")}</h2>
           {h.passages.map((p) => (

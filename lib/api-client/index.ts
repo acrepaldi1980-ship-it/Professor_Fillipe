@@ -82,7 +82,7 @@ export async function teacherTurn(
 }
 
 async function teacherTurnOnce(
-  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; historian?: { id: string; passage?: string }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
+  body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; historian?: { id: string; passage?: string; unit?: { work: string; ord: number } }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
   onDone?: (meta: TurnMeta) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
@@ -475,3 +475,11 @@ export const getJosephusChapter = (w: JosephusWork, b: number, c: number) => api
 
 export interface FamilyTreeData { focus: string; nodes: { id: string; name: string; period: string | null; gen: number }[]; edges: { parent: string; child: string; refs: string[] }[]; partners: { a: string; b: string; refs: string[] }[]; siblings: { id: string; refs: string[] }[]; truncated: boolean }
 export const getFamilyTree = (id: string) => apiJson<FamilyTreeData>(`/study/characters/${encodeURIComponent(id)}/tree`);
+
+// ---- Livros dos historiadores (módulo M21) ----
+export interface HistBook { id: string; author: string; title: string; edition: string; note: string; units: number; translated: number }
+export interface HistUnitRef { ord: number; part: string; label: string; title: string; translated: boolean }
+export interface HistUnit { ord: number; part: string; label: string; title: string; titleEn: string; text: string; text_pt: string | null }
+export const listHistBooks = () => apiJson<{ works: HistBook[] }>("/study/historians");
+export const getHistToc = (work: string) => apiJson<{ work: Omit<HistBook, "units" | "translated">; units: HistUnitRef[] }>(`/study/historians/${work}`);
+export const getHistUnit = (work: string, ord: number) => apiJson<{ work: Omit<HistBook, "units" | "translated">; unit: HistUnit; prev: { ord: number; label: string } | null; next: { ord: number; label: string } | null }>(`/study/historians/${work}/${ord}`);

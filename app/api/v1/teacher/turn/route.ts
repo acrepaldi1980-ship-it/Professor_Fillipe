@@ -35,7 +35,7 @@ const bodySchema = z.object({
   /** Studying Josephus: which chapter the student reads (the text comes from the database on the server). */
   josephus: z.object({ work: z.enum(["ant", "war", "life", "apion"]), book: z.number().int().min(0).max(20), chapter: z.number().int().min(0).max(40) }).optional(),
   /** Studying a historian (Josefo, Tácito...) or comparing their testimonies: the guide comes from the server's own data. */
-  historian: z.object({ id: z.string().max(20), passage: z.string().max(20).optional() }).optional(),
+  historian: z.object({ id: z.string().max(20), passage: z.string().max(20).optional(), unit: z.object({ work: z.string().regex(/^[a-z]{2,12}$/), ord: z.number().int().min(1).max(5000) }).optional() }).optional(),
   /** 360° photo tour (Prompt 3.5b): which scene, which pin and where the student looks; the knowledge of the place comes from the registered tour. */
   pano: z.object({ tour: z.string().max(40), scene: z.string().max(40), hotspot: z.string().max(40).nullish(), yaw: z.number().finite().optional(), pitch: z.number().finite().optional() }).optional(),
 });
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         // Inside an immersive environment the teacher knows where the student is and what they see (from the package, never from client text).
         const pkg = parsed.data.scene ? getPackage(parsed.data.scene.env) : undefined;
         const tour = parsed.data.pano ? getTour(parsed.data.pano.tour) : undefined;
-        const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : tour && parsed.data.pano ? panoContext(tour, parsed.data.pano) : parsed.data.josephus ? await josephusContext(parsed.data.josephus) : parsed.data.historian ? historianContext(parsed.data.historian) : null;
+        const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : tour && parsed.data.pano ? panoContext(tour, parsed.data.pano) : parsed.data.josephus ? await josephusContext(parsed.data.josephus) : parsed.data.historian ? await historianContext(parsed.data.historian) : null;
         const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, createTurnDeps());
 
         // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.

@@ -31,8 +31,8 @@ export const HISTORIANS: Historian[] = [
     summary: "O “pai da história da Igreja”: sua História Eclesiástica guarda trechos de autores perdidos (Papias, Hegésipo) e a memória dos três primeiros séculos.",
     lines: ["Viveu a última grande perseguição (303–311) e a virada de Constantino.", "Estudou na biblioteca de Panfilo em Cesareia e herdou o acervo de Orígenes.", "Foi presente ao Concílio de Niceia (325) e escreveu a Vida de Constantino."],
     works: [
-      { id: "he", title: "História Eclesiástica", original: "Historia Ecclesiastica", what: "10 livros, até 324 d.C.: sucessão dos apóstolos, mártires, hereges, cânon.", status: "library", edition: "McGiffert, 1890 (NPNF II.1, domínio público)" },
-      { id: "vc", title: "Vida de Constantino", original: "Vita Constantini", what: "4 livros: elogio do imperador e a Igreja sob Constantino.", status: "library", edition: "Richardson, 1890 (NPNF II.1, domínio público)" },
+      { id: "he", title: "História Eclesiástica", original: "Historia Ecclesiastica", what: "10 livros, até 324 d.C.: sucessão dos apóstolos, mártires, hereges, cânon.", status: "reader", edition: "McGiffert, 1890 (NPNF II.1, domínio público)" },
+      { id: "vc", title: "Vida de Constantino", original: "Vita Constantini", what: "4 livros: elogio do imperador e a Igreja sob Constantino.", status: "reader", edition: "Richardson, 1890 (NPNF II.1, domínio público)" },
       { id: "mp", title: "Mártires da Palestina", original: "De martyribus Palaestinae", what: "Testemunho das perseguições de 303 a 311.", status: "planned", edition: "a obter" },
       { id: "pe", title: "Preparação Evangélica", original: "Praeparatio Evangelica", what: "15 livros: por que um cristão pode estudar os escritos gregos e hebraicos.", status: "planned", edition: "Gifford, 1903 (a verificar)" },
     ],
@@ -48,10 +48,10 @@ export const HISTORIANS: Historian[] = [
     summary: "Sua passagem sobre Nero e os cristãos (Anais 15.44) é o testemunho romano mais antigo e mais citado sobre Cristo e a Igreja de Roma.",
     lines: ["Foi cônsul em 97 e governador da Ásia.", "Escreveu Agrícola e Germânia (98), as Histórias (c. 105–110) e os Anais (c. 116).", "Sua visão é a de um senador romano: severa com a corrupção e com os “superstitiones” estrangeiras."],
     works: [
-      { id: "annals", title: "Anais", original: "Annales", what: "Roma de Tibério a Nero (14–68 d.C.), 16 livros, com lacunas.", status: "planned", edition: "Church e Brodribb, 1876 (a obter; a edição de Fyfe, 1912, não pode entrar)" },
+      { id: "annals", title: "Anais", original: "Annales", what: "Roma de Tibério a Nero (14–68 d.C.), 16 livros, com lacunas.", status: "reader", edition: "Church e Brodribb, 1876 (a obter; a edição de Fyfe, 1912, não pode entrar)" },
       { id: "histories", title: "Histórias", original: "Historiae", what: "O ano dos quatro imperadores (69 d.C.) e a guerra judaica; o livro 5 fala dos judeus.", status: "planned", edition: "Church e Brodribb (a obter)" },
-      { id: "agricola", title: "Agrícola", original: "De vita Iulii Agricolae", what: "Biografia do sogro de Tácito, governador da Britânia.", status: "library", edition: "Gutenberg 7524 (verificar tradutor)" },
-      { id: "germania", title: "Germânia", original: "De origine et situ Germanorum", what: "Os povos germânicos.", status: "library", edition: "Gutenberg 7524 e 2995 (verificar tradutor)" },
+      { id: "agricola", title: "Agrícola", original: "De vita Iulii Agricolae", what: "Biografia do sogro de Tácito, governador da Britânia.", status: "reader", edition: "Gutenberg 7524 (verificar tradutor)" },
+      { id: "germania", title: "Germânia", original: "De origine et situ Germanorum", what: "Os povos germânicos.", status: "reader", edition: "Gutenberg 7524 e 2995 (verificar tradutor)" },
     ],
     passages: [
       { id: "ann1544", cite: "Anais 15.44", topic: "Nero culpa os cristãos pelo incêndio de Roma (64 d.C.)", summary: "Diz que Cristo, de quem vem o nome “cristãos”, foi executado no reinado de Tibério pelo procurador Pôncio Pilatos, e que a “superstição” voltou a surgir em Roma.", refs: ["MAT.27.1-MAT.27.2", "1PE.4.16"], debate: "Autenticidade defendida pela grande maioria; discute-se de onde Tácito tirou a informação e a grafia “Chrestianos” no manuscrito mais antigo. Só é testemunho de que, em 116, os romanos sabiam da execução de Cristo por Pilatos." },
@@ -64,11 +64,11 @@ export const HISTORIANS: Historian[] = [
     summary: "Sua carta ao imperador Trajano (c. 112) descreve como os cristãos de uma província romana viviam e eram julgados.",
     lines: ["Sobrinho e filho adotivo de Plínio, o Velho, que morreu na erupção do Vesúvio em 79.", "Governou a Bitínia-Ponto, na atual Turquia, por volta de 110–112.", "Publicou nove livros de cartas; o livro 10, com a correspondência com Trajano, saiu depois de sua morte."],
     works: [
-      { id: "letters", title: "Cartas (livros 1–9)", original: "Epistulae", what: "Cartas a amigos: vida romana, o Vesúvio (6.16 e 6.20).", status: "library", edition: "Bosanquet, 1906 (Gutenberg 2811, verificar)" },
-      { id: "trajan", title: "Correspondência com Trajano (livro 10)", original: "Epistulae X", what: "Cartas ao imperador, entre elas a 10.96 sobre os cristãos.", status: "library", edition: "Bosanquet, 1906 (Gutenberg 2811, verificar)" },
+      { id: "letters", title: "Cartas (livros 1–9)", original: "Epistulae", what: "Cartas a amigos: vida romana, o Vesúvio (6.16 e 6.20).", status: "reader", edition: "Bosanquet, 1906 (Gutenberg 2811, verificar)" },
+      { id: "trajan", title: "Correspondência com Trajano (livro 10)", original: "Epistulae X", what: "Cartas ao imperador, entre elas a 10.96 sobre os cristãos.", status: "reader", edition: "Bosanquet, 1906 (Gutenberg 2811, verificar)" },
     ],
     passages: [
-      { id: "ep1096", cite: "Cartas 10.96–10.97", topic: "Os cristãos da Bitínia e a resposta de Trajano", summary: "Plínio pergunta o que fazer com os cristãos: relata que se reuniam antes do amanhecer, cantavam um hino a Cristo “como a um deus” e se comprometiam a não cometer crimes; Trajano responde que não devem ser procurados, mas punidos se acusados e se não negarem.", refs: ["1PE.4.14-1PE.4.16", "ACT.11.26"], debate: "Datada por volta de 112; a autenticidade é aceita, e o texto mostra a prática dos primeiros cristãos vista por um romano." },
+      { id: "ep1096", cite: "Cartas 10.96–10.97 (na edição de Melmoth, 10.97–10.98)", topic: "Os cristãos da Bitínia e a resposta de Trajano", summary: "Plínio pergunta o que fazer com os cristãos: relata que se reuniam antes do amanhecer, cantavam um hino a Cristo “como a um deus” e se comprometiam a não cometer crimes; Trajano responde que não devem ser procurados, mas punidos se acusados e se não negarem.", refs: ["1PE.4.14-1PE.4.16", "ACT.11.26"], debate: "Datada por volta de 112; a autenticidade é aceita, e o texto mostra a prática dos primeiros cristãos vista por um romano." },
     ],
     limits: "Não fala da vida de Jesus: só da prática dos cristãos no começo do século II.",
   },
@@ -76,7 +76,7 @@ export const HISTORIANS: Historian[] = [
     id: "suetonio", name: "Suetônio", years: "c. 69 – depois de 122 d.C.", role: "Biógrafo e secretário do imperador Adriano",
     summary: "Em Vidas dos Doze Césares há duas menções breves a cristãos e a judeus em Roma que ajudam a datar o ambiente de Atos.",
     lines: ["Foi secretário de Adriano até cerca de 122.", "Escreveu a vida de Júlio César e dos onze imperadores seguintes, até Domiciano.", "Seu interesse é pelos imperadores, não pelos judeus nem pelos cristãos."],
-    works: [{ id: "caesars", title: "Vidas dos Doze Césares", original: "De vita Caesarum", what: "Biografias de Júlio César a Domiciano.", status: "library", edition: "Thomson e Forester (Gutenberg 6400, verificar)" }],
+    works: [{ id: "caesars", title: "Vidas dos Doze Césares", original: "De vita Caesarum", what: "Biografias de Júlio César a Domiciano.", status: "reader", edition: "Thomson e Forester (Gutenberg 6400, verificar)" }],
     passages: [
       { id: "cl254", cite: "Cláudio 25.4", topic: "Cláudio expulsa os judeus de Roma", summary: "Diz que Cláudio expulsou de Roma os judeus que faziam tumulto “por instigação de Cresto”.", refs: ["ACT.18.2"], debate: "Discute-se se “Cresto” é uma forma de Cristo (e então seria um sinal de conflitos em torno do cristianismo) ou outra pessoa; a data (c. 49) é discutida." },
       { id: "ner162", cite: "Nero 16.2", topic: "Nero castiga os cristãos", summary: "Cita, entre as medidas de Nero, o castigo aos cristãos, “gente de uma superstição nova e perniciosa”.", refs: ["1PE.4.16"] },

@@ -1,9 +1,10 @@
 // What the teacher knows when the student studies the historians: who the author is, the passage in question, the limits and the rules (RA-21, RA-14).
+import { refQuery } from "@/lib/knowledge/reference-db";
 import { byId, HISTORIANS, TESTIMONIES } from "./data";
 
-export interface HistorianState { id: string; passage?: string }
+export interface HistorianState { id: string; passage?: string; unit?: { work: string; ord: number } }
 
-export function historianContext(s: HistorianState): { text: string; refs: string[] } | null {
+export async function historianContext(s: HistorianState): Promise<{ text: string; refs: string[] } | null> {
   const all = s.id === "testemunhos";
   const h = all ? null : byId(s.id);
   if (!all && !h) return null;
@@ -20,5 +21,12 @@ export function historianContext(s: HistorianState): { text: string; refs: strin
     rules,
   ];
   void HISTORIANS;
+  if (s.unit) {
+    try {
+      const [u] = await refQuery<{ label: string; title: string; text: string; text_pt: string | null }>("select label, title, text, text_pt from hist_units where work = $1 and ord = $2", [s.unit.work, s.unit.ord]);
+      const [w] = await refQuery<{ title: string }>("select title from hist_works where id = $1", [s.unit.work]);
+      if (u) lines.splice(3, 0, `O aluno está lendo "${w?.title ?? s.unit.work}", ${u.label}${u.title ? ` (${u.title})` : ""}. TRECHO LIDO (${u.text_pt ? "tradução automática para o português" : "tradução inglesa de domínio público; a versão em português ainda não chegou"}):\n${(u.text_pt ?? u.text).slice(0, 4500)}`);
+    } catch { /* the author sheet is enough */ }
+  }
   return { text: lines.join("\n"), refs: (p ? p.refs : h!.passages.flatMap((x) => x.refs)).slice(0, 6) };
 }

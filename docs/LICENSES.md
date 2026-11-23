@@ -342,3 +342,10 @@ Toda obra ingerida na base precisa de uma ficha aqui antes de ser habilitada (`w
 - Crédito exigido (texto exato): "Obra coletiva de domínio público (publicada em 1907–1914; editores falecidos até 1951). Texto da Wikisource (https://en.wikisource.org/wiki/Catholic_Encyclopedia_(1913)), transcrição sob CC BY-SA 4.0. Reflete a tradição católica de 1913."
 - Fonte (URL): https://en.wikisource.org/wiki/Catholic_Encyclopedia_(1913)
 - Observações: entram só os verbetes que citam pelo menos 3 passagens bíblicas (`scripts/ingest/library-wikisource.ts`); rotulada como tradição católica, para respeitar RA-11 e RA-14.
+
+## Livros dos historiadores para leitura (hist_works, hist_units) — M21
+- Textos de domínio público, em tradução inglesa, lidos de `data/raw` (Project Gutenberg e CCEL) por `scripts/ingest/historians-read.ts`; a versão em português é tradução automática feita pelo app (`scripts/translate`), a partir dessas edições.
+- **Eusébio** (*História Eclesiástica*, *Vida de Constantino*): NPNF série 2, vol. 1, tradução de A. C. McGiffert e E. C. Richardson (1890), via CCEL (`schaff/npnf201`, "Public Domain").
+- **Tácito**: *Anais* livros 1 a 6, Thomas Gordon (1728) e Arthur Galton, ed. (1896), Gutenberg nº 7959; *Germânia* e *Agrícola*, Gutenberg nº 7524 (tradutor a verificar). **Não entra:** *Histórias* na tradução de Fyfe (1912; falecido em 1965).
+- **Plínio, o Jovem**: *Cartas*, William Melmoth (1746), seleção Harvard Classics, Gutenberg nº 2811. A numeração é a de Melmoth (a carta sobre os cristãos é 10.97, e não 10.96).
+- **Suetônio**: *Vidas dos Doze Césares*, Alexander Thomson (c. 1796), revisto por Thomas Forester (1893), Gutenberg nº 6400. A triagem automática o mandou para revisão porque o Gutenberg não dá as datas de morte; conferi à mão (Thomson morreu em 1803 e Forester em 1850, ambos antes do corte do Brasil) e o liberei. **Confirmar com a assessoria jurídica.**

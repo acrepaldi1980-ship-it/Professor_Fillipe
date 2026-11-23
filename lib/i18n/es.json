@@ -1089,5 +1089,20 @@
   "hist.banner": "Estudiando: {who}",
   "hist.seed.author": "Vamos a estudiar a {name}. Presenta quién fue, qué escribió y por qué importa para la Biblia.",
   "hist.seed.passage": "Vamos a estudiar {cite}, de {name}: {topic}. Explica el contexto, lo que dice el texto, el límite de la fuente y qué se discute.",
-  "hist.seed.testimonies": "Compara los testimonios fuera de la Biblia sobre Jesús y los primeros cristianos (Josefo, Tácito, Suetonio, Plinio): qué dice cada uno, qué es independiente y qué se discute."
+  "hist.seed.testimonies": "Compara los testimonios fuera de la Biblia sobre Jesús y los primeros cristianos (Josefo, Tácito, Suetonio, Plinio): qué dice cada uno, qué es independiente y qué se discute.",
+  "hist.seed.unit": "Vamos a estudiar el pasaje de {name} que estoy leyendo. Presenta el contexto, lo que dice el texto, el límite de la fuente y cómo se relaciona con la Biblia.",
+  "hist.books": "Libros para leer",
+  "hist.toc": "Índice",
+  "hist.read.work": "Leer",
+  "hist.translated": "{n} de {m} pasajes en portugués",
+  "hist.lang.pt": "Traducción automática al portugués a partir de la traducción inglesa de dominio público. Puede tener imperfecciones; confirme el original al citar.",
+  "hist.lang.wait": "La traducción al portugués de este pasaje está en preparación; por ahora el texto aparece en inglés (traducción de dominio público). El profesor explica en español.",
+  "hist.prev": "Anterior",
+  "hist.next": "Siguiente",
+  "hist.ask.unit": "Explicar con el profesor",
+  "hist.show.en": "Ver el original en inglés",
+  "hist.show.pt": "Ver en portugués",
+  "hist.note": "Sobre esta edición",
+  "hist.credit": "Texto de dominio público; vea la edición usada y los créditos en docs/LICENSES.md.",
+  "hist.status.reader.n": "Lector en la aplicación ({n} pasajes)"
 }
