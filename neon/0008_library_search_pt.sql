@@ -1,6 +1,6 @@
 -- Search in Portuguese: chunks with language = 'pt' (the machine translation of Josephus and of the historians) get their own keyword branch,
 -- using the Portuguese text-search configuration. The old five-argument function is replaced (two overloads would make calls ambiguous).
--- The keyword text for Portuguese is the same question text the English branch receives.
+-- A Portuguese question is a sentence, not a list of keywords: the branch matches ANY of its stems (stop words removed) and ranks by how many match.
 drop function if exists library_search(vector, text, text[], int, text[]);
 create or replace function library_search(
   q_embedding vector(384),
@@ -41,12 +41,16 @@ language sql stable as $$
     order by k.score desc
     limit match_per_signal
   ),
+  pt_query as (
+    select to_tsquery('simple', string_agg(quote_literal(l), ' | ')) as q
+    from unnest(tsvector_to_array(to_tsvector('portuguese', coalesce(q_text, '')))) as l
+  ),
   keyword_pt as (
     select k.id, row_number() over (order by k.score desc) as rnk
     from (
-      select e.id, ts_rank(e.tsv, websearch_to_tsquery('portuguese', q_text)) as score
-      from eligible e
-      where e.language = 'pt' and e.tsv @@ websearch_to_tsquery('portuguese', q_text)
+      select e.id, ts_rank(e.tsv, p.q) as score
+      from eligible e, pt_query p
+      where p.q is not null and e.language = 'pt' and e.tsv @@ p.q
     ) k
     order by k.score desc
     limit match_per_signal
