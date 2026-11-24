@@ -154,3 +154,4 @@ Nenhum.
 
 - RA-25 (hardening, 24/11/2026): a question with no biblical signal AND no match in the app by words and meaning at once is treated as off topic (fixed kind reply, no model, no web). Unclear questions the app does know still go to the model, never to the web.
 - Retrieval evaluation (24/11/2026, `--quick`): app content 97% (58/60) top-12 by title, main DB sample 100% (60/60), exact verses 100% (40/40). Index audit: 114k chunks, 0 broken, 276 works reachable.
+- Resilience (24/11/2026): LLM quota pauses now follow the provider's "try again in" hint (else 15 min, max 1 h); when every model is unavailable the teacher shows the best retrieved passage (excerpt + citation) instead of only asking to retry. Free daily quotas (Groq 200k tokens/model/day, Gemini, OpenRouter) ran out; recommended adding CEREBRAS_API_KEY and MISTRAL_API_KEY.

@@ -247,3 +247,15 @@ describe("a slow or failing library search does not fail the turn", () => {
     expect(out.response.speech.length).toBeGreaterThan(0);
   });
 });
+
+describe("fallback with library excerpt", () => {
+  it("when the model is down and no verse was found, shows the best retrieved passage with its citation", async () => {
+    const long = "Barnabé foi um levita de Chipre que vendeu um campo e trouxe o dinheiro aos apóstolos; chamado filho da consolação, acompanhou Paulo e Marcos em viagens.";
+    const d = { ...deps([]), search: async () => ({ chunks: [{ ...chunk("c1"), text: `Barnabas\n${long}`, kind: "dictionary" as never }], refs: [] }) };
+    d.llm = { generate: async () => { throw new Error("llm_failed_429"); } } as never;
+    const out = await runTurn({ sessionId: "s1", text: "Quem foi Barnabé?" }, d);
+    expect(out.meta.degraded).toBe(true);
+    expect(out.response.speech).toContain("levita de Chipre");
+    expect(out.response.citations[0]).toMatchObject({ type: "work", chunk_id: "c1" });
+  });
+});

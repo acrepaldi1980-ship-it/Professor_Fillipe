@@ -132,7 +132,15 @@ function fallbackResponse(name: string, verses: BibleVerse[] = [], chunks: Retri
     const ref = formatRefPt(v.ref);
     return { ...base, speech: `${name}, a resposta completa está demorando, mas já separei a Palavra para você. ${ref}: ${text} Quer que eu tente explicar de novo?`, display_markdown: `**${ref}**\n\n${v.text}`, citations: [{ type: "bible", ref: v.ref, version_id: v.version_id ?? "por_blivre_2018" }] };
   }
-  void chunks;
+  // No verse, but the search did find something in the app: show the best passage as it is (an excerpt of a real source, with its citation).
+  const c = chunks.find((x) => x.text && x.text.length > 80 && x.kind !== "bible_text");
+  if (c) {
+    const body = c.text.replace(/^[^\n]*\n/, "").replace(/\s+/g, " ").trim();
+    const words = body.split(" ");
+    const excerpt = words.slice(0, 60).join(" ") + (words.length > 60 ? "…" : "");
+    const label = (c.title_path ?? c.work_id).replace(/\s*\(tela:[^)]*\)/, "").slice(0, 120);
+    return { ...base, speech: `${name}, a resposta completa está demorando, mas já encontrei algo nas fontes do app. ${label}: ${excerpt} Quer que eu tente explicar de novo?`, display_markdown: `**${label}**\n\n${body.slice(0, 1200)}`, citations: [{ type: "work" as const, work_id: c.work_id, chunk_id: c.id, label }] };
+  }
   return { ...base, speech: `${name}, a resposta está demorando mais do que devia. Já estou tentando de novo: pode repetir a pergunta ou escolher “Tentar de novo”?`, display_markdown: "", citations: [] };
 }
 
