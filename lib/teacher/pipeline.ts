@@ -14,6 +14,7 @@ import { ensureClosingQuestion } from "./speech";
 import { normalizeRaw } from "./normalize";
 import { injectionResponse, leaksPrompt, screenInput } from "../security/injection";
 import type { WebRequest, WebSource } from "../websearch/types";
+import type { WebResult } from "../websearch";
 import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
 import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
 
@@ -38,7 +39,7 @@ export interface TurnDeps {
   rewriteQuery?(question: string): Promise<string | null>;
   existingVerses(versionId: string, refs: string[]): Promise<Set<string>>;
   /** Optional: research OUTSIDE the app (spec 8.23). Only called inside the biblical context, for adults, when the app's own sources do not answer. */
-  webSearch?(req: WebRequest): Promise<WebSource[]>;
+  webSearch?(req: WebRequest): Promise<WebResult>;
   /** Optional: active prompt layers from prompt_versions (falls back to the built-in version 1). */
   loadLayers?(): Promise<import("./prompt-store").PromptLayers | null>;
 }
@@ -199,7 +200,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4b) Topic guardrail (owner's rule, 23/11/2026): the teacher answers only inside the biblical context. What is clearly outside gets a short, kind invitation back to
   // the study: no model call, no outside research. What is unclear goes on, but never to the web.
   const inStudyContext = !!input.extraSources || (!!input.mode && input.mode !== "free") || !!input.modeContext?.trail;
-  const gate = topicGate({ text: input.text, refs: wantedVerses, chunks, followUp: followUp0(searchText, input.text), inStudyContext, rewritten });
+  const gate = topicGate({ text: input.text, refs: mentioned, chunks, followUp: followUp0(searchText, input.text), inStudyContext, rewritten });
   if (gate.verdict === "off") {
     const response = offTopicResponse(student.preferred_name);
     memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
@@ -212,12 +213,15 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const coverage = assessCoverage({ chunks, verses });
   let external: WebSource[] = [];
   let externalTried = false, externalMs = 0;
+  let externalErrors: string[] = [];
   const runWeb = async () => {
     externalTried = true;
     const tw = Date.now();
     // the English keywords (from the model) help to find the English article; wait for them a moment, no longer
     const english = rewritten ?? (await Promise.race([rewriteP, new Promise<null>((r) => setTimeout(() => r(null), 1500))]).catch(() => null));
-    external = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch(() => []);
+    const found = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch((e: Error) => ({ sources: [] as WebSource[], errors: [`websearch:${String(e?.message).slice(0, 60)}`] }));
+    external = found.sources;
+    externalErrors = found.errors;
     externalMs = Date.now() - tw;
   };
   if (canWeb && coverage !== "ok") await runWeb();
@@ -358,7 +362,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       promptVersion: layers?.version ?? PROMPT_DB_VERSION,
       lensChunks: chunks.filter((c) => c.signals?.includes("lens")).length,
       topic: gate,
-      external: { tried: externalTried, sources: external.length, used: usedOutside, ms: externalMs, ...(externalTried && !external.length ? { reason: "no_pages" } : {}) },
+      external: { tried: externalTried, sources: external.length, used: usedOutside, ms: externalMs, ...(externalTried && !external.length ? { reason: externalErrors.length ? externalErrors.join("; ") : "no_pages" } : {}) },
       removedCitations: ver.removed.length,
       schemaRetries,
       speechRewrites: speechRewrites + lengthRewrites,

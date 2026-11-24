@@ -13,7 +13,7 @@ function setup(opts: { chunks?: Retrieved[]; replies: unknown[]; web?: WebSource
   let i = 0;
   const systems: string[] = [];
   const llm: TeacherLlm = { generate: async (a) => { systems.push(a.system); return opts.replies[Math.min(i++, opts.replies.length - 1)]; } };
-  const webSearch = vi.fn(async () => opts.web ?? [WEB]);
+  const webSearch = vi.fn(async () => ({ sources: opts.web ?? [WEB], errors: [] as string[] }));
   const deps: TurnDeps = { llm, search: async () => ({ chunks: opts.chunks ?? [], refs: [] }), getVerses: async () => [], existingVerses: async () => new Set<string>(), webSearch };
   return { deps, webSearch, systems, get llmCalls() { return i; } };
 }
@@ -73,6 +73,13 @@ describe("research outside the app", () => {
     const r = await ask("Qual é a altura do Monte Carmelo?", t.deps);
     expect(r.response.external_sources).toEqual([]);
     expect(r.meta.external).toMatchObject({ tried: true, sources: 0, used: false, reason: "no_pages" });
+  });
+
+  it("says why the research failed (blocked, rate limited): the reason goes to the turn's metrics", async () => {
+    const t = setup({ chunks: [], replies: [reply("Não encontrei isso nas minhas fontes. Quer outro caminho?")] });
+    t.webSearch.mockResolvedValue({ sources: [], errors: ["wikipedia:wikipedia_429"] });
+    const r = await ask("Qual é a altura do Monte Carmelo?", t.deps);
+    expect(r.meta.external?.reason).toBe("wikipedia:wikipedia_429");
   });
 
   it("a number the pages do not carry is never spoken: one retry, then the plain words of the source", async () => {

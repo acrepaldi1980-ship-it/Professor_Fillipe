@@ -69,7 +69,7 @@ describe("Wikipedia provider", () => {
     const f = fakeWiki({ pt: ["Monte Carmelo"] }, { "Monte Carmelo": TEAM });
     expect(await new WikipediaProvider(f, ["pt"]).search({ question: "Qual é a altura do Monte Carmelo?" })).toEqual([]);
   });
-  it("waits and tries again when Wikipedia answers 429, and gives up quietly on a failure", async () => {
+  it("waits and tries again when Wikipedia answers 429, and reports a failure instead of hiding it", async () => {
     let n = 0;
     const f = vi.fn(async (url: string) => {
       if (new URL(url).searchParams.get("list") === "search") { n++; return n === 1 ? new Response("slow down", { status: 429, headers: { "retry-after": "0" } }) : Response.json({ query: { search: [{ title: "Monte Carmelo" }] } }); }
@@ -77,7 +77,7 @@ describe("Wikipedia provider", () => {
     }) as unknown as typeof fetch;
     expect((await new WikipediaProvider(f, ["pt"]).search({ question: "Altura do Monte Carmelo" })).length).toBe(1);
     const broken = vi.fn(async () => new Response("", { status: 500 })) as unknown as typeof fetch;
-    expect(await new WikipediaProvider(broken, ["pt"]).search({ question: "Altura do Monte Carmelo" })).toEqual([]);
+    await expect(new WikipediaProvider(broken, ["pt"]).search({ question: "Altura do Monte Carmelo" })).rejects.toThrow("wikipedia_500");
   });
   it("uses the English keywords as the subject of the English pages", async () => {
     const calls: string[] = [];
@@ -127,5 +127,21 @@ describe("web search entry point", () => {
     const p = provider([src("https://a/1")]);
     expect(await webSearch({ question: "q4" }, { providers: [p] })).toEqual([]);
     expect(p.calls).toBe(0);
+  });
+});
+
+import { webSearchDetailed } from "@/lib/websearch";
+describe("failures are reported, not hidden", () => {
+  it("names the provider and the reason when a provider fails, and still returns what the others found", async () => {
+    resetWebSearchCache();
+    const good: WebSearchProvider = { name: "ok", search: async () => [{ provider: "wikipedia", title: "T", url: "https://x/1", site: "S", lang: "pt", license: "L", passages: ["p"], retrievedAt: "now" }] };
+    const bad: WebSearchProvider = { name: "wikipedia", search: async () => { throw new Error("wikipedia_429"); } };
+    const r = await webSearchDetailed({ question: "qq" }, { providers: [bad, good] });
+    expect(r.errors).toEqual(["wikipedia:wikipedia_429"]);
+    expect(r.sources).toHaveLength(1);
+  });
+  it("the Wikipedia provider throws only when EVERY language failed", async () => {
+    const f = vi.fn(async () => new Response("", { status: 403 })) as unknown as typeof fetch;
+    await expect(new WikipediaProvider(f, ["pt", "en"]).search({ question: "Altura do Monte Carmelo" })).rejects.toThrow("wikipedia_403");
   });
 });

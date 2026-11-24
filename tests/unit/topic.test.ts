@@ -43,6 +43,15 @@ describe("topic guardrail: the teacher stays inside the biblical context", () =>
     expect(gate("sim, continue").verdict).toBe("unsure");
   });
 
+  it("an off-topic question stays off topic in the middle of a study, a follow-up or a study screen", () => {
+    expect(gate("Quem ganhou o jogo do Flamengo ontem?", { followUp: true }).verdict).toBe("off");
+    expect(gate("Quem ganhou o jogo do Flamengo ontem?", { inStudyContext: true }).verdict).toBe("off");
+    expect(gate("Quanto custa o iPhone?", { inStudyContext: true, followUp: true }).verdict).toBe("off");
+  });
+  it("a short question with no subject of its own is not biblical just because the last answer was", () => {
+    expect(gate("e o resultado de ontem?", { followUp: true }).verdict).toBe("unsure");
+  });
+
   it("a common name alone is biblical, but not when the sentence is about something else", () => {
     expect(gate("Quem foi Paulo?").verdict).toBe("in");
     expect(gate("Paulo comprou um celular novo").verdict).toBe("off");

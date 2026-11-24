@@ -52,7 +52,7 @@ const SHORT_FOLLOWUP = /^(sim|nao|ok|certo|beleza|continue|continua|pode|vamos|q
 
 export interface TopicInput {
   text: string;
-  /** Bible references named by the student or carried from the previous turn. */
+  /** Bible references the student TYPED in this message (references carried over from the previous turn do not count: they are not what this question is about). */
   refs: string[];
   /** The retrieved passages (their signals say how well the library knows this subject). */
   chunks: Retrieved[];
@@ -74,15 +74,19 @@ function libraryKnows(chunks: Retrieved[], text: string): boolean {
   });
 }
 
+/**
+ * Order matters. What the student typed decides first (a typed reference, a clearly biblical word); then a clearly off-topic word wins over everything that is only
+ * context (the conversation, the study screen, the references of the last answer): asking about football in the middle of a study is still off topic.
+ */
 export function topicGate(i: TopicInput): { verdict: TopicVerdict; why: string } {
   const t = norm(i.text);
   if (i.refs.length) return { verdict: "in", why: "reference" };
-  if (i.inStudyContext) return { verdict: "in", why: "study_context" };
   if (STRONG.test(t)) return { verdict: "in", why: "biblical_words" };
   if (i.rewritten && STRONG.test(norm(i.rewritten))) return { verdict: "in", why: "biblical_words_en" };
-  if (libraryKnows(i.chunks, i.text)) return { verdict: "in", why: "library_knows" };
-  if (i.followUp && (SHORT_FOLLOWUP.test(t) || t.split(/\s+/).length <= 6)) return { verdict: "in", why: "follow_up" };
   if (OFF_TOPIC.test(t)) return { verdict: "off", why: "off_topic_words" };
+  if (libraryKnows(i.chunks, i.text)) return { verdict: "in", why: "library_knows" };
+  if (i.inStudyContext) return { verdict: "in", why: "study_context" };
+  if (i.followUp && SHORT_FOLLOWUP.test(t)) return { verdict: "in", why: "follow_up" };
   if (NAMES.test(t)) return { verdict: "in", why: "biblical_names" };
   return { verdict: "unsure", why: "no_biblical_signal" };
 }

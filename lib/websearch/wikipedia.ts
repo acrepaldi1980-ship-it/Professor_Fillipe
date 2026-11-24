@@ -60,7 +60,9 @@ export class WikipediaProvider implements WebSearchProvider {
   }
 
   async search(req: WebRequest, signal?: AbortSignal): Promise<WebSource[]> {
-    const parts = await Promise.all(this.langs.map((l) => this.forLanguage(l, req, signal).catch(() => [] as WebSource[])));
-    return parts.flat();
+    const parts = await Promise.allSettled(this.langs.map((l) => this.forLanguage(l, req, signal)));
+    // one language failing is fine; every language failing is an error worth reporting (blocked, rate limited, offline)
+    if (parts.every((p) => p.status === "rejected")) throw (parts[0] as PromiseRejectedResult).reason;
+    return parts.flatMap((p) => (p.status === "fulfilled" ? p.value : []));
   }
 }
