@@ -59,7 +59,7 @@ describe("failover", () => {
   it("cooldown lengths by kind of failure", () => {
     expect(cooldownFor("rate_limit", 20)).toBe(20);
     expect(cooldownFor("rate_limit", 0)).toBe(30);
-    expect(cooldownFor("quota", 0)).toBe(3600);
+    expect(cooldownFor("quota", 0)).toBe(900);
     expect(cooldownFor("auth", 0)).toBe(1800);
     expect(cooldownFor("server", 0)).toBe(20);
     expect(cooldownFor("bad_output", 0)).toBe(0);
@@ -222,5 +222,18 @@ describe("hedged calls (slow tails of free models)", () => {
     });
     expect(r.endpoint).toBe("c/m3");
     expect(calls).toEqual(["a/m1", "b/m2", "c/m3"]);
+  });
+});
+
+import { hintedWait } from "@/lib/llm/clients";
+describe("provider wait hints", () => {
+  it("reads 'try again in' and uses it for a quota pause", () => {
+    expect(hintedWait("Please try again in 7m12.5s. Need more")).toBe(433);
+    expect(hintedWait("try again in 1h2m3s")).toBe(3723);
+    expect(hintedWait("try again in 850ms")).toBe(0);
+    expect(hintedWait("no hint")).toBe(0);
+    expect(cooldownFor("quota", 433)).toBe(433);
+    expect(cooldownFor("quota", 0)).toBe(900);
+    expect(cooldownFor("quota", 99999)).toBe(3600);
   });
 });

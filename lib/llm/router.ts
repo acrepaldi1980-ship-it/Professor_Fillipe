@@ -30,7 +30,7 @@ const realCall = (e: Endpoint, req: LlmRequest) => (e.kind === "gemini" ? callGe
 export function cooldownFor(f: Failure, retryAfter: number): number {
   switch (f) {
     case "rate_limit": return Math.min(120, Math.max(8, retryAfter || 30));
-    case "quota": return 3600; // daily quota or no credit: try again in an hour
+    case "quota": return retryAfter > 0 ? Math.min(3600, Math.max(60, retryAfter)) : 900; // when the provider says when it lifts, believe it; otherwise try again in 15 minutes
     case "auth": return 1800; // wrong or revoked key
     case "gone": return 21600; // the model was removed
     case "server": case "timeout": return 20;

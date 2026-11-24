@@ -1,8 +1,16 @@
 // The two wire formats: OpenAI-compatible chat completions (Groq, Cerebras, OpenRouter, Mistral, SambaNova, NVIDIA, GitHub...) and Google Gemini.
 import { LlmError, type Endpoint, type LlmRequest } from "./types";
 
+/** Providers say when the limit lifts ("Please try again in 7m12.5s"): use it instead of guessing, so a short limit does not park a model for an hour. */
+export function hintedWait(body: string): number {
+  const m = /try again in\s+(?:(\d+)h)?\s*(?:(\d+)m(?!s))?\s*(?:(\d+(?:\.\d+)?)s)?/i.exec(body);
+  if (!m || (!m[1] && !m[2] && !m[3])) return 0;
+  return Math.ceil(Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0));
+}
+
 function classify(status: number, body: string, retryAfter: number): LlmError {
   const b = body.slice(0, 160);
+  retryAfter = retryAfter || hintedWait(body);
   if (status === 429) return new LlmError(/per day|daily|quota|insufficient/i.test(body) && !/per minute/i.test(body) ? "quota" : "rate_limit", status, retryAfter, b);
   if (status === 402) return new LlmError("quota", status, retryAfter, b);
   if (status === 401 || status === 403) return new LlmError("auth", status, 0, b);
