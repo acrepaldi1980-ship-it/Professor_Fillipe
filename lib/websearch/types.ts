@@ -22,5 +22,6 @@ export interface WebRequest {
 
 export interface WebSearchProvider {
   readonly name: string;
-  search(req: WebRequest, signal?: AbortSignal): Promise<WebSource[]>;
+  /** `notes` receives short remarks about what happened (candidates, pages discarded): diagnostics only, never the student's text. */
+  search(req: WebRequest, signal?: AbortSignal, notes?: string[]): Promise<WebSource[]>;
 }

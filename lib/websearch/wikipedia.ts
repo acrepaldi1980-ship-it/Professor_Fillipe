@@ -44,23 +44,27 @@ export class WikipediaProvider implements WebSearchProvider {
     return { title: data.parse.title, url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(data.parse.title.replace(/ /g, "_"))}`, text: htmlToText(data.parse.text) };
   }
 
-  private async forLanguage(lang: string, req: WebRequest, signal?: AbortSignal): Promise<WebSource[]> {
+  private async forLanguage(lang: string, req: WebRequest, signal?: AbortSignal, notes: string[] = []): Promise<WebSource[]> {
     // English keywords come "subject first": their first item is the subject for the English pages.
     const entity = lang === "en" && req.english ? req.english.split(",")[0].replace(/\b(height|elevation|size|length|width|depth|population|meaning)\b/gi, "").trim() : entityPhrase(req.question);
-    if (!entity) return [];
+    if (!entity) { notes.push(`${lang}:no_entity`); return []; }
     const { terms } = attributeTerms(req.question);
     const out: WebSource[] = [];
-    for (const { title, exact } of await this.candidates(lang, entity, signal)) {
+    const found = await this.candidates(lang, entity, signal);
+    if (!found.length) notes.push(`${lang}:no_candidates(${entity})`);
+    for (const { title, exact } of found) {
       const p = await this.page(lang, title, signal);
-      if (!p || !isBiblicalPage(p.text, exact ? 2 : 3)) continue; // a page whose title is exactly the subject needs less proof of being biblical
+      if (!p) { notes.push(`${lang}:no_page(${title})`); continue; }
+      if (!isBiblicalPage(p.text, exact ? 2 : 3)) { notes.push(`${lang}:not_biblical(${title})`); continue; } // a page whose title is exactly the subject needs less proof of being biblical
       const passages = pickPassages(p.text, `${req.question} ${entity}`, { terms });
+      if (!passages.length) notes.push(`${lang}:no_passages(${title})`);
       if (passages.length) out.push({ provider: "wikipedia", title: p.title, url: p.url, site: `${lang === "pt" ? "Wikipédia" : "Wikipedia"} (${lang})`, lang, license: "CC BY-SA 4.0", passages, retrievedAt: new Date().toISOString() });
     }
     return out;
   }
 
-  async search(req: WebRequest, signal?: AbortSignal): Promise<WebSource[]> {
-    const parts = await Promise.allSettled(this.langs.map((l) => this.forLanguage(l, req, signal)));
+  async search(req: WebRequest, signal?: AbortSignal, notes: string[] = []): Promise<WebSource[]> {
+    const parts = await Promise.allSettled(this.langs.map((l) => this.forLanguage(l, req, signal, notes)));
     // one language failing is fine; every language failing is an error worth reporting (blocked, rate limited, offline)
     if (parts.every((p) => p.status === "rejected")) throw (parts[0] as PromiseRejectedResult).reason;
     return parts.flatMap((p) => (p.status === "fulfilled" ? p.value : []));

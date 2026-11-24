@@ -214,14 +214,16 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   let external: WebSource[] = [];
   let externalTried = false, externalMs = 0;
   let externalErrors: string[] = [];
+  let externalNotes: string[] = [];
   const runWeb = async () => {
     externalTried = true;
     const tw = Date.now();
     // the English keywords (from the model) help to find the English article; wait for them a moment, no longer
     const english = rewritten ?? (await Promise.race([rewriteP, new Promise<null>((r) => setTimeout(() => r(null), 1500))]).catch(() => null));
-    const found = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch((e: Error) => ({ sources: [] as WebSource[], errors: [`websearch:${String(e?.message).slice(0, 60)}`] }));
+    const found: WebResult = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch((e: Error) => ({ sources: [] as WebSource[], errors: [`websearch:${String(e?.message).slice(0, 60)}`] }));
     external = found.sources;
     externalErrors = found.errors;
+    externalNotes = found.notes ?? [];
     externalMs = Date.now() - tw;
   };
   if (canWeb && coverage !== "ok") await runWeb();
@@ -362,7 +364,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
       promptVersion: layers?.version ?? PROMPT_DB_VERSION,
       lensChunks: chunks.filter((c) => c.signals?.includes("lens")).length,
       topic: gate,
-      external: { tried: externalTried, sources: external.length, used: usedOutside, ms: externalMs, ...(externalTried && !external.length ? { reason: externalErrors.length ? externalErrors.join("; ") : "no_pages" } : {}) },
+      external: { tried: externalTried, sources: external.length, used: usedOutside, ms: externalMs, ...(externalTried && !external.length ? { reason: (externalErrors.length ? externalErrors.join("; ") : `no_pages ${externalNotes.join(" ")}`.trim()).slice(0, 240) } : {}) },
       removedCitations: ver.removed.length,
       schemaRetries,
       speechRewrites: speechRewrites + lengthRewrites,
