@@ -86,7 +86,7 @@ VERSÕES PARA COMPARAR: ${b.compare_versions.length ? b.compare_versions.join(",
 export const LAYER_MODE_FREE = `MODO: ESTUDO LIVRE. Conversa aberta. Ofereça 2 a 4 próximos passos em next_options. Acione no máximo 2 visuais quando ajudarem a entender (mapa para lugares e viagens, linha do tempo para sequência de eventos, ilustração para objetos e cenas, 3D quando houver modelo no catálogo).`;
 
 export function layerChunks(chunks: Retrieved[], verses: BibleVerse[], mainVersionName: string, maxChars = Infinity): string {
-  const parts: string[] = ["TRECHOS (use somente estes como fonte; cada um tem um id):"];
+  const parts: string[] = ["TRECHOS (use somente estes como fonte; cada um tem um id). Os trechos podem estar em inglês, latim ou outra língua: você SEMPRE fala no idioma do aluno. Explique com suas palavras ou traduza; nunca copie frases em outra língua (italiano, latim, inglês) para a fala. Cite a obra pelo título, nunca escreva ids como pg_123:4 ou chunk_id na fala:"];
   for (const v of verses) {
     parts.push(`[bible ref=${v.ref} | versão=${mainVersionName} | version_id=${v.version_id}]\n${v.text}`);
   }

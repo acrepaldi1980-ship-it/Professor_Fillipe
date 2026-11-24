@@ -16,6 +16,7 @@ import { injectionResponse, leaksPrompt, screenInput } from "../security/injecti
 import type { WebRequest, WebSource } from "../websearch/types";
 import type { WebResult } from "../websearch";
 import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
+import { foreignChunk, wrongLanguage } from "./language";
 import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
 
 export interface TeacherLlm {
@@ -133,13 +134,14 @@ function fallbackResponse(name: string, verses: BibleVerse[] = [], chunks: Retri
     return { ...base, speech: `${name}, a resposta completa está demorando, mas já separei a Palavra para você. ${ref}: ${text} Quer que eu tente explicar de novo?`, display_markdown: `**${ref}**\n\n${v.text}`, citations: [{ type: "bible", ref: v.ref, version_id: v.version_id ?? "por_blivre_2018" }] };
   }
   // No verse, but the search did find something in the app: show the best passage as it is (an excerpt of a real source, with its citation).
-  const c = chunks.find((x) => x.text && x.text.length > 80 && x.kind !== "bible_text");
+  const usable = chunks.filter((x) => x.text && x.text.length > 80 && x.kind !== "bible_text");
+  const c = usable.find((x) => x.language === "pt") ?? usable[0];
   if (c) {
     const body = c.text.replace(/^[^\n]*\n/, "").replace(/\s+/g, " ").trim();
     const words = body.split(" ");
     const excerpt = words.slice(0, 60).join(" ") + (words.length > 60 ? "…" : "");
     const label = (c.title_path ?? c.work_id).replace(/\s*\(tela:[^)]*\)/, "").slice(0, 120);
-    return { ...base, speech: `${name}, a resposta completa está demorando, mas já encontrei algo nas fontes do app. ${label}: ${excerpt} Quer que eu tente explicar de novo?`, display_markdown: `**${label}**\n\n${body.slice(0, 1200)}`, citations: [{ type: "work" as const, work_id: c.work_id, chunk_id: c.id, label }] };
+    return { ...base, speech: `${name}, a resposta completa está demorando, mas já encontrei algo nas fontes do app${c.language === "pt" ? "" : " (o trecho está em inglês, na língua original da obra)"}. ${label}: ${excerpt} Quer que eu tente explicar de novo?`, display_markdown: `**${label}**\n\n${body.slice(0, 1200)}`, citations: [{ type: "work" as const, work_id: c.work_id, chunk_id: c.id, label }] };
   }
   return { ...base, speech: `${name}, a resposta está demorando mais do que devia. Já estou tentando de novo: pode repetir a pergunta ou escolher “Tentar de novo”?`, display_markdown: "", citations: [] };
 }
@@ -196,12 +198,14 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   void rewriteP.then((r) => { rewritten = r; });
   const wantedVerses = [...mentioned, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
-  const [{ chunks }, verses, layers] = await Promise.all([
+  const [{ chunks: found0 }, verses, layers] = await Promise.all([
     searchResilient(() => deps.search(searchText, { trace, extraQuery: rewriteP, extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),
     wantedVerses.length ? deps.getVerses(bible.main_version_id, wantedVerses.slice(0, 20)) : Promise.resolve([]),
     deps.loadLayers ? deps.loadLayers().catch(() => null) : Promise.resolve(null),
   ]);
 
+  // Passages written mostly in a language the teacher does not use (Italian, Latin, French, German: hymns, quotations inside English works) only make the model drift: leave them out.
+  const chunks = found0.filter((c) => !foreignChunk(c.text));
   const retrievalMs = Date.now() - tSearch;
   trace.total = retrievalMs;
 
@@ -308,6 +312,21 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     const shorterRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
     const shorter = shorterRaw ? teacherResponseSchema.safeParse(shorterRaw) : null;
     if (shorter?.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
+  }
+  // 6a) The teacher speaks the student's language. A free model sometimes drifts into Italian/English/Latin after reading foreign passages: one correction, then the plain fallback.
+  const want = student.locale === "es" ? "es" : "pt";
+  let drift = wrongLanguage(`${parsed.data.speech}\n${parsed.data.display_markdown ?? ""}`, want);
+  if (drift) {
+    const hint = `Sua resposta saiu em outro idioma (${drift}). Refaça TODA a resposta (speech, display_markdown e opções) em ${want === "es" ? "espanhol" : "português do Brasil"}, explicando com suas palavras o que os trechos dizem, sem copiar frases de outra língua e sem escrever ids de trechos.`;
+    const fixedRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
+    const fixed = fixedRaw ? teacherResponseSchema.safeParse(fixedRaw) : null;
+    if (fixed?.success) parsed = fixed;
+    drift = wrongLanguage(`${parsed.data.speech}\n${parsed.data.display_markdown ?? ""}`, want);
+    if (drift) {
+      const fb = fallbackResponse(student.preferred_name, verses, chunks);
+      const fbParsed = teacherResponseSchema.safeParse(fb);
+      if (fbParsed.success) parsed = fbParsed;
+    }
   }
   // 6b) The model says the app's passages do not answer (or admits it did not find the answer): research outside the app, once, and answer again with those pages.
   if (canWeb && !externalTried && (parsed.data.sources_sufficient === false || looksUnanswered(parsed.data.speech))) {
