@@ -200,7 +200,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4b) Topic guardrail (owner's rule, 23/11/2026): the teacher answers only inside the biblical context. What is clearly outside gets a short, kind invitation back to
   // the study: no model call, no outside research. What is unclear goes on, but never to the web.
   const inStudyContext = !!input.extraSources || (!!input.mode && input.mode !== "free") || !!input.modeContext?.trail;
-  const gate = topicGate({ text: input.text, refs: mentioned, chunks, followUp: followUp0(searchText, input.text), inStudyContext, rewritten });
+  const gate = topicGate({ text: input.text, refs: mentioned, chunks, followUp: followUp0(searchText, input.text), inStudyContext });
   if (gate.verdict === "off") {
     const response = offTopicResponse(student.preferred_name);
     memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });

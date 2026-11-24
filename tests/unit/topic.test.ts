@@ -48,6 +48,9 @@ describe("topic guardrail: the teacher stays inside the biblical context", () =>
     expect(gate("Quem ganhou o jogo do Flamengo ontem?", { inStudyContext: true }).verdict).toBe("off");
     expect(gate("Quanto custa o iPhone?", { inStudyContext: true, followUp: true }).verdict).toBe("off");
   });
+  it("the English keywords the model makes (which may carry the previous topic) are not used to decide the topic", () => {
+    expect(topicGate({ text: "Quem ganhou o jogo do Flamengo ontem?", refs: [], chunks: [], followUp: true, rewritten: "mount carmel height, flamengo match" } as never).verdict).toBe("off");
+  });
   it("a short question with no subject of its own is not biblical just because the last answer was", () => {
     expect(gate("e o resultado de ontem?", { followUp: true }).verdict).toBe("unsure");
   });

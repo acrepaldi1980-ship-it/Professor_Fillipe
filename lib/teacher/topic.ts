@@ -60,8 +60,6 @@ export interface TopicInput {
   followUp?: boolean;
   /** A guided mode, a study screen (scene, Josephus, historian, trail) or extra sources already define the subject. */
   inStudyContext?: boolean;
-  /** English keywords the model made for the question (their words help match English-titled entries). */
-  rewritten?: string | null;
 }
 
 /** An entry or app-content block whose title carries a word of the question, found by BOTH keyword and meaning: the library knows this subject. */
@@ -82,7 +80,6 @@ export function topicGate(i: TopicInput): { verdict: TopicVerdict; why: string }
   const t = norm(i.text);
   if (i.refs.length) return { verdict: "in", why: "reference" };
   if (STRONG.test(t)) return { verdict: "in", why: "biblical_words" };
-  if (i.rewritten && STRONG.test(norm(i.rewritten))) return { verdict: "in", why: "biblical_words_en" };
   if (OFF_TOPIC.test(t)) return { verdict: "off", why: "off_topic_words" };
   if (libraryKnows(i.chunks, i.text)) return { verdict: "in", why: "library_knows" };
   if (i.inStudyContext) return { verdict: "in", why: "study_context" };
