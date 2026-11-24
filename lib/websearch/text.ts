@@ -1,7 +1,7 @@
 // Text helpers of the web research: what the question is about (the entity), what it asks about it (the attribute), HTML to plain text, and which passages to keep.
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-const STOP = new Set("de do da dos das o a os as um uma uns umas que em no na nos nas para por com e ou se ao aos pelo pela pelos pelas sobre entre ate sua seu suas seus qual quais quem quando onde como porque porquê quanto quantos quantas foi era sao eram fica ficava existe existem tem teve ter mais menos muito pouco me diga fale falar dizer pode voce sabe saber the of is was in and to for".split(" "));
+const STOP = new Set("hoje atualmente agora atual ainda ontem amanha existe de do da dos das o a os as um uma uns umas que em no na nos nas para por com e ou se ao aos pelo pela pelos pelas sobre entre ate sua seu suas seus qual quais quem quando onde como porque porquê quanto quantos quantas foi era sao eram fica ficava existe existem tem teve ter mais menos muito pouco me diga fale falar dizer pode voce sabe saber the of is was in and to for".split(" "));
 
 /** Attribute words of a question and the English words that name the same thing on an English page. */
 export const ATTRIBUTES: Record<string, string[]> = {
@@ -64,7 +64,7 @@ export function htmlToText(html: string): string {
  * a number and a unit when the question asks a measure. Within `maxChars`, in page order.
  */
 export function pickPassages(text: string, query: string, opts: { terms?: string[]; max?: number; maxChars?: number } = {}): string[] {
-  const max = opts.max ?? 5, maxChars = opts.maxChars ?? 1800;
+  const max = opts.max ?? (opts.terms?.length ? 7 : 5), maxChars = opts.maxChars ?? 2400;
   // short lines are noise, except a short infobox row with a number ("Altitude | 545 metros |"), which is often the answer
   const lines = text.split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter((l) => l.length >= 25 || (l.length >= 12 && l.includes("|") && /\d/.test(l)));
   if (!lines.length) return [];
@@ -75,7 +75,9 @@ export function pickPassages(text: string, query: string, opts: { terms?: string
     const n = norm(l);
     let s = words.filter((w) => n.includes(w)).length * 2 + terms.filter((t) => n.includes(t)).length * 3;
     if (measure && /\d/.test(l) && /\b(m|km|metros|metres|meters|ft|pes|anos|years|habitantes|inhabitants|a\.c\.|d\.c\.|bc|ad)\b/i.test(l)) s += 3;
-    if (/^[|\s]*[\p{L} ]{2,30}\s*\|\s*\d/u.test(l)) s += 2; // an infobox row: "Altitude | 545 metros"
+    // an infobox row ("Altitude | 545 metros", "Population (2022) | 981,711"): worth more when its label is what the question asks
+    const row = /^[|\s]*([\p{L}\d ()/.,'-]{2,45})\s*\|\s*[~≈]?\s*\d/u.exec(l);
+    if (row) s += terms.some((t) => norm(row[1]).includes(t)) ? 8 : 2;
     return { l, i, s };
   });
   const picked = new Set<number>([0]);

@@ -8,7 +8,7 @@ import type { WebSearchProvider, WebSource } from "@/lib/websearch/types";
 describe("what the question is about", () => {
   it("takes the subject, not the whole sentence", () => {
     expect(entityPhrase("Qual é a altura do Monte Carmelo?")).toBe("monte carmelo");
-    expect(entityPhrase("Quantos habitantes tem Jerusalém hoje?")).toBe("jerusalem hoje");
+    expect(entityPhrase("Quantos habitantes tem Jerusalém hoje?")).toBe("jerusalem");
     expect(entityPhrase("Qual o tamanho da Arca de Noé?")).toBe("arca noe");
   });
   it("recognises what is asked and the English words for it", () => {
@@ -143,5 +143,21 @@ describe("failures are reported, not hidden", () => {
   it("the Wikipedia provider throws only when EVERY language failed", async () => {
     const f = vi.fn(async () => new Response("", { status: 403 })) as unknown as typeof fetch;
     await expect(new WikipediaProvider(f, ["pt", "en"]).search({ question: "Altura do Monte Carmelo" })).rejects.toThrow("wikipedia_403");
+  });
+});
+
+describe("measures on infobox rows", () => {
+  it("a row whose label is what the question asks beats the sentences that merely mention the subject", () => {
+    const text = [
+      "Jerusalém é uma cidade no Oriente Médio, sagrada para judeus, cristãos e muçulmanos.",
+      "A população cresceu 2,1% em 2019 e 1,8% em 2020, segundo estimativas oficiais do governo.",
+      "Habitantes (2022) | 981 711 |",
+      "A cidade foi conquistada por Davi e depois por Nabucodonosor, e reconstruída por Esdras e Neemias.",
+    ].join("\n");
+    const p = pickPassages(text, "jerusalem", { terms: attributeTerms("Quantos habitantes tem Jerusalém?").terms });
+    expect(p.some((l) => l.includes("981 711"))).toBe(true);
+  });
+  it("time words are not part of the subject", () => {
+    expect(entityPhrase("Quantos habitantes tem Jerusalém hoje?")).toBe("jerusalem");
   });
 });
