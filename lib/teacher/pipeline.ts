@@ -200,7 +200,11 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4b) Topic guardrail (owner's rule, 23/11/2026): the teacher answers only inside the biblical context. What is clearly outside gets a short, kind invitation back to
   // the study: no model call, no outside research. What is unclear goes on, but never to the web.
   const inStudyContext = !!input.extraSources || (!!input.mode && input.mode !== "free") || !!input.modeContext?.trail;
-  const gate = topicGate({ text: input.text, refs: mentioned, chunks, followUp: followUp0(searchText, input.text), inStudyContext });
+  const coverage = assessCoverage({ chunks, verses });
+  const gate0 = topicGate({ text: input.text, refs: mentioned, chunks, followUp: followUp0(searchText, input.text), inStudyContext });
+  // Unclear AND nothing in the app matches it by words and by meaning at once (so the search only brought loosely related passages): it is not a Bible question.
+  // Declining kindly beats answering with random passages (capital of France, relativity, arithmetic, poems).
+  const gate = gate0.verdict === "unsure" && coverage !== "ok" && !followUp0(searchText, input.text) ? { verdict: "off" as const, why: "unclear_and_library_does_not_know" } : gate0;
   if (gate.verdict === "off") {
     const response = offTopicResponse(student.preferred_name);
     memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
@@ -210,7 +214,6 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   // 4c) Research outside the app: only for adults (RA-22), only inside the biblical context, only in the free and deep modes, and only when the app's own collection
   // does not answer (checked before the model when nothing was found, and after it when the model says the passages do not answer).
   const canWeb = !!deps.webSearch && gate.verdict === "in" && !student.is_minor && (!input.mode || input.mode === "free" || input.mode === "deep");
-  const coverage = assessCoverage({ chunks, verses });
   let external: WebSource[] = [];
   let externalTried = false, externalMs = 0;
   let externalErrors: string[] = [];

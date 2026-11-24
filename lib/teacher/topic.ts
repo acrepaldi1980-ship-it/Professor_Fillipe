@@ -27,7 +27,7 @@ const STRONG = new RegExp(
 const NAMES = new RegExp(
   "\\b(" + [
     "abraao", "isaque", "jaco", "jose", "moises", "arao", "davi", "salomao", "elias", "eliseu", "paulo", "maria", "pedro", "joao", "noe", "adao", "eva", "caim", "abel", "sansao", "gideao", "debora", "ana", "saul", "golias", "jonas", "ester", "daniel",
-    "nicodemos", "lazaro", "marta", "zaqueu", "barrabas", "pilatos", "herodes", "caifas", "nero", "tito", "ciro", "judas", "tiago", "mateus", "marcos", "lucas", "timoteo", "samuel", "joel", "amos", "naum", "ageu", "tome",
+    "barnabe", "silas", "estevao", "filipe", "priscila", "aquila", "apolo", "onesimo", "filemom", "gamaliel", "melquisedeque", "ismael", "esau", "raquel", "lea", "rebeca", "sara", "rute", "boaz", "josias", "ezequias", "nicodemos", "lazaro", "marta", "zaqueu", "barrabas", "pilatos", "herodes", "caifas", "nero", "tito", "ciro", "judas", "tiago", "mateus", "marcos", "lucas", "timoteo", "samuel", "joel", "amos", "naum", "ageu", "tome",
     "fe", "lei", "rei\\w*", "king", "reino", "monte", "senhor", "roma\\w*", "arca\\w*", "cruz", "cross", "graca", "grace", "reis", "numeros", "atos", "oferta\\w*", "ceia", "jordao", "persia", "egito", "egypt", "palestina", "reforma", "passagem", "verse", "plinio",
   ].join("|") + ")\\b",
 );
@@ -91,7 +91,7 @@ export function topicGate(i: TopicInput): { verdict: TopicVerdict; why: string }
 /** The fixed, kind reply for what is off topic (RA-18): short, no search, an invitation back to the study. Never calls the model. */
 export function offTopicResponse(name: string) {
   return {
-    speech: `${name}, essa pergunta foge do que eu posso ajudar: sou o professor de Bíblia e só respondo dentro do estudo das Escrituras. Que tal voltarmos a ele? Posso explicar um texto, uma personagem ou um tema bíblico. Qual você prefere?`,
+    speech: `${name}, essa pergunta parece fugir do que eu posso ajudar: sou o professor de Bíblia e só respondo dentro do estudo das Escrituras. Se ela era sobre a Bíblia, me diga o texto ou o tema. Ou prefere que eu sugira um texto, uma personagem ou um tema bíblico?`,
     display_markdown: "",
     citations: [],
     visuals: [],

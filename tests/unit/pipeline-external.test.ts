@@ -30,9 +30,17 @@ describe("guardrail: off-topic questions never reach the model or the web", () =
     expect(r.response.external_sources).toEqual([]);
     expect(r.meta.topic?.verdict).toBe("off");
   });
-  it("an unclear question goes to the model with a reminder, but never to the web", async () => {
-    const t = setup({ replies: [reply("Só ajudo dentro do estudo da Bíblia. Quer voltar a ele?")] });
-    await ask("Me explique a teoria da relatividade", t.deps);
+  it("unclear and nothing in the app matches it by words and meaning: treated as off topic, no model, no web", async () => {
+    const t = setup({ chunks: [chunk(["semantic"])], replies: [reply("não deveria ser chamado")] });
+    const r = await ask("Me explique a teoria da relatividade", t.deps);
+    expect(t.llmCalls).toBe(0);
+    expect(t.webSearch).not.toHaveBeenCalled();
+    expect(r.meta.topic).toEqual({ verdict: "off", why: "unclear_and_library_does_not_know" });
+    expect(r.response.speech).toContain("só respondo dentro do estudo das Escrituras");
+  });
+  it("unclear but the app knows something about it: goes to the model with a reminder, never to the web", async () => {
+    const t = setup({ chunks: [chunk()], replies: [reply("Só ajudo dentro do estudo da Bíblia. Quer voltar a ele?")] });
+    await ask("Me explique essa teoria difícil", t.deps);
     expect(t.webSearch).not.toHaveBeenCalled();
     expect(t.systems[0]).toContain("não está claro que esta pergunta seja sobre a Bíblia");
   });

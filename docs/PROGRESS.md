@@ -151,3 +151,5 @@ Em 22/11/2026: Fases 0, 1 (MVP em PWA publicado, beta pendente de itens do dono)
 ## Problemas conhecidos
 
 Nenhum.
+
+- RA-25 (hardening, 24/11/2026): a question with no biblical signal AND no match in the app by words and meaning at once is treated as off topic (fixed kind reply, no model, no web). Unclear questions the app does know still go to the model, never to the web.
