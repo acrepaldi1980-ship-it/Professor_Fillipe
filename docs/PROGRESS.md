@@ -153,3 +153,4 @@ Em 22/11/2026: Fases 0, 1 (MVP em PWA publicado, beta pendente de itens do dono)
 Nenhum.
 
 - RA-25 (hardening, 24/11/2026): a question with no biblical signal AND no match in the app by words and meaning at once is treated as off topic (fixed kind reply, no model, no web). Unclear questions the app does know still go to the model, never to the web.
+- Retrieval evaluation (24/11/2026, `--quick`): app content 97% (58/60) top-12 by title, main DB sample 100% (60/60), exact verses 100% (40/40). Index audit: 114k chunks, 0 broken, 276 works reachable.
