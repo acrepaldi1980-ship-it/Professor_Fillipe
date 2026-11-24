@@ -7,11 +7,14 @@ import { sql } from "./db.mjs";
 
 const QUICK = process.argv.includes("--quick");
 const TOP = 12;
+// Gentle by default: the databases are free-tier and shared with the live app (a heavy run made the app slow once). One search at a time, with a short pause.
+const CONCURRENCY = Number(process.env.EVAL_CONCURRENCY ?? 1);
+const PAUSE_MS = Number(process.env.EVAL_PAUSE_MS ?? 300);
 const results: { name: string; ok: number; total: number; min: number; misses: string[] }[] = [];
 
 async function pool<T>(items: T[], n: number, fn: (x: T) => Promise<void>) {
   let i = 0;
-  await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const x = items[i++]; await fn(x); } }));
+  await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const x = items[i++]; await fn(x); await new Promise((r) => setTimeout(r, PAUSE_MS)); } }));
 }
 async function found(query: string, id: string): Promise<boolean> {
   const { chunks } = await searchChunks(query, { maxChunks: TOP, maxTokens: 60000, perSignal: 30 });
@@ -19,7 +22,7 @@ async function found(query: string, id: string): Promise<boolean> {
 }
 async function check(name: string, items: { id: string; query: string }[], min: number) {
   const misses: string[] = [];
-  await pool(items, 4, async (x) => { if (!(await found(x.query, x.id).catch(() => false))) misses.push(x.id); });
+  await pool(items, CONCURRENCY, async (x) => { if (!(await found(x.query, x.id).catch(() => false))) misses.push(x.id); });
   results.push({ name, ok: items.length - misses.length, total: items.length, min, misses });
   console.log(`${name}: ${items.length - misses.length}/${items.length} (${Math.round(((items.length - misses.length) / items.length) * 100)}%)`);
 }
@@ -36,7 +39,7 @@ async function main() {
   // 3) exact verses: a random sample of (version, reference) must come back with text
   const verses = await sql(`select version_id, ref from bible_verses order by random() limit ${QUICK ? 40 : 150}`);
   let missing = 0;
-  await pool(verses as Record<string, string>[], 6, async (v) => { const r = await getVerses(v.version_id, [v.ref]).catch(() => []); if (!r.some((x) => x.ref === v.ref && x.text)) missing++; });
+  await pool(verses as Record<string, string>[], CONCURRENCY, async (v) => { const r = await getVerses(v.version_id, [v.ref]).catch(() => []); if (!r.some((x) => x.ref === v.ref && x.text)) missing++; });
   results.push({ name: "exact verses", ok: verses.length - missing, total: verses.length, min: 1, misses: [] });
   console.log(`exact verses: ${verses.length - missing}/${verses.length}`);
 

@@ -27,7 +27,7 @@ export class WikipediaProvider implements WebSearchProvider {
     const q = new URLSearchParams({ action: "query", list: "search", srsearch: entity, srlimit: "6", format: "json", formatversion: "2" });
     const data = await this.json<{ query?: { search?: { title: string }[] } }>(`${api(lang)}?${q}`, signal);
     const words = norm(entity).split(/\s+/).filter(Boolean);
-    const ranked = (data.query?.search ?? []).map((r, i) => {
+    const ranked = (data.query?.search ?? []).filter((r) => !/disambiguation|desambigua|\(lista|\(list of/i.test(r.title)).map((r, i) => {
       const t = norm(r.title.replace(/\s*\(.*\)\s*$/, ""));
       const score = t === norm(entity) ? 3 : words.length && words.every((w) => t.includes(w)) ? 2 : 0;
       return { title: r.title, score, i, plain: !/\(/.test(r.title) };
@@ -56,7 +56,7 @@ export class WikipediaProvider implements WebSearchProvider {
     for (const { title, exact } of found) {
       const p = await this.page(lang, title, signal);
       if (!p) { notes.push(`${lang}:no_page(${title})`); continue; }
-      if (!isBiblicalPage(p.text, exact ? 2 : 3)) { notes.push(`${lang}:not_biblical(${title})`); continue; } // a page whose title is exactly the subject needs less proof of being biblical
+      if (!isBiblicalPage(p.text, exact ? 3 : 4)) { notes.push(`${lang}:not_biblical(${title})`); continue; } // a page whose title is exactly the subject needs less proof of being biblical
       const passages = pickPassages(p.text, `${req.question} ${entity}`, { terms });
       if (!passages.length) notes.push(`${lang}:no_passages(${title})`);
       if (out.length >= 2) break;

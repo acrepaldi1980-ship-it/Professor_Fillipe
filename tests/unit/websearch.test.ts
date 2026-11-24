@@ -179,3 +179,15 @@ describe("the subject comes from the question, not from the last turn", () => {
     expect(out.map((s) => s.title)).toEqual(["Belém (Cisjordânia)"]);
   });
 });
+
+describe("what counts as a page of the biblical world", () => {
+  it("skips disambiguation pages and a parish of Lisbon that merely mentions a church", async () => {
+    const f = fakeWiki({ pt: ["Belém (desambiguação)", "Belém (Lisboa)", "Belém (Cisjordânia)"] }, {
+      "Belém (desambiguação)": "<p>Belém pode referir-se a: Belém (Cisjordânia), Belém (Lisboa). Bíblia Jesus Israel.</p>",
+      "Belém (Lisboa)": "<p>Belém é uma freguesia de Lisboa, famosa pelo mosteiro e pela igreja de Santa Maria, com um templo manuelino.</p>",
+      "Belém (Cisjordânia)": "<p>Belém é uma cidade da Cisjordânia, local do nascimento de Jesus segundo a Bíblia, onde nasceu Davi, em Israel.</p>",
+    });
+    const out = await new WikipediaProvider(f, ["pt"]).search({ question: "Quantos habitantes tem Belém?" });
+    expect(out.map((s) => s.title)).toEqual(["Belém (Cisjordânia)"]);
+  });
+});
