@@ -161,3 +161,21 @@ describe("measures on infobox rows", () => {
     expect(entityPhrase("Quantos habitantes tem Jerusalém hoje?")).toBe("jerusalem");
   });
 });
+
+describe("the subject comes from the question, not from the last turn", () => {
+  it("uses the conversation only when the question has no subject of its own", async () => {
+    const calls: string[] = [];
+    const f = fakeWiki({ pt: ["Monte Sinai"] }, { "Monte Sinai": "<p>O Monte Sinai, segundo a Bíblia, é onde Moisés recebeu a Lei em Israel.</p>" }, calls);
+    await new WikipediaProvider(f, ["pt"]).search({ question: "E a altitude?", context: "Qual é a altitude do Monte Sinai? E a altitude?" });
+    expect(calls[0]).toContain("srsearch=monte+sinai");
+    const calls2: string[] = [];
+    await new WikipediaProvider(fakeWiki({ pt: [] }, {}, calls2), ["pt"]).search({ question: "Quantos habitantes tem Belém hoje?", context: "Qual é a altitude do Monte Sinai?" });
+    expect(calls2[0]).toContain("srsearch=belem");
+    expect(calls2[0]).not.toContain("sinai");
+  });
+  it("tries every page with the exact title: the Brazilian city is discarded and Bethlehem is read", async () => {
+    const f = fakeWiki({ pt: ["Belém", "Belém (Cisjordânia)"] }, { "Belém": "<p>Belém é um município do estado do Pará, no Brasil, capital paraense.</p>", "Belém (Cisjordânia)": "<p>Belém é uma cidade da Cisjordânia, local do nascimento de Jesus segundo a Bíblia, em Israel e na Palestina.</p>" });
+    const out = await new WikipediaProvider(f, ["pt"]).search({ question: "Quantos habitantes tem Belém hoje?" });
+    expect(out.map((s) => s.title)).toEqual(["Belém (Cisjordânia)"]);
+  });
+});

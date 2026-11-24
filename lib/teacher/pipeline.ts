@@ -220,7 +220,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     const tw = Date.now();
     // the English keywords (from the model) help to find the English article; wait for them a moment, no longer
     const english = rewritten ?? (await Promise.race([rewriteP, new Promise<null>((r) => setTimeout(() => r(null), 1500))]).catch(() => null));
-    const found: WebResult = await deps.webSearch!({ question: searchText === input.text ? input.text : `${input.text} (${searchText})`, english }).catch((e: Error) => ({ sources: [] as WebSource[], errors: [`websearch:${String(e?.message).slice(0, 60)}`] }));
+    const found: WebResult = await deps.webSearch!({ question: input.text, english, context: searchText === input.text ? undefined : searchText }).catch((e: Error) => ({ sources: [] as WebSource[], errors: [`websearch:${String(e?.message).slice(0, 60)}`] }));
     external = found.sources;
     externalErrors = found.errors;
     externalNotes = found.notes ?? [];

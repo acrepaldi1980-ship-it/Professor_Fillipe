@@ -18,6 +18,8 @@ export interface WebRequest {
   question: string;
   /** English keywords for the question (subject first), when the model produced them. */
   english?: string | null;
+  /** The conversation the question leans on, used for the subject ONLY when the question has none of its own ("e a população?"). */
+  context?: string;
 }
 
 export interface WebSearchProvider {

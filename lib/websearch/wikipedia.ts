@@ -22,7 +22,7 @@ export class WikipediaProvider implements WebSearchProvider {
     return (await res.json()) as T;
   }
 
-  /** Pages that look like the subject. An exact title wins alone; without one, up to two titles that contain all its words. */
+  /** Pages that look like the subject: the pages whose title is exactly the subject (up to three: "Belém" is a Brazilian city and "Belém (Cisjordânia)" is Bethlehem), else up to two whose title contains all its words. */
   private async candidates(lang: string, entity: string, signal?: AbortSignal): Promise<{ title: string; exact: boolean }[]> {
     const q = new URLSearchParams({ action: "query", list: "search", srsearch: entity, srlimit: "6", format: "json", formatversion: "2" });
     const data = await this.json<{ query?: { search?: { title: string }[] } }>(`${api(lang)}?${q}`, signal);
@@ -33,7 +33,8 @@ export class WikipediaProvider implements WebSearchProvider {
       return { title: r.title, score, i, plain: !/\(/.test(r.title) };
     }).filter((x) => x.score > 0);
     const sorted = ranked.sort((a, b) => b.score - a.score || Number(b.plain) - Number(a.plain) || a.i - b.i);
-    if (sorted[0]?.score === 3) return [{ title: sorted[0].title, exact: true }];
+    const exact = sorted.filter((x) => x.score === 3);
+    if (exact.length) return exact.slice(0, 3).map((x) => ({ title: x.title, exact: true }));
     return sorted.slice(0, 2).map((x) => ({ title: x.title, exact: false }));
   }
 
@@ -46,7 +47,7 @@ export class WikipediaProvider implements WebSearchProvider {
 
   private async forLanguage(lang: string, req: WebRequest, signal?: AbortSignal, notes: string[] = []): Promise<WebSource[]> {
     // English keywords come "subject first": their first item is the subject for the English pages.
-    const entity = lang === "en" && req.english ? req.english.split(",")[0].replace(/\b(height|elevation|size|length|width|depth|population|meaning)\b/gi, "").trim() : entityPhrase(req.question);
+    const entity = lang === "en" && req.english ? req.english.split(",")[0].replace(/\b(height|elevation|size|length|width|depth|population|meaning)\b/gi, "").trim() : entityPhrase(req.question) || entityPhrase(req.context ?? "");
     if (!entity) { notes.push(`${lang}:no_entity`); return []; }
     const { terms } = attributeTerms(req.question);
     const out: WebSource[] = [];
@@ -58,6 +59,7 @@ export class WikipediaProvider implements WebSearchProvider {
       if (!isBiblicalPage(p.text, exact ? 2 : 3)) { notes.push(`${lang}:not_biblical(${title})`); continue; } // a page whose title is exactly the subject needs less proof of being biblical
       const passages = pickPassages(p.text, `${req.question} ${entity}`, { terms });
       if (!passages.length) notes.push(`${lang}:no_passages(${title})`);
+      if (out.length >= 2) break;
       if (passages.length) out.push({ provider: "wikipedia", title: p.title, url: p.url, site: `${lang === "pt" ? "Wikipédia" : "Wikipedia"} (${lang})`, lang, license: "CC BY-SA 4.0", passages, retrievedAt: new Date().toISOString() });
     }
     return out;
