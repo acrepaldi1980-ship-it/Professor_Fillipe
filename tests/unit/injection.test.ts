@@ -25,5 +25,10 @@ describe("input screen", () => {
 
 describe("leak detector", () => {
   it("catches copied instructions", () => expect(leaksPrompt(`Claro! ${LAYER_IDENTITY.slice(0, 300)}`)).toBe(true));
+  it("does not call the sentences the prompt tells the teacher to say a leak (honest 'not found' answers were being replaced)", () => {
+    expect(leaksPrompt("Ana, não encontrei isso nas minhas fontes. Quer que eu tente outro caminho?")).toBe(false);
+    expect(leaksPrompt("Não encontrei isso nas minhas fontes, mas posso mostrar o texto bíblico.")).toBe(false);
+  });
+  it("still catches copied instructions around those sentences", () => expect(leaksPrompt(`Não encontrei isso nas minhas fontes. ${LAYER_IDENTITY.slice(600, 900)}`)).toBe(true));
   it("lets a normal answer through", () => expect(leaksPrompt("Filipe era um dos sete diáconos e pregou em Samaria. O que você já sabe sobre ele?")).toBe(false));
 });

@@ -79,6 +79,8 @@ const grams = (s: string, n = 6) => {
   return out;
 };
 const SECRET_GRAMS = grams(LAYER_IDENTITY);
+// The identity text tells the teacher to SAY some sentences ("Não encontrei isso nas minhas fontes", "Entendes o que lês?"): saying them is not a leak. Their grams are allowed.
+for (const q of LAYER_IDENTITY.matchAll(/["“]([^"”]{12,120})["”]/g)) for (const g of grams(q[1])) SECRET_GRAMS.delete(g);
 
 export function leaksPrompt(answer: string): boolean {
   for (const g of grams(answer)) if (SECRET_GRAMS.has(g)) return true;
