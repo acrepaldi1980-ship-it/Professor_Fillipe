@@ -19,7 +19,6 @@ export const WORKS: Record<string, { title: string; filter: string | null }> = {
   pg_42251: { title: "A Bíblia do Expositor: O Livro do Apocalipse", filter: null },
 };
 const step = process.argv[2];
-const q = (s: string) => s.replace(/'/g, "''");
 
 function dst() {
   const url = process.env.NEON_OWNER_URL_2; if (!url) throw new Error("NEON_OWNER_URL_2 not set");
@@ -70,8 +69,10 @@ async function ingest() {
     const parts = ans.split(/\[§(\d+)\]/).slice(1);
     const sec = new Map<number, string>();
     for (let i = 0; i + 1 < parts.length; i += 2) sec.set(Number(parts[i]), parts[i + 1].trim());
-    const path = sec.get(0); if (!path) continue;
-    const body = [...sec.entries()].filter(([n]) => n > 0).sort((a, b) => a[0] - b[0]).map(([, t]) => t).join("\n\n");
+    const fixText = (t: string) => t.replace(/ESCAT\s*LOGIA/g, "ESCATOLOGIA").replace(/Escat\s*logia/g, "Escatologia").replace(/\s⁇\s/g, " ");
+    const path0 = sec.get(0); if (!path0) continue;
+    const path = fixText(path0);
+    const body = fixText([...sec.entries()].filter(([n]) => n > 0).sort((a, b) => a[0] - b[0]).map(([, t]) => t).join("\n\n"));
     if (body.length < 40) continue;
     const i = id.indexOf(":");
     const title = `${WORKS[m.work_id].title} (tradução automática para o português) > ${path}`;
