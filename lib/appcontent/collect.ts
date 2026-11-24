@@ -6,6 +6,7 @@ import { CURATED } from "../characters";
 import { HISTORIANS, TESTIMONIES } from "../historians/data";
 import { PUBLIC_PACKAGES, PUBLIC_TOURS } from "../immersive/registry";
 import { BIO, BOOKS, CONTROVERSIES } from "../josephus/books";
+import { ESCHATOLOGY } from "../eschatology/data";
 import { PATHS } from "../paths/data";
 import { ROUTES } from "../visuals/route-data";
 import { TIMELINES } from "../visuals/timeline-data";
@@ -22,6 +23,7 @@ export const SECTIONS = {
   trilhas: { workId: "app_trilhas", title: "Conteúdo do app: Trilhas de estudo" },
   historiadores: { workId: "app_historiadores", title: "Conteúdo do app: Historiadores" },
   josefo: { workId: "app_josefo", title: "Conteúdo do app: Flávio Josefo, guia" },
+  escatologia: { workId: "app_escatologia", title: "Conteúdo do app: Escatologia (últimas coisas)" },
 } as const;
 export type SectionKey = keyof typeof SECTIONS;
 
@@ -155,9 +157,16 @@ export function josephusGuideRecords(): AppRecord[] {
   return out;
 }
 
+/** "1TH.4.13-18" and "REV.2.1-3.22" (short ranges, easier to write) into the full form the search uses ("1TH.4.13-1TH.4.18"). */
+const fullRange = (r: string) => r.replace(/^([0-9A-Z]{3})\.(\d+)\.(\d+)-(?:(\d+)\.)?(\d+)$/, (_m, b, c, v1, c2, v2) => `${b}.${c}.${v1}-${b}.${c2 ?? c}.${v2}`);
+
+export function eschatologyRecords(): AppRecord[] {
+  return ESCHATOLOGY.map((e) => rec("escatologia", e.id, e.title, `${e.title}. ${e.text} Fontes: ${e.sources}.`, refsOf(e.refs.map(fullRange)), "/estudo"));
+}
+
 export function collectAppContent(): AppRecord[] {
   return [
     ...characterRecords(), ...curiosityRecords(), ...archaeologyRecords(), ...environmentRecords(), ...model3dRecords(), ...timelineRecords(),
-    ...routeRecords(), ...pathRecords(), ...historianRecords(), ...josephusGuideRecords(),
+    ...routeRecords(), ...pathRecords(), ...historianRecords(), ...josephusGuideRecords(), ...eschatologyRecords(),
   ];
 }
