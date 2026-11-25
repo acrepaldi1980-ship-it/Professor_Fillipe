@@ -168,9 +168,14 @@ export async function searchChunks(
   if (auto && !queries.includes(auto)) queries.push(auto);
   // The people, places and events of the Bible named in the question ("Zaqueu" -> Zacchaeus, Luke 19): their English names reach the English works and the dictionary entries,
   // their verses are asked for exactly, and the search looks for the SUBJECT ("Zaqueu Zacchaeus"), not for the whole sentence ("Me fale tudo sobre Zaqueu").
-  const hints = queries[0] ? entityHints(queries[0]) : { names: [], refs: [], subject: "", matches: [] };
+  // (a question that cites a verse is precise already: names inside it are not looked up)
+  const typedRefs = queries[0] ? findReferences(queries[0]).length > 0 : false;
+  const hints = queries[0] && !typedRefs ? entityHints(queries[0]) : { names: [], refs: [], subject: "", matches: [], aboutEntity: false };
   const subjectQuery = [hints.subject, ...hints.names].filter(Boolean).join(" ").trim();
-  if (subjectQuery && hints.names.length && !queries.includes(subjectQuery)) queries.splice(1, 0, subjectQuery);
+  // a question only ABOUT the entity is searched as its subject ("Zaqueu Zacchaeus"): the filler of the sentence ("me fale tudo sobre") only adds noise, and no extra search is needed
+  const original = queries[0];
+  if (subjectQuery && hints.names.length && hints.aboutEntity) queries[0] = subjectQuery;
+  else if (subjectQuery && hints.names.length && !queries.includes(subjectQuery)) queries.splice(1, 0, subjectQuery);
   if (opts.trace && hints.matches.length) opts.trace.entities = hints.matches.length;
   const per = opts.perSignal ?? 24;
   const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
@@ -181,7 +186,7 @@ export async function searchChunks(
   const mark = (name: string) => { if (opts.trace) opts.trace[name] = Math.max(opts.trace[name] ?? 0, Date.now() - T0); };
 
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
-  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...hints.refs, ...(opts.extraRefs ?? [])]);
+  const refs = expandRefs([...[original, ...queries].flatMap((q) => (q ? findReferences(q).flatMap((r) => r.refs) : [])), ...topicRefs(original ?? ""), ...hints.refs, ...(opts.extraRefs ?? [])]);
   let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
   const titleSources = terms.length ? [store.titleChunks ? store.titleChunks(terms) : null, library?.titleChunks ? library.titleChunks(terms) : null].filter((p): p is Promise<Row[]> => !!p) : [];

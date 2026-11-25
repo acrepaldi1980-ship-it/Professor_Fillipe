@@ -16,6 +16,7 @@ import { injectionResponse, leaksPrompt, screenInput } from "../security/injecti
 import type { WebRequest, WebSource } from "../websearch/types";
 import type { WebResult } from "../websearch";
 import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
+import { entityHints } from "../knowledge/entities";
 import { foreignChunk, wrongLanguage } from "./language";
 import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
 
@@ -196,7 +197,10 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const rewriteP: Promise<string | null> = deps.rewriteQuery ? deps.rewriteQuery(searchText).then((r) => { trace.rewrite = Date.now() - tRw; return r; }).catch(() => null) : Promise.resolve(null);
   let rewritten: string | null = null;
   void rewriteP.then((r) => { rewritten = r; });
-  const wantedVerses = [...mentioned, ...carriedRefs];
+  // A question about a person or place of the Bible ("Me fale tudo sobre Zaqueu") also fetches that entity's own verses by exact reference: an indexed lookup that does not
+  // depend on the hybrid search, so the teacher always has the Bible text of the subject (Luke 19), even when the search is slow.
+  const entityRefs = mentioned.length ? [] : entityHints(input.text).refs.filter((r) => r.split(".").length === 3).slice(0, 12);
+  const wantedVerses = [...mentioned, ...entityRefs, ...carriedRefs];
   // The search and the verse lookup do not depend on each other: run them together.
   const [{ chunks: found0 }, verses, layers] = await Promise.all([
     searchResilient(() => deps.search(searchText, { trace, extraQuery: rewriteP, extraRefs: carriedRefs, lenses: bible.lenses, maxTokens: deps.contextTokens, maxChunks: deps.contextTokens && deps.contextTokens < 4000 ? 8 : undefined })),

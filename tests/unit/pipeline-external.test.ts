@@ -110,4 +110,12 @@ describe("research outside the app", () => {
     await ask("Qual é a altura do Monte Carmelo?", t.deps, { mode: "lesson" });
     expect(t.webSearch).not.toHaveBeenCalled();
   });
+  it("a question about a Bible person fetches that person's own verses by reference, and never goes to the web", async () => {
+    const t = setup({ chunks: [], replies: [reply("Zaqueu era chefe dos publicanos. Quer ler a história?")] });
+    const asked: string[][] = [];
+    t.deps.getVerses = async (_v, refs) => { asked.push(refs); return []; };
+    const r = await ask("Me fale tudo sobre Zaqueu", t.deps);
+    expect(asked.flat().some((x) => x.startsWith("LUK.19"))).toBe(true);
+    expect(r.meta.topic).toMatchObject({ verdict: "in" });
+  });
 });

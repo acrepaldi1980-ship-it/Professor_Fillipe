@@ -42,10 +42,11 @@ async function checkNames() {
     const name = e.pt[0];
     const q = TEMPLATES[i++ % TEMPLATES.length].replace("NAME", name);
     const t0 = Date.now();
-    const { chunks } = await searchChunks(q, { maxChunks: TOP, maxTokens: 60000, perSignal: 30 }).catch(() => ({ chunks: [] as { text: string; refs: string[] }[] }));
+    const { chunks } = await searchChunks(q, { maxChunks: TOP, maxTokens: 60000, perSignal: 30 }).catch(() => ({ chunks: [] as { text: string; refs: string[]; signals?: string[] }[] }));
     times.push(Date.now() - t0);
     const refs = new Set(e.r);
-    const ok = chunks.some((c) => norm(c.text).includes(norm(name)) || norm(c.text).includes(norm(e.en)) || (c.refs ?? []).some((r) => refs.has(r)));
+    // "exact" and "title" signals mean the entity's own verses or its dictionary entry were found (the Bibles may spell the name differently: Hete/Hitita)
+    const ok = chunks.some((c) => c.signals?.some((x) => x === "exact" || x === "title") || norm(c.text).includes(norm(name)) || norm(c.text).includes(norm(e.en)) || (c.refs ?? []).some((r) => refs.has(r)));
     if (!ok) misses.push(`${q}`);
   });
   results.push({ name: "basic questions by name (people and places)", ok: sample.length - misses.length, total: sample.length, min: 0.95, misses });

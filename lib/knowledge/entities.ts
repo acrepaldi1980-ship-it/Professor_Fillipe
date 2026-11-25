@@ -14,7 +14,7 @@ const GENERIC = new Set(["monte", "mar", "rio", "vale", "rei", "reino", "terra",
 
 /** Filler words of a question that say what the student wants, not what it is about. */
 const FILLER = new Set([
-  "me", "te", "nos", "fale", "fala", "falar", "diga", "dizer", "conte", "contar", "conta", "explique", "explica", "explicar", "mostre", "mostra", "mostrar", "ensine", "ensina", "ensinar", "resuma", "resumir", "detalhe", "detalhes", "tudo", "todo", "toda", "sobre", "acerca", "respeito", "quem", "qual", "quais", "quando", "onde", "como", "porque", "por", "que", "foi", "era", "eram", "foram", "e", "eh", "sao", "sera", "ser", "o", "a", "os", "as", "um", "uma", "uns", "umas", "de", "do", "da", "dos", "das", "no", "na", "nos", "nas", "em", "ao", "aos", "pra", "para", "com", "sem", "seu", "sua", "pelo", "pela", "isso", "isto", "esse", "essa", "este", "esta", "aquele", "aquela", "quero", "queria", "gostaria", "preciso", "poderia", "pode", "voce", "tem", "ha", "mais", "bem", "bastante", "completo", "completa", "historia", "vida", "estudo", "estudar", "aprofundar", "aprofunda", "saber", "entender", "conhecer", "pergunta", "professor", "filipe", "por favor", "favor", "ola", "oi", "sim", "nao", "continue", "continua", "continuar", "ok", "certo", "talvez", "obrigado", "obrigada", "valeu", "amem", "tudo bem", "bom", "boa", "dia", "tarde", "noite", "so", "apenas", "tambem", "ja", "ai", "la", "aqui", "voces", "eu", "ele", "ela", "mim", "meu", "minha", "sua",
+  "me", "te", "nos", "fale", "fala", "falar", "diga", "dizer", "conte", "contar", "conta", "explique", "explica", "explicar", "mostre", "mostra", "mostrar", "ensine", "ensina", "ensinar", "resuma", "resumir", "detalhe", "detalhes", "tudo", "todo", "toda", "sobre", "acerca", "respeito", "quem", "qual", "quais", "quando", "onde", "como", "porque", "por", "que", "foi", "era", "eram", "foram", "e", "eh", "sao", "sera", "ser", "o", "a", "os", "as", "um", "uma", "uns", "umas", "de", "do", "da", "dos", "das", "no", "na", "nos", "nas", "em", "ao", "aos", "pra", "para", "com", "sem", "seu", "sua", "pelo", "pela", "isso", "isto", "esse", "essa", "este", "esta", "aquele", "aquela", "quero", "queria", "gostaria", "preciso", "poderia", "pode", "voce", "tem", "ha", "mais", "bem", "bastante", "completo", "completa", "historia", "vida", "estudo", "estudar", "aprofundar", "aprofunda", "saber", "entender", "conhecer", "pergunta", "professor", "filipe", "por favor", "favor", "ola", "oi", "biblia", "biblico", "biblica", "biblicos", "escritura", "escrituras", "texto", "sim", "nao", "continue", "continua", "continuar", "ok", "certo", "talvez", "obrigado", "obrigada", "valeu", "amem", "tudo bem", "bom", "boa", "dia", "tarde", "noite", "so", "apenas", "tambem", "ja", "ai", "la", "aqui", "voces", "eu", "ele", "ela", "mim", "meu", "minha", "sua",
 ]);
 
 const index = new Map<string, Entity[]>();
@@ -91,8 +91,14 @@ export function eventRefsFor(en: string): string[] {
 }
 
 /** Everything the search needs from the entities of a question: English names (for the English works), Bible references, and the subject phrase. */
-export function entityHints(question: string): { names: string[]; refs: string[]; subject: string; matches: EntityMatch[] } {
+export function entityHints(question: string): { names: string[]; refs: string[]; subject: string; matches: EntityMatch[]; aboutEntity: boolean } {
   const matches = findEntities(question);
-  const refs = [...new Set(matches.flatMap((m) => [...m.refs.slice(0, 12), ...(m.kind === "person" ? eventRefsFor(m.en) : [])]))].slice(0, 40);
-  return { names: [...new Set(matches.map((m) => m.en))], refs, subject: subjectOf(question), matches };
+  // A question that is only ABOUT the entity ("Me fale tudo sobre Zaqueu") gets its verses. A specific question that merely names it ("Noé > Dilúvio: a entrada na arca")
+  // keeps the English name but not the verses: the entity's whole story would crowd out the passage actually asked for.
+  const named = new Set(matches.flatMap((m) => m.matched.split(" ")));
+  const subject = subjectOf(question);
+  const extra = strip(subject || question).replace(/[^a-z0-9 ]+/g, " ").split(/\s+/).filter((w) => w && !named.has(w) && !FILLER.has(w) && !(w.length < 3));
+  const aboutEntity = matches.length > 0 && extra.length <= 1;
+  const refs = aboutEntity ? [...new Set(matches.flatMap((m) => [...m.refs.slice(0, 12), ...(m.kind === "person" ? eventRefsFor(m.en) : [])]))].slice(0, 40) : [];
+  return { names: [...new Set(matches.map((m) => m.en))], refs, subject, matches, aboutEntity };
 }

@@ -35,3 +35,12 @@ describe("entity recognition (Portuguese names of Bible people and places)", () 
     expect(subjectOf("Zaqueu")).toBe("");
   });
 });
+
+describe("entity hints", () => {
+  it("gives the verses only when the question is about the entity itself", () => {
+    expect(entityHints("Me fale tudo sobre Zaqueu").refs.length).toBeGreaterThan(0);
+    expect(entityHints("O que a Bíblia diz sobre Nicodemos").refs.length).toBeGreaterThan(0);
+    expect(entityHints("Dilúvio: A entrada na arca de Noé").refs).toEqual([]);
+    expect(entityHints("Dilúvio: A entrada na arca de Noé").names).toContain("Noah");
+  });
+});
