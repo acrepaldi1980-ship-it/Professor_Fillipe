@@ -170,7 +170,7 @@ export async function searchChunks(
   // their verses are asked for exactly, and the search looks for the SUBJECT ("Zaqueu Zacchaeus"), not for the whole sentence ("Me fale tudo sobre Zaqueu").
   // (a question that cites a verse is precise already: names inside it are not looked up)
   const typedRefs = queries[0] ? findReferences(queries[0]).length > 0 : false;
-  const hints = queries[0] && !typedRefs ? entityHints(queries[0]) : { names: [], refs: [], subject: "", matches: [], aboutEntity: false };
+  const hints = queries[0] && !typedRefs && process.env.SEARCH_ENTITIES !== "off" ? entityHints(queries[0]) : { names: [], refs: [], subject: "", matches: [], aboutEntity: false };
   const subjectQuery = [hints.subject, ...hints.names].filter(Boolean).join(" ").trim();
   // a question only ABOUT the entity is searched as its subject ("Zaqueu Zacchaeus"): the filler of the sentence ("me fale tudo sobre") only adds noise, and no extra search is needed
   const original = queries[0];
@@ -189,8 +189,14 @@ export async function searchChunks(
   const refs = expandRefs([...[original, ...queries].flatMap((q) => (q ? findReferences(q).flatMap((r) => r.refs) : [])), ...topicRefs(original ?? ""), ...hints.refs, ...(opts.extraRefs ?? [])]);
   let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
-  const titleSources = terms.length ? [store.titleChunks ? store.titleChunks(terms) : null, library?.titleChunks ? library.titleChunks(terms) : null].filter((p): p is Promise<Row[]> => !!p) : [];
-  const titlePromise = within(Promise.all(titleSources.map((p) => p.catch(() => [] as Row[]))).then((parts) => parts.flat()), TITLES_BUDGET_MS * k, [] as Row[]).then((r) => { mark("titles"); return r; });
+  // Each source of entries answers (or not) on its own: a slow one must not take the fast one's entries down with it.
+  const titleSources = terms.length
+    ? [
+        store.titleChunks ? within(store.titleChunks(terms), TITLES_BUDGET_MS * k, [] as Row[]) : null,
+        library?.titleChunks ? within(library.titleChunks(terms, original), LIBRARY_BUDGET_MS * k, [] as Row[]) : null,
+      ].filter((p): p is Promise<Row[]> => !!p)
+    : [];
+  const titlePromise = Promise.all(titleSources.map((p) => p.catch(() => [] as Row[]))).then((parts) => { mark("titles"); return parts.flat(); });
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];
@@ -215,11 +221,13 @@ export async function searchChunks(
   mark("contrastIds");
   const lensPromise = Promise.all([lensSearch(lensIds, "lens", 12), lensSearch(contrastIds, "contrast", 8)]).then(([a, b]) => { mark("lensSearch"); return [...a, ...b]; });
 
+  // did the main database (Bible windows, dictionaries, the app's notes) answer in time? When it did not, the answer would have no Bible text at all: try once more, patiently
+  let mainAnswered = false;
   const runQuery = async (q: string, i: number): Promise<Row[]> => {
     const vec = await emb.embedQuery(q);
     mark(`embed${i}`);
     const args = { embedding: vec, text: q, refs: i === 0 ? refs : [], perSignal: per, workIds: opts.workIds ?? null };
-    const [main, lib] = await Promise.all([within(store.searchChunks(args).then((r) => { mark(`main${i}`); return r; }), MAIN_BUDGET_MS * k, [] as Row[]), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
+    const [main, lib] = await Promise.all([within(store.searchChunks(args).then((r) => { mark(`main${i}`); if (i === 0) mainAnswered = true; return r; }), MAIN_BUDGET_MS * k, [] as Row[]), library ? within(library.searchChunks(args).then((r) => { mark(`lib${i}`); return r; }), LIBRARY_BUDGET_MS, [] as Row[]) : Promise.resolve([] as Row[])]);
     return [...main, ...lib];
   };
   // The English keywords come from a model call that can take seconds: the search does not wait for it, it uses them only if they arrive in time.
@@ -236,7 +244,11 @@ export async function searchChunks(
     }
   }
   if (extraQ) terms = queryTerms([...queries, extraQ]);
-  for (const r of await titlePromise) if (!merged.has(r.id)) merged.set(r.id, r);
+  // an entry found by its title that the other signals also found: the title match adds to its score (it is not dropped as a duplicate)
+  for (const r of await titlePromise) {
+    const prev = merged.get(r.id);
+    merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
+  }
   for (const r of await lensPromise) {
     const prev = merged.get(r.id);
     merged.set(r.id, prev ? { ...prev, rrf: prev.rrf + r.rrf, signals: [...new Set([...prev.signals, ...r.signals])] } : r);
@@ -245,7 +257,7 @@ export async function searchChunks(
   const value = { chunks: rerankAndSelect([...merged.values()], { terms, ...opts }), refs };
   // Nothing came back: a cold database or embedding model timed out (the first question after idle time). Try once more, patiently, now that they are warm;
   // an empty answer must never reach the teacher as "no sources" when the sources exist.
-  if (!value.chunks.length && !opts.patient && !deps.store) return searchChunks(query, { ...opts, patient: true }, deps);
+  if ((!value.chunks.length || !mainAnswered) && !opts.patient && !deps.store) return searchChunks(query, { ...opts, patient: true }, deps);
   if (cacheKey && value.chunks.length) {
     searchCache.set(cacheKey, { at: Date.now(), value });
     if (searchCache.size > 60) searchCache.delete(searchCache.keys().next().value as string);
