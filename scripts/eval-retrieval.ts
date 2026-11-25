@@ -1,6 +1,7 @@
 // Proof that the search really finds what is indexed: every record of the app's own content, a sample of library chunks and Bible windows, and exact verses,
 // each looked up through the SAME search the teacher uses. For a chunk the question is its own title (what a student would call it); it must come back in the top 12.
 // Usage: NODE_OPTIONS=--use-env-proxy tsx --env-file=.env.local scripts/eval-retrieval.ts [--quick]   (exit code 1 when a threshold is missed)
+import { readFileSync } from "node:fs";
 import { collectAppContent } from "../lib/appcontent/collect";
 import { getVerses, searchChunks } from "../lib/knowledge/search";
 import { sql } from "./db.mjs";
@@ -27,7 +28,36 @@ async function check(name: string, items: { id: string; query: string }[], min: 
   console.log(`${name}: ${items.length - misses.length}/${items.length} (${Math.round(((items.length - misses.length) / items.length) * 100)}%)`);
 }
 
+/** Basic questions by NAME ("Me fale tudo sobre Zaqueu"): the people and places of the Bible, asked the way a student asks. The answer must hold a passage that names or covers them. */
+async function checkNames() {
+  const all = JSON.parse(readFileSync("lib/knowledge/entity-index.json", "utf8")) as { id: string; k: string; en: string; pt: string[]; r: string[] }[];
+  const pool0 = all.filter((e) => (e.k === "p" || e.k === "l") && e.pt.length && e.r.length >= 3 && e.pt[0].length >= 4);
+  const step = Math.max(1, Math.floor(pool0.length / (QUICK ? 40 : 120)));
+  const sample = pool0.filter((_, i) => i % step === 0).slice(0, QUICK ? 40 : 120);
+  const TEMPLATES = ["Me fale tudo sobre NAME", "Quem foi NAME?", "NAME", "O que a Bíblia diz sobre NAME"];
+  const norm = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const misses: string[] = [], times: number[] = [];
+  let i = 0;
+  await pool(sample, CONCURRENCY, async (e) => {
+    const name = e.pt[0];
+    const q = TEMPLATES[i++ % TEMPLATES.length].replace("NAME", name);
+    const t0 = Date.now();
+    const { chunks } = await searchChunks(q, { maxChunks: TOP, maxTokens: 60000, perSignal: 30 }).catch(() => ({ chunks: [] as { text: string; refs: string[] }[] }));
+    times.push(Date.now() - t0);
+    const refs = new Set(e.r);
+    const ok = chunks.some((c) => norm(c.text).includes(norm(name)) || norm(c.text).includes(norm(e.en)) || (c.refs ?? []).some((r) => refs.has(r)));
+    if (!ok) misses.push(`${q}`);
+  });
+  results.push({ name: "basic questions by name (people and places)", ok: sample.length - misses.length, total: sample.length, min: 0.95, misses });
+  console.log(`names: ${sample.length - misses.length}/${sample.length}`);
+  times.sort((a, b) => a - b);
+  const p50 = times[Math.floor(times.length * 0.5)] ?? 0, p95 = times[Math.floor(times.length * 0.95)] ?? 0;
+  console.log(`search time: p50 ${p50} ms, p95 ${p95} ms`);
+  results.push({ name: "search speed (p95 under 6 s)", ok: p95 <= 6000 ? 1 : 0, total: 1, min: 1, misses: p95 > 6000 ? [`p95 ${p95} ms`] : [] });
+}
+
 async function main() {
+  await checkNames();
   // 1) the app's own content: every record, asked by its title (a student names the character, the place, the object...)
   const app = collectAppContent();
   await check("app content (every record, by title)", (QUICK ? app.slice(0, 60) : app).map((r) => ({ id: r.id, query: r.title.replace(/^.*> /, "") })), 0.9);

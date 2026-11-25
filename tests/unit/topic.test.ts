@@ -73,3 +73,9 @@ describe("topic guardrail: the teacher stays inside the biblical context", () =>
     expect(r.speech).toContain("Ana");
   });
 });
+
+describe("topic gate: Bible entities", () => {
+  it("any person or place of the Bible named in the question is in topic", () => {
+    for (const q of ["Me fale tudo sobre Zaqueu", "Quem foi Nicodemos?", "Onde fica Betânia?"]) expect(topicGate({ text: q, refs: [], chunks: [] }).verdict, q).toBe("in");
+  });
+});

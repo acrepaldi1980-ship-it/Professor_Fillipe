@@ -6,6 +6,8 @@ const pgArray = (a: string[]) => `{${a.map((x) => `"${x.replace(/(["\\])/g, "\\$
 
 export interface LibraryStore {
   searchChunks(a: { embedding: number[]; text: string; refs: string[]; perSignal: number; workIds?: string[] | null }): Promise<ChunkRow[]>;
+  /** Dictionary entries titled exactly with one of the words ("zacchaeus"). Shards without the title index are skipped. */
+  titleChunks?(titles: string[]): Promise<ChunkRow[]>;
 }
 
 type Args = { embedding: number[]; text: string; refs: string[]; perSignal: number; workIds?: string[] | null };
@@ -44,6 +46,11 @@ export class NeonLibraryStore implements LibraryStore {
     if (this.urls.length <= 1) return dropEnglishTwins(await run(this.urls[0]));
     const parts = await Promise.all(this.urls.map((u) => run(u).catch(() => [] as ChunkRow[])));
     return dropEnglishTwins(mergeShards(parts, params[3] as number * 3));
+  }
+  /** Entry lookup by title in every shard that has the index (library_titles); the others answer nothing. */
+  async titleChunks(titles: string[]): Promise<ChunkRow[]> {
+    const parts = await Promise.all(this.urls.map((u) => refQuery<ChunkRow>("select * from library_titles($1::text[], 24)", [pgArray(titles.slice(0, 40))], u).catch(() => [] as ChunkRow[])));
+    return parts.flat();
   }
 }
 

@@ -1,6 +1,7 @@
 // Hybrid search (spec 8.10.4): exact references + semantic + keyword, fused with RRF in SQL (search_chunks),
 // then re-ranked by authority layer (8.10.6) and trimmed to a prompt budget.
 import { englishQuery } from "./glossary";
+import { entityHints } from "./entities";
 import { getLibraryStore, type LibraryStore } from "./library-store";
 import { getStore, type KnowledgeStore } from "./db";
 import { getEmbeddingProvider, type EmbeddingProvider } from "./embeddings";
@@ -64,11 +65,14 @@ export function authorityLayer(kind: string, tradition: string, lenses: string[]
 const ENTRY_KINDS = new Set(["dictionary", "encyclopedia", "lexicon"]);
 
 /** Words of a question that can name a dictionary entry ("Barnabas", "Ark of the Covenant" -> "ark", "covenant"...). */
+/** Words that name too many entries to say what is asked ("Bible" for "o que a Bíblia diz sobre Nicodemos", "Mount" for "Mount Carmel"). */
+const GENERIC_TITLE_TERMS = new Set(["bible", "scripture", "scriptures", "mount", "mountain", "river", "city", "land", "lord", "king", "valley", "lake", "house", "temple", "tribe", "church", "people", "book", "word", "what", "about", "tell", "everything", "sobre", "fale", "tudo", "diga", "conte", "explique", "quem", "qual", "quais", "como", "onde", "quando", "porque", "biblia", "biblico", "biblica"]);
+
 export function queryTerms(queries: string[]): string[] {
   const out = new Set<string>();
   // The first phrasing is the question; the others are English keywords where the subject comes first, so only their first items count.
   const scoped = queries.map((q, i) => (i === 0 ? q : q.split(",").slice(0, 2).join(" ")));
-  for (const q of scoped) for (const w of q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z]+/)) if (w.length >= 4) out.add(w);
+  for (const q of scoped) for (const w of q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z]+/)) if (w.length >= 4 && !GENERIC_TITLE_TERMS.has(w)) out.add(w);
   return [...out];
 }
 
@@ -162,6 +166,12 @@ export async function searchChunks(
   // a safe English phrasing from the glossary, so the library (mostly English) is found even when the model that rewrites questions is down
   const auto = queries[0] ? englishQuery(queries[0]) : null;
   if (auto && !queries.includes(auto)) queries.push(auto);
+  // The people, places and events of the Bible named in the question ("Zaqueu" -> Zacchaeus, Luke 19): their English names reach the English works and the dictionary entries,
+  // their verses are asked for exactly, and the search looks for the SUBJECT ("Zaqueu Zacchaeus"), not for the whole sentence ("Me fale tudo sobre Zaqueu").
+  const hints = queries[0] ? entityHints(queries[0]) : { names: [], refs: [], subject: "", matches: [] };
+  const subjectQuery = [hints.subject, ...hints.names].filter(Boolean).join(" ").trim();
+  if (subjectQuery && hints.names.length && !queries.includes(subjectQuery)) queries.splice(1, 0, subjectQuery);
+  if (opts.trace && hints.matches.length) opts.trace.entities = hints.matches.length;
   const per = opts.perSignal ?? 24;
   const cacheKey = deps.store || deps.embeddings ? null : JSON.stringify([queries, opts.lenses, opts.extraRefs, opts.maxTokens, opts.maxChunks, opts.workIds]);
   const hit = cacheKey ? searchCache.get(cacheKey) : undefined;
@@ -171,10 +181,11 @@ export async function searchChunks(
   const mark = (name: string) => { if (opts.trace) opts.trace[name] = Math.max(opts.trace[name] ?? 0, Date.now() - T0); };
 
   // References named by the student, passages suggested with the English keywords, and well-known passages (topics.ts).
-  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...(opts.extraRefs ?? [])]);
+  const refs = expandRefs([...queries.flatMap((q) => findReferences(q).flatMap((r) => r.refs)), ...topicRefs(queries[0] ?? ""), ...hints.refs, ...(opts.extraRefs ?? [])]);
   let terms = queryTerms(queries);
   // Entries titled with a word of the question start at once, in parallel with the semantic and keyword searches.
-  const titlePromise = (store.titleChunks && terms.length ? within(store.titleChunks(terms), TITLES_BUDGET_MS * k, [] as Row[]) : Promise.resolve([] as Row[])).then((r) => { mark("titles"); return r; });
+  const titleSources = terms.length ? [store.titleChunks ? store.titleChunks(terms) : null, library?.titleChunks ? library.titleChunks(terms) : null].filter((p): p is Promise<Row[]> => !!p) : [];
+  const titlePromise = within(Promise.all(titleSources.map((p) => p.catch(() => [] as Row[]))).then((parts) => parts.flat()), TITLES_BUDGET_MS * k, [] as Row[]).then((r) => { mark("titles"); return r; });
 
   // The student's lens: one more search restricted to the works of that tradition, so a divergent topic gets that side's sources.
   const lensIds = opts.lenses?.length && !opts.workIds ? await lensWorkIds(store, opts.lenses) : [];

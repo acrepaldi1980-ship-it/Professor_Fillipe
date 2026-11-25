@@ -2,6 +2,7 @@
 // this decides whether the question belongs to the study of the Bible (text, people, places, history and archaeology of the biblical world, languages of the
 // Scriptures, theology, church history, the study materials of the app). What is off topic gets a short, kind invitation back to the study, never a web search.
 // Pure and deterministic, so it is cheap (no model call) and testable. Spec: RA-18 and 8.23.
+import { findEntities } from "../knowledge/entities";
 import type { Retrieved } from "../knowledge/search";
 
 export type TopicVerdict = "in" | "off" | "unsure";
@@ -82,6 +83,8 @@ export function topicGate(i: TopicInput): { verdict: TopicVerdict; why: string }
   if (STRONG.test(t)) return { verdict: "in", why: "biblical_words" };
   if (OFF_TOPIC.test(t)) return { verdict: "off", why: "off_topic_words" };
   if (libraryKnows(i.chunks, i.text)) return { verdict: "in", why: "library_knows" };
+  // a person, place or event of the Bible named in the question (exact name, no guessing at misspellings here)
+  if (findEntities(i.text, 1, false).length) return { verdict: "in", why: "biblical_entity" };
   if (i.inStudyContext) return { verdict: "in", why: "study_context" };
   if (i.followUp && SHORT_FOLLOWUP.test(t)) return { verdict: "in", why: "follow_up" };
   if (NAMES.test(t)) return { verdict: "in", why: "biblical_names" };

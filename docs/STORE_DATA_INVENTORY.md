@@ -83,3 +83,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 - **Pesquisa fora do app** (`lib/websearch`): quando o acervo não responde, o texto da pergunta (sem o nome do aluno e sem dados do perfil) é enviado como consulta à API pública da Wikipédia (`pt.wikipedia.org`, `en.wikipedia.org`) e, se `TAVILY_API_KEY` estiver definida, ao Tavily. Nada é guardado fora do app. Não ocorre para menores de idade, nem nos modos Aula, Sermão e Ensaio, nem para perguntas fora do contexto bíblico. A resposta guarda só o título, o link e a licença das páginas usadas (`structured.external_sources`).
 - **Conteúdo próprio indexado** (`app_*` em `chunks`): conteúdo do produto, sem dado pessoal.
 
+
+## Índice de entidades bíblicas (25/11/2026)
+- `lib/knowledge/entity-index.json`: nomes (pt/en) e versículos de pessoas, lugares e eventos da Bíblia, gerado do grafo de conhecimento. Dado público, empacotado no app; **nenhum dado pessoal**, nenhuma coleta nova.

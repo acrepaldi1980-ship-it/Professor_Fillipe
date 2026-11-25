@@ -736,6 +736,8 @@ Cada trecho guarda: `work_id`, texto, idioma, referências bíblicas mencionadas
 5. **Filtros**: obras habilitadas, licença válida, obras escolhidas pelo usuário, idioma.
 6. **Pesos de autoridade e lente** (8.10.6).
 7. Seleciona os 8 a 12 melhores trechos, até ~6.000 tokens no total, garantindo pelo menos 1 trecho bíblico quando o tema for bíblico.
+8. **Reconhecimento de nomes (24/11/2026)**: antes de buscar, a pergunta passa por um índice local de pessoas, lugares e eventos da Bíblia (`lib/knowledge/entities.ts`, gerado de `kg_entities` e das Bíblias por `scripts/build-entity-index.mjs`, com os nomes em português aprendidos dos versículos). "Me fale tudo sobre Zaqueu" vira: o assunto ("Zaqueu Zacchaeus", sem as palavras de enchimento), os nomes em inglês (para as obras em inglês), os versículos do grafo (Lucas 19) e a busca do verbete pelo título nas bases (Easton, Smith, Nave, Torrey: índice `title_key`, funções `api_title_chunks` e `library_titles`). Aceita nome sem acento, em maiúsculas e com um erro de digitação. Um nome bíblico na pergunta também a mantém dentro do tema (RA-25).
+- CA (24/11/2026): em 120 perguntas por nome de pessoas e lugares ("Me fale tudo sobre X", "Quem foi X?", "X", "O que a Bíblia diz sobre X"), o resultado traz um trecho que cita o nome ou cobre seus versículos em ≥ 95%; a busca leva até 6 s no percentil 95. Medido por `scripts/eval-retrieval.ts`.
 
 - Embeddings multilíngues de um fornecedor configurável (`EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`) **[DECISÃO D-09]**; obras em inglês são buscadas também por perguntas em português.
 - CA: em 50 perguntas com trecho esperado, o trecho certo aparece entre os 5 primeiros em ≥ 85%.
