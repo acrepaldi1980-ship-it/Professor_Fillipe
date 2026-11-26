@@ -48,6 +48,8 @@ export interface Share {
   canShare(): boolean;
   /** `file`: an image to share with the text (WhatsApp, Instagram); where the device cannot share files, only the text and link go. */
   share(data: { title?: string; text?: string; url?: string; file?: { name: string; blob: Blob } }): Promise<"shared" | "copied" | "unavailable">;
+  /** Puts the text on the clipboard (the "Copy" button of the reader). Optional: a platform without it has no Copy button. */
+  copyText?(text: string): Promise<boolean>;
   canShareFiles?(): boolean;
 }
 

@@ -91,11 +91,15 @@ export class WebShare implements Share {
         return "unavailable" as const;
       }
     }
-    if (navigator.clipboard && data.url) {
-      await navigator.clipboard.writeText(data.url);
+    if (navigator.clipboard && (data.text || data.url)) {
+      // no share sheet here (a desktop browser): the text and the link are copied
+      await navigator.clipboard.writeText([data.text, data.url].filter(Boolean).join("\n"));
       return "copied" as const;
     }
     return "unavailable" as const;
+  }
+  async copyText(text: string) {
+    try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
   }
 }
 

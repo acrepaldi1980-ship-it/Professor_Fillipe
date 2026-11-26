@@ -9,7 +9,7 @@ import { addNote, deleteNote, exportNotebook, getNotebook, type NotebookEntry } 
 import { t } from "@/lib/i18n";
 import { formatRefPt } from "@/lib/knowledge/refs-parser";
 
-const KINDS = ["session", "lesson", "sermon", "deep", "bookmark", "note"] as const;
+const KINDS = ["session", "lesson", "sermon", "deep", "bookmark", "note", "verse_note"] as const;
 const input = "h-11 rounded-control border border-line bg-surface px-3 text-base text-ink";
 
 export default function NotebookPage() {
@@ -63,7 +63,7 @@ export default function NotebookPage() {
               <li key={e.id}>
                 <Card className="flex flex-col gap-1">
                   <div className="text-xs text-muted">{t(`nb.kind.${e.kind}` as "nb.kind.note")} · {new Date(e.date).toLocaleDateString("pt-BR")}</div>
-                  <strong>{e.kind === "bookmark" ? formatRefPt(e.title) : e.title}</strong>
+                  <strong>{e.kind === "bookmark" || e.kind === "verse_note" ? formatRefPt(e.title) : e.title}</strong>
                   {e.snippet && <p className="text-sm text-muted">{e.snippet}</p>}
                   <div className="flex flex-wrap gap-3 text-sm">
                     {href && <Link className="underline" href={href}>{t("notebook.open")}</Link>}

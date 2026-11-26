@@ -6,6 +6,7 @@ import { t, type MessageKey } from "@/lib/i18n";
 
 const ITEMS: { href: string; key: MessageKey; icon: string }[] = [
   { href: "/inicio", key: "nav.home", icon: "🏠" },
+  { href: "/biblia", key: "nav.bible", icon: "📖" },
   { href: "/estudo", key: "nav.study", icon: "💬" },
   { href: "/revisao", key: "nav.review", icon: "🔁" },
   { href: "/caderno", key: "nav.notebook", icon: "📓" },

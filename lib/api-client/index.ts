@@ -526,3 +526,42 @@ export interface HistUnit { ord: number; part: string; label: string; title: str
 export const listHistBooks = () => apiJson<{ works: HistBook[] }>("/study/historians");
 export const getHistToc = (work: string) => apiJson<{ work: Omit<HistBook, "units" | "translated">; units: HistUnitRef[] }>(`/study/historians/${work}`);
 export const getHistUnit = (work: string, ord: number) => apiJson<{ work: Omit<HistBook, "units" | "translated">; unit: HistUnit; prev: { ord: number; label: string } | null; next: { ord: number; label: string } | null }>(`/study/historians/${work}/${ord}`);
+
+// ---- Bible reader (spec 8.24, M24) ----
+export interface ReaderState { version_id: string; compare_version_id: string | null; last_ref: string | null; font_scale: number; chosen: boolean }
+export const getReaderState = () => apiJson<ReaderState>("/reader/state");
+export const saveReaderState = (s: { version_id?: string; compare_version_id?: string | null; last_ref?: string; font_scale?: number }) => apiJson<{ ok: boolean }>("/reader/state", { method: "PUT", body: JSON.stringify(s) });
+
+export const getBookReads = (book: string) => apiJson<{ refs: string[] }>(`/reader/reads?book=${book}`);
+export const getReadProgress = () => apiJson<{ books: Record<string, number>; total: number }>("/reader/reads?progress=1");
+export const markRead = (b: { refs?: string[]; chapters?: string[] }) => apiJson<{ ok: boolean; marked: number }>("/reader/reads", { method: "POST", body: JSON.stringify(b) });
+export const unmarkRead = (b: { refs?: string[]; chapter?: string }) => apiJson<{ ok: boolean }>(`/reader/reads?${b.chapter ? `chapter=${b.chapter}` : `refs=${(b.refs ?? []).join(",")}`}`, { method: "DELETE" });
+
+export interface PlanStatus { today: number; total: number; done: number; behind: number; finished: boolean; nextDay: number | null; percent: number }
+export interface CatalogPlanInfo { key: string; name: string; description: string; days: number }
+export interface MyPlan { id: string; key: string; name: string; start_date: string; paused: boolean; status: PlanStatus }
+export interface PlanDetail extends MyPlan { schedule: { day: number; chapters: string[] }[]; done_days: number[] }
+const localDay = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+export const getReadingPlans = () => apiJson<{ catalog: CatalogPlanInfo[]; mine: MyPlan[] }>(`/reader/plans?today=${localDay()}`);
+export const getReadingPlan = (id: string) => apiJson<{ plan: PlanDetail }>(`/reader/plans?id=${id}&today=${localDay()}`);
+export const startReadingPlan = (b: { key: string; start_date?: string; name?: string; custom?: { from: string; to: string; days: number } }) => apiJson<{ id: string }>("/reader/plans", { method: "POST", body: JSON.stringify({ start_date: localDay(), ...b }) });
+export const setPlanDay = (id: string, day: number, done: boolean) => apiJson<{ ok: boolean }>("/reader/plans", { method: "PATCH", body: JSON.stringify({ id, day, done }) });
+export const pausePlan = (id: string, paused: boolean) => apiJson<{ ok: boolean }>("/reader/plans", { method: "PATCH", body: JSON.stringify({ id, paused }) });
+export const deleteReadingPlan = (id: string) => apiJson<{ ok: boolean }>(`/reader/plans?id=${id}`, { method: "DELETE" });
+
+export type NoteColor = "yellow" | "green" | "blue" | "pink" | "orange";
+export interface VerseNote { id: string; version_id: string; ref_start: string; ref_end: string; book_code: string; chapter: number; text: string; context: string | null; tags: string[]; color: NoteColor | null; created_at: string; updated_at: string }
+export interface NoteFilters { book?: string; chapter?: number; ref?: string; context?: string; tag?: string; from?: string; to?: string; q?: string; order?: "date" | "bible" }
+export const getVerseNotes = (f: NoteFilters = {}) => apiJson<{ notes: VerseNote[]; contexts: string[]; tags: string[]; books: Record<string, number> }>(`/reader/notes?${new URLSearchParams(Object.entries(f).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => [k, String(v)]))}`);
+export const addVerseNote = (n: { version_id: string; ref_start: string; ref_end?: string; text: string; context?: string | null; tags?: string[]; color?: NoteColor | null }) => apiJson<{ note: VerseNote }>("/reader/notes", { method: "POST", body: JSON.stringify(n) });
+export const updateVerseNote = (id: string, n: { text?: string; context?: string | null; tags?: string[]; color?: NoteColor | null }) => apiJson<{ note: VerseNote }>("/reader/notes", { method: "PATCH", body: JSON.stringify({ id, ...n }) });
+export const deleteVerseNote = (id: string) => apiJson<{ ok: boolean }>(`/reader/notes?id=${id}`, { method: "DELETE" });
+
+export interface VerseHelp {
+  version: string; refs: string[]; verses: { ref: string; text: string }[];
+  entities: { id: string; name: string; en: string; kind: "person" | "place"; entry: { title: string; work_id: string; source: string; snippet: string } | null; refs: number }[];
+  words: { surface: string; translit: string | null; strong: string | null; gloss: string | null; meaning: string | null; ref: string }[];
+  related: string[]; sources: { work_id: string; label: string }[];
+}
+export const getVerseHelp = (version: string, ref: string, to?: string) => apiJson<VerseHelp>(`/reader/help?version=${version}&ref=${ref}${to && to !== ref ? `&to=${to}` : ""}`);
+export const explainVerses = (b: { version_id: string; ref_start: string; ref_end?: string; locale?: "pt-BR" | "es"; refresh?: boolean }) => apiJson<{ text: string; citations: { work_id: string; label: string }[]; cached: boolean }>("/reader/help", { method: "POST", body: JSON.stringify(b) });

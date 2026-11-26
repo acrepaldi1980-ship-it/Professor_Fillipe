@@ -102,3 +102,17 @@ export function entityHints(question: string): { names: string[]; refs: string[]
   const refs = aboutEntity ? [...new Set(matches.flatMap((m) => [...m.refs.slice(0, 12), ...(m.kind === "person" ? eventRefsFor(m.en) : [])]))].slice(0, 40) : [];
   return { names: [...new Set(matches.map((m) => m.en))], refs, subject, matches, aboutEntity };
 }
+
+/** People and places that the knowledge graph places in these verses ("LUK.19.2" -> Zacchaeus, Jericho), the most mentioned first. Exact verses, so no guessing from the words of a translation. */
+export function entitiesAtRefs(refs: string[], max = 8): EntityMatch[] {
+  const want = new Set(refs);
+  return ENTITIES.filter((e) => e.k !== "e" && e.r.some((r) => want.has(r)))
+    .sort((a, b) => b.r.length - a.r.length)
+    .slice(0, max)
+    .map((e) => ({ id: e.id, kind: e.k === "p" ? "person" : "place", en: e.en, matched: e.pt[0] ?? e.en, refs: e.r }));
+}
+
+/** Portuguese name of an entity found by `entitiesAtRefs` (first learned name), or its English name. */
+export function ptNameOf(id: string): string | null {
+  return ENTITIES.find((e) => e.id === id)?.pt[0] ?? null;
+}

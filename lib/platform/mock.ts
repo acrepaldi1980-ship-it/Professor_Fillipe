@@ -16,7 +16,7 @@ export function createMockPlatform(overrides: Partial<Platform> = {}): Platform 
       set: async (k, v) => void mem.set(k, v),
       remove: async (k) => void mem.delete(k),
     },
-    share: { canShare: () => true, share: async () => "shared" },
+    share: { canShare: () => true, share: async () => "shared", copyText: async () => true },
     files: { save: async (name) => void calls.push(`files.save:${name}`) },
     deepLinks: { onOpen: () => () => {}, currentUrl: () => "https://app.test/" },
     purchases: { openCheckout: async (url) => void calls.push(`purchases.openCheckout:${url}`) },

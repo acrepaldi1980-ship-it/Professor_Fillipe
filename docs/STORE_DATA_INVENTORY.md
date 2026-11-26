@@ -86,3 +86,8 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 
 ## Índice de entidades bíblicas (25/11/2026)
 - `lib/knowledge/entity-index.json`: nomes (pt/en) e versículos de pessoas, lugares e eventos da Bíblia, gerado do grafo de conhecimento. Dado público, empacotado no app; **nenhum dado pessoal**, nenhuma coleta nova.
+
+## Leitor da Bíblia (M24, 25/11/2026)
+- **Dados pessoais novos (religiosos por natureza):** versão e posição de leitura (`reader_state`), versículos lidos (`bible_reads`), planos de leitura (`reading_plans`), anotações de versículos com contexto e etiquetas (`verse_notes`) e explicações guardadas por aluno (`verse_help`). Todos com Row Level Security por usuário, exclusão em cascata com a conta e inclusão na exportação de dados.
+- **Compartilhar versículo:** o texto vai pelo compartilhamento do aparelho (ou é copiado); nada é enviado ao servidor do app.
+- **Sem coleta nova de terceiros.** A explicação do professor usa o mesmo provedor de IA do estudo (RA-09: só com as fontes do acervo).

@@ -49,22 +49,31 @@ create table if not exists verse_notes (
 create index if not exists verse_notes_user_book on verse_notes (user_id, book_code, chapter);
 create index if not exists verse_notes_user_date on verse_notes (user_id, created_at desc);
 
--- Explanations of verses made by the teacher from the library (no personal data: the same verse, version, language and lens give the same text for everyone).
-create table if not exists verse_help_cache (
+-- Explanations of verses made by the teacher, kept per student (so a verse is not explained twice, and nobody can put text in front of another student).
+create table if not exists verse_help (
+  user_id uuid not null references auth.users(id) on delete cascade,
   version_id text not null,
   ref text not null,
   locale text not null default 'pt-BR',
   lens text not null default '',
-  text text not null,
+  text text not null check (char_length(text) <= 6000),
   citations jsonb not null default '[]',
   created_at timestamptz not null default now(),
-  primary key (version_id, ref, locale, lens)
+  primary key (user_id, version_id, ref, locale, lens)
 );
+
+-- How much of each book the student has read (one row per book; RLS applies: the function runs as the caller).
+create or replace function reader_progress() returns table (book_code text, n bigint)
+language sql stable security invoker set search_path = public as $$
+  select b.book_code, count(*) from bible_reads b where b.user_id = auth.uid() group by b.book_code
+$$;
+revoke all on function reader_progress() from public, anon;
+grant execute on function reader_progress() to authenticated;
 
 do $$
 declare t text;
 begin
-  foreach t in array array['reader_state','bible_reads','reading_plans','verse_notes'] loop
+  foreach t in array array['reader_state','bible_reads','reading_plans','verse_notes','verse_help'] loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists %I on %I', t || '_own', t);
     execute format('create policy %I on %I for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid())', t || '_own', t);
@@ -72,5 +81,3 @@ begin
     execute format('revoke all on %I from anon', t);
   end loop;
 end $$;
-alter table verse_help_cache enable row level security;
-revoke all on verse_help_cache from anon, authenticated;

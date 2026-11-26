@@ -1084,7 +1084,7 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | `bible_reads` | user_id, ref (versículo, ex. JHN.3.16), read_at; chave (user_id, ref) |
 | `reading_plans` | id, user_id, key (catálogo ou `custom`), name, start_date, schedule (jsonb: dia → capítulos), done_days (int[]), paused, created_at |
 | `verse_notes` | id, user_id, version_id, ref_start, ref_end, book_code, chapter, text, context, tags[], color, created_at, updated_at |
-| `verse_help_cache` | version_id, ref, locale, lens, text, citations (jsonb), created_at; chave (version_id, ref, locale, lens); sem dado pessoal |
+| `verse_help` | user_id, version_id, ref, locale, lens, text, citations (jsonb), created_at; chave (user_id, version_id, ref, locale, lens); a explicação do professor guardada por aluno (não é compartilhada entre alunos) |
 
 ## 10. Arquitetura técnica
 
@@ -1208,6 +1208,11 @@ Todas as rotas abaixo ficam sob o prefixo **`/api/v1`** (ex.: `POST /api/v1/teac
 
 | Método e rota | Função | Entrada | Saída |
 | --- | --- | --- | --- |
+| `GET/PUT /api/v1/reader/state` | Versão, comparação, última posição e tamanho da letra do leitor (M24) | `{ version_id?, compare_version_id?, last_ref?, font_scale? }` | estado |
+| `GET/POST/DELETE /api/v1/reader/reads` | O que foi lido: versículos de um livro, progresso por livro, marcar e desmarcar versículos ou capítulos | `?book=`, `?progress=1`, `{ refs?, chapters? }` | `{ refs }`, `{ books, total }` |
+| `GET/POST/PATCH/DELETE /api/v1/reader/plans` | Planos de leitura: catálogo, meus planos, começar, marcar o dia, pausar, apagar | `{ key, start_date, custom? }`, `{ id, day, done }` | planos com `status` |
+| `GET/POST/PATCH/DELETE /api/v1/reader/notes` | Anotações de versículos com filtros por livro, capítulo, contexto, etiqueta, data e texto | `{ version_id, ref_start, ref_end?, text, context?, tags?, color? }` | `{ notes, contexts, tags, books }` |
+| `GET/POST /api/v1/reader/help` | Ajuda do trecho (pessoas e lugares com verbete, palavras no original, textos relacionados) e explicação do professor | `?version=&ref=&to=`; `{ version_id, ref_start, ref_end?, locale }` | ajuda; `{ text, citations, cached }` |
 | `POST /api/v1/sessions` | Cria sessão | `{ mode, topic? }` | `{ sessionId }` |
 | `POST /api/v1/teacher/turn` | Um turno do professor (streaming SSE) | `{ sessionId, text, intent? }` | eventos: `speech_delta`, `structured`, `done`, `error` |
 | `POST /api/v1/voice/transcribe` | Transcrição | áudio | `{ text, confidence }` |
