@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M24 Leitor da Bíblia | Ler a Bíblia no app em qualquer das 25 versões, marcar o que já leu, planos de leitura, compartilhar versículos, ajuda dinâmica por versículo e anotações por livro, data e contexto (8.24) |
 | M21 Historiadores | Seção com Josefo, Eusébio, Tácito, Plínio, Suetônio e Fílon, testemunhos fora da Bíblia e estudo com o professor (8.21) |
 | M20 Flávio Josefo | Os 30 livros de Josefo (Whiston), leitor por capítulo, resumos, paralelos com a Bíblia e estudo guiado pelo professor (8.20) |
 | M19 Vida dos Personagens | Livro ilustrado da vida de cada personagem bíblico, do nascimento à morte, com linha da vida, narração, família e rota (8.19) |
@@ -984,6 +985,21 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Privacidade:** a pergunta do aluno (sem nome) vira consulta à Wikipédia (e ao Tavily, se ligado); isso consta em `docs/STORE_DATA_INVENTORY.md` e na tela de privacidade. Créditos CC BY-SA 4.0 em `docs/LICENSES.md`.
 - **Limites honestos:** Wikipédia pode estar errada ou divergir entre idiomas (o professor mostra as duas); sem busca geral não há resposta para o que a Wikipédia não traz; a barreira de tema por palavras erra nos dois sentidos em casos raros (por isso o ambíguo não vai à web).
 
+### 8.24 M24 — Leitor da Bíblia (P0, pedido do dono em 25/11/2026)
+
+- **Objetivo:** o aluno lê a Bíblia dentro do app, na versão que escolher, e a leitura vira estudo: marca o que leu, segue um plano, anota, compartilha e, em qualquer versículo, recebe uma ajuda que deixa o texto mais claro.
+- **RF-M24-01 Versão e navegação:** tela `/biblia`. O aluno escolhe a versão (as 25 do acervo, agrupadas por idioma, só as de licença verificada) e a escolha fica salva; depois escolhe livro e capítulo (lista dos 66 livros, grade de capítulos) e lê o capítulo com versículos numerados, capítulo anterior e próximo, tamanho de letra ajustável e volta ao ponto onde parou ("Continuar de onde parei"). A leitura funciona também em modo comparação com outra versão (um versículo abaixo do outro).
+- **RF-M24-02 Marcar como lido:** por versículo (toque e "Marcar como lido"), por trecho selecionado e por capítulo inteiro ("Marcar capítulo como lido"). O capítulo lido mostra um sinal; o livro mostra a barra de progresso (versículos lidos / total); a tela inicial da leitura mostra o progresso da Bíblia toda. Desmarcar é possível.
+- **RF-M24-03 Planos de leitura:** catálogo pronto (Bíblia em 1 ano, Novo Testamento em 90 dias, Evangelhos em 30 dias, Salmos e Provérbios em 31 dias, Bíblia em 90 dias de capítulos de livros escolhidos) e plano personalizado (livros inicial e final, número de dias; o app distribui os capítulos de forma equilibrada). O plano tem data de início, mostra "hoje" e o atraso, abre direto a leitura do dia e marca o dia como feito; ao concluir o dia, os capítulos do dia ficam marcados como lidos. O aluno pode ter vários planos, pausar e apagar.
+- **RF-M24-04 Compartilhar:** selecionar um ou mais versículos e compartilhar o texto com a referência e a versão (`lib/platform` `share`, que usa o compartilhamento do aparelho ou copia o texto), com o crédito da versão quando a licença pede; opção de copiar. Imagem do versículo para redes sociais fica para a Fase 2.
+- **RF-M24-05 Ajuda dinâmica por versículo:** ao selecionar versículo(s), o botão "Entender" abre um painel que mostra, sem inventar nada (RA-09): (1) **quem e onde**: pessoas, lugares e eventos do trecho, cada um com seu verbete (Easton, Smith, Nave) e a ligação com o estudo; (2) **palavras no original**: as palavras gregas ou hebraicas do trecho com número de Strong e significado, quando houver; (3) **textos relacionados**: referências cruzadas (Tesouro do Conhecimento da Escritura); (4) **explicação do professor**: uma explicação curta e clara do trecho, na lente do aluno, feita pelo professor com as fontes do acervo e **citando-as**, que usa a cota de mensagens do plano e fica guardada para não ser refeita; (5) botão "Conversar com o professor sobre este trecho", que abre o estudo já no trecho. Os itens 1 a 3 não dependem de modelo de IA e aparecem sempre.
+- **RF-M24-06 Anotações por versículo:** o aluno anota um ou mais versículos (texto livre, com **contexto** escolhido ou criado: Devocional, Estudo, Sermão, Aula, Oração, Família, ou outro) e **etiquetas**. As anotações aparecem sob o versículo no leitor e numa tela de anotações com filtros por **livro**, por **data** (hoje, semana, mês, intervalo), por **contexto** e por etiqueta, busca por texto, e ordenação por data ou pela ordem da Bíblia. Também aparecem no caderno (8.9). Exportação em PDF pelo caderno.
+- **RF-M24-07 Marcadores e destaques:** o versículo pode ser marcado como favorito (já existe em `bookmarks`) e receber cor de destaque.
+- **Planos de assinatura:** ler, marcar, planos, anotações e compartilhar são gratuitos em todos os planos (a leitura da Bíblia é o centro do produto). A "explicação do professor" (RF-M24-05, item 4) conta como mensagem de texto do dia no plano, como no estudo livre. **[DECISÃO D-26, proposta:** manter a leitura gratuita e a explicação dentro do limite diário do plano; o dono confirma ou muda].
+- **Privacidade:** o que o aluno lê, marca e anota é dado pessoal (religioso por natureza): Row Level Security por usuário, nada compartilhado sem ação do aluno, exportação e exclusão com a conta (8.2).
+- **Portabilidade (10.6):** a tela usa só `lib/api-client`, `lib/platform` (compartilhar, armazenamento local) e `lib/entitlements`; API em `/api/v1/reader/*`.
+- **CA:** (1) abrir João 3 em três versões diferentes mostra o texto de cada uma; (2) marcar o capítulo lido atualiza a barra do livro e persiste ao reabrir; (3) um plano de 90 dias do Novo Testamento cobre os 260 capítulos sem repetir nem pular, e marcar o dia marca os capítulos; (4) anotar o versículo, filtrar por livro, data e contexto e achá-lo; (5) a ajuda de "Zaqueu" em Lucas 19:2 mostra o verbete de Zacchaeus e a palavra original; (6) com a IA sem cota, os itens 1 a 3 da ajuda continuam aparecendo.
+
 ## 9. Modelo de dados
 
 Postgres (Supabase), com Row Level Security em **todas** as tabelas de usuário. Tipos simplificados; o Claude Code escreve as migrations completas com índices, chaves estrangeiras e `created_at` e `updated_at`.
@@ -1059,6 +1075,16 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 | `audit_logs` | id, actor_id, action, target, created_at |
 
 ---
+
+### 9.x Leitor da Bíblia (M24)
+
+| Tabela | Campos principais |
+| --- | --- |
+| `reader_state` | user_id, version_id, last_ref, font_scale, compare_version_id, updated_at |
+| `bible_reads` | user_id, ref (versículo, ex. JHN.3.16), read_at; chave (user_id, ref) |
+| `reading_plans` | id, user_id, key (catálogo ou `custom`), name, start_date, schedule (jsonb: dia → capítulos), done_days (int[]), paused, created_at |
+| `verse_notes` | id, user_id, version_id, ref_start, ref_end, book_code, chapter, text, context, tags[], color, created_at, updated_at |
+| `verse_help_cache` | version_id, ref, locale, lens, text, citations (jsonb), created_at; chave (version_id, ref, locale, lens); sem dado pessoal |
 
 ## 10. Arquitetura técnica
 
