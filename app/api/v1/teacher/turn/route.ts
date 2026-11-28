@@ -12,6 +12,7 @@ import { historianContext } from "@/lib/historians/context";
 import { josephusContext } from "@/lib/josephus/context";
 import { INTENTS } from "@/lib/teacher/schema";
 import { findReferences } from "@/lib/knowledge/refs-parser";
+import { getEmbeddingProvider } from "@/lib/knowledge/embeddings";
 import { track } from "@/lib/analytics/track";
 import { loadAccess, loadUsage } from "@/lib/entitlements/server";
 import { checkLimit, overFairUse } from "@/lib/entitlements";
@@ -43,6 +44,7 @@ const bodySchema = z.object({
 const sse = (event: string, data: unknown) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
 export async function POST(req: Request) {
+  getEmbeddingProvider().preload?.(); // on a cold instance the search model loads (~2 s) while login and the session are read
   let ctx;
   try {
     ctx = await requireUser(req);

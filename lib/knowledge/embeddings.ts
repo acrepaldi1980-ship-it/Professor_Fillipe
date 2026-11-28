@@ -8,6 +8,8 @@ export interface EmbeddingProvider {
   readonly dimensions: number;
   embedQuery(text: string): Promise<number[]>;
   embedPassages(texts: string[]): Promise<number[][]>;
+  /** Starts loading the model in the background (no-op when it is already loaded or loading). */
+  preload?(): void;
 }
 
 type Extractor = (
@@ -48,21 +50,34 @@ export class LocalE5Provider implements EmbeddingProvider {
     this.name = `local-${model.split("/")[1]}`;
   }
 
+  /** How long each part of the first load took (ms), for the warm-up diagnostics: where does a cold start go? */
+  loadTimings: Record<string, number> = {};
   private load(): Promise<Extractor> {
     this.extractor ??= (async () => {
+      const t0 = Date.now();
       const { pipeline, env } = await import("@huggingface/transformers");
+      this.loadTimings.import = Date.now() - t0;
       // Production bundles the model with the function (models/, split in two parts because of the upload size limit):
       // loading it from disk takes seconds, downloading it on every cold start took ~30 s.
+      const t1 = Date.now();
       const bundled = bundledModelDir(this.model);
+      this.loadTimings.model_files = Date.now() - t1;
       if (bundled) {
         env.localModelPath = bundled;
         env.allowRemoteModels = false;
       }
       // Serverless file systems are read-only except /tmp: cache the downloaded model there.
       if (process.env.VERCEL || process.env.TRANSFORMERS_CACHE_DIR) env.cacheDir = process.env.TRANSFORMERS_CACHE_DIR ?? "/tmp/hf-cache";
-      return (await pipeline("feature-extraction", this.model, {
+      const t2 = Date.now();
+      const ex = (await pipeline("feature-extraction", this.model, {
         dtype: "q8",
       })) as unknown as Extractor;
+      this.loadTimings.pipeline = Date.now() - t2;
+      const t3 = Date.now();
+      await ex(["query: aquecimento"], { pooling: "mean", normalize: true });
+      this.loadTimings.first_run = Date.now() - t3;
+      this.loadTimings.total = Date.now() - t0;
+      return ex;
     })();
     return this.extractor;
   }
@@ -76,6 +91,11 @@ export class LocalE5Provider implements EmbeddingProvider {
       out.push(...res.tolist());
     }
     return out;
+  }
+
+  /** A server instance that has just started loads the model while the request does its other work (login, session, database reads): the ~2 s overlap instead of adding up. */
+  preload() {
+    void this.load().catch(() => { this.extractor = null; });
   }
 
   async embedQuery(text: string) {

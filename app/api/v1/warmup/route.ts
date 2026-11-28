@@ -11,8 +11,10 @@ export const maxDuration = 60;
 
 export async function GET(req: Request) {
   const t0 = Date.now();
+  const bootedAt = (globalThis as { __pfBoot?: number }).__pfBoot ??= Date.now(); // when this server instance first served a warm-up (a fresh instance = a cold start)
   const bench = new URL(req.url).searchParams.get("bench") === "1";
   const vec = await getEmbeddingProvider().embedQuery("aquecimento");
+  const embedLoad = (getEmbeddingProvider() as { loadTimings?: Record<string, number> }).loadTimings;
   const args = { embedding: vec, text: "aquecimento", refs: [], perSignal: 3 };
   // the first spoken sentence after idle time used to take ~9 s (the voice model loads on first use): load it now too
   const [a, b, c] = await Promise.allSettled([getStore().searchChunks(args), getLibraryStore()?.searchChunks(args) ?? Promise.resolve([]), new PiperTtsProvider().synthesize("Olá.")]);
@@ -28,5 +30,5 @@ export async function GET(req: Request) {
     for (let i = 0; i < 3; i++) { rows.supabase_search.push(await time(() => getStore().searchChunks(q))); rows.neon_search.push(await time(() => getLibraryStore()!.searchChunks(q))); }
     timings = { embed_warm: [embedMs], ...rows };
   }
-  return Response.json({ ok: true, ms: Date.now() - t0, supabase: a.status, neon: b.status, voice: c.status, shards, ...(timings ? { timings } : {}) });
+  return Response.json({ ok: true, ms: Date.now() - t0, instanceAgeMs: Date.now() - bootedAt, ...(embedLoad && Object.keys(embedLoad).length ? { embedLoad } : {}), supabase: a.status, neon: b.status, voice: c.status, shards, ...(timings ? { timings } : {}) });
 }

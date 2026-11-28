@@ -91,3 +91,14 @@ Sobre "um sistema que não seja invadido": nenhum sistema tem garantia absoluta.
 | D. Planos pagos (Supabase Pro ou Neon Launch, Vercel Pro) | computação dedicada, sem pausa, mais funções e firewall | backup diário, mais recursos de proteção | ~US$ 20 a 25 por mês cada | baixo |
 
 Recomendação: **A agora**, e **D** (primeiro crédito da Anthropic, depois Vercel Pro) quando houver orçamento, porque é onde estão o tempo e a proteção extras. B só vale se, depois das melhorias, a medição mostrar que a busca no Supabase é o gargalo.
+
+## 7. Atualização (28/11/2026): modelo de busca sempre quente
+
+- **Serviço externo gratuito não é possível:** os "Spaces" Docker do Hugging Face em CPU gratuita agora exigem assinatura PRO (erro 402), e o Modal só pode ser publicado com o token do dono numa máquina com a ferramenta de linha de comando. Alternativas (Render, Fly, Cloud Run, Oracle) pedem cartão.
+- **Medido na Vercel (campo `embedLoad` do `/api/v1/warmup`):** carregar o modelo numa instância nova leva **2,06 s** (importar 0,16 s; arquivos do modelo 0,25 s; sessão ONNX 1,63 s; primeira execução 0,02 s), não os 4 a 10 s que aparecia antes (isso incluía bancos frios e o modelo de voz). A 7 a 12 ms por pergunta quando quente.
+- **O que foi feito:** a rota do professor passa a começar a carregar o modelo no começo do pedido, em paralelo com o login e a leitura da sessão. O aquecimento a cada 4 minutos mantém uma instância quente das 07h às 23h (Brasília).
+- **Opcional (você, no SQL Editor do Supabase):** deixar o aquecimento 24 horas, para não haver primeira pergunta fria de madrugada ou em outros fusos:
+```sql
+select cron.unschedule('app-warmup');
+select cron.schedule('app-warmup', '*/4 * * * *', $$select net.http_get('https://professor-filipe.vercel.app/api/v1/warmup', timeout_milliseconds := 60000)$$);
+```
