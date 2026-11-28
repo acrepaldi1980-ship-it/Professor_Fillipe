@@ -18,6 +18,8 @@ export interface LlmRequest {
   deadlineMs?: number;
   /** Ask a second endpoint too when the first has not answered after this many ms; the first valid answer wins (slow tails of free models). */
   hedgeAfterMs?: number;
+  /** Streaming: called with everything the model has written so far (raw JSON text) as it arrives. Only the endpoint that answers first is relayed (see the router). */
+  onText?: (written: string) => void;
   /** Accepts or refuses an answer (schema check). A refused answer makes the router try the next endpoint. */
   validate?: (out: unknown) => boolean;
 }

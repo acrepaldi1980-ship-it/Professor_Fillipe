@@ -1,7 +1,7 @@
 // Layered system prompt (spec 11). Layers are versioned in `prompt_versions` later (Prompt 1.5);
 // version 1 of the texts lives here.
 import type { Retrieved, BibleVerse } from "../knowledge/search";
-import { visualsCatalogPrompt } from "../visuals/catalog";
+import { VISUALS_OFF_NOTE, visualsCatalogPrompt } from "../visuals/catalog";
 
 export const PROMPT_VERSION = 4; // v4 = lens rule (both sides with sources) and a 110-word target
 /** Version of the editable layers in prompt_versions (v2: Prompt 1.5 adjustments approved after the first evals). */
@@ -124,6 +124,8 @@ Estruture: texto e tradução → palavras-chave no original (lema, Strong, sent
 }
 
 export interface PromptInput {
+  /** false = leave the visuals catalog out of this turn's prompt (it is a third of the prompt and the question does not ask for a map, a timeline, a model or an image). */
+  visuals?: boolean;
   /** Source warning injected when names in the question are not found in the retrieved sources. */
   notice?: string;
   student?: StudentProfile;
@@ -168,7 +170,7 @@ Pergunta do dia: ${l.question}. Passo prático sugerido: ${l.action}. Tema da or
 export function buildSystemParts(i: PromptInput): { stable: string; dynamic: string } {
   const bible = i.bible ?? DEFAULT_BIBLE;
   return {
-    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLanguage(i.student ?? DEFAULT_STUDENT), layerLens(bible), visualsCatalogPrompt(), layerChurchLesson(i.modeContext), layerTrail(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
+    stable: [i.layers?.identity ?? LAYER_IDENTITY, layerStudent(i.student ?? DEFAULT_STUDENT), layerLanguage(i.student ?? DEFAULT_STUDENT), layerLens(bible), i.visuals === false ? VISUALS_OFF_NOTE : visualsCatalogPrompt(), layerChurchLesson(i.modeContext), layerTrail(i.modeContext), i.mode && i.mode !== "free" ? layerMode(i.mode, i.modeContext, i.sermonTypeDefinition) : i.layers?.mode_free ?? LAYER_MODE_FREE].filter(Boolean).join("\n\n---\n\n"),
     dynamic: [layerChunks(i.chunks, i.verses, bible.main_version_name, i.maxChunkChars), ...(i.notice ? [i.notice] : [])].join("\n\n---\n\n"),
   };
 }

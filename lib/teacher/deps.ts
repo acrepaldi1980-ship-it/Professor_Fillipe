@@ -5,6 +5,8 @@ import { getVerses, searchChunks } from "../knowledge/search";
 import { AnthropicTeacherLlm } from "./anthropic";
 import { RouterTeacherLlm } from "../llm/teacher";
 import { buildEndpoints } from "../llm/registry";
+import { englishQuery } from "../knowledge/glossary";
+import { findEntities } from "../knowledge/entities";
 import { rewriteQueryToEnglish } from "./groq";
 import type { TurnDeps } from "./pipeline";
 import { FallbackLlm, primaryIsDown } from "./fallback-llm";
@@ -29,7 +31,8 @@ export function createTurnDeps(): TurnDeps {
     search: (q, opts) => searchChunks(q, opts),
     // research outside the app (spec 8.23): Wikipedia, and a general search when TAVILY_API_KEY is set; off with WEB_SEARCH=off
     webSearch: webSearchEnabled() ? (req) => webSearchDetailed(req) : undefined,
-    rewriteQuery: buildEndpoints().length && process.env.QUERY_REWRITE !== "off" ? rewriteQueryToEnglish : undefined,
+    // The model call that rewrites the question into English keywords costs free-model quota and 1 to 3 s; it is skipped when the glossary or a Bible name already gives the English words
+    rewriteQuery: buildEndpoints().length && process.env.QUERY_REWRITE !== "off" ? async (q: string) => (englishQuery(q) || findEntities(q, 1, false).length ? null : rewriteQueryToEnglish(q)) : undefined,
     getVerses: (versionId, refs) => getVerses(versionId, refs),
     loadLayers: loadActiveLayers,
     async existingVerses(versionId, refs) {

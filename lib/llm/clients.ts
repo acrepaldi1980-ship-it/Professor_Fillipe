@@ -1,4 +1,5 @@
 // The two wire formats: OpenAI-compatible chat completions (Groq, Cerebras, OpenRouter, Mistral, SambaNova, NVIDIA, GitHub...) and Google Gemini.
+import { readSse } from "./stream";
 import { LlmError, type Endpoint, type LlmRequest } from "./types";
 
 /** Providers say when the limit lifts ("Please try again in 7m12.5s"): use it instead of guessing, so a short limit does not park a model for an hour. */
@@ -31,14 +32,18 @@ const schemaHint = (req: LlmRequest) => req.tool ? `\n\nResponda SOMENTE com um 
 export interface RawResult { out: unknown; text: string }
 
 export async function callOpenAI(e: Endpoint, req: LlmRequest, fetcher: typeof fetch = fetch): Promise<RawResult> {
-  const useTool = !!req.tool && e.tools;
-  const wantJson = !!req.json || (!!req.tool && !e.tools);
+  const streaming = !!req.onText;
+  // Streaming uses JSON text, not a forced tool call: some providers (Groq with gpt-oss) end a streamed forced tool call without sending its arguments.
+  const asTool = e.tools && !streaming;
+  const useTool = !!req.tool && asTool;
+  const wantJson = !!req.json || (!!req.tool && !asTool);
   const body: Record<string, unknown> = {
     model: e.model,
+    ...(streaming ? { stream: true } : {}),
     temperature: req.temperature ?? (req.task === "query" ? 0 : 0.4),
     max_tokens: req.maxTokens ?? 1200,
     ...e.extra,
-    messages: [{ role: "system", content: req.system + (req.tool && !e.tools ? schemaHint(req) : "") }, ...req.messages],
+    messages: [{ role: "system", content: req.system + (req.tool && !asTool ? schemaHint(req) : "") }, ...req.messages],
   };
   if (e.provider === "groq") { body.max_completion_tokens = body.max_tokens; delete body.max_tokens; }
   if (useTool) {
@@ -52,10 +57,26 @@ export async function callOpenAI(e: Endpoint, req: LlmRequest, fetcher: typeof f
     throw new LlmError((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError" ? "timeout" : "server", 0, 0, String((err as Error).message).slice(0, 80));
   }
   if (!res.ok) throw classify(res.status, await res.text().catch(() => ""), Number(res.headers.get("retry-after")) || 0);
-  const json = (await res.json()) as { choices?: { message?: { content?: string; tool_calls?: { function?: { arguments?: string } }[] } }[] };
-  const msg = json.choices?.[0]?.message;
-  const args = msg?.tool_calls?.[0]?.function?.arguments;
-  const text = msg?.content ?? "";
+  let text = "", args: string | undefined;
+  if (streaming && res.body) {
+    // the answer is relayed to the student piece by piece (JSON text)
+    try {
+      await readSse(res.body, (data) => {
+        if (!data || data === "[DONE]") return;
+        let j: { choices?: { delta?: { content?: string } }[] };
+        try { j = JSON.parse(data); } catch { return; }
+        const piece = j.choices?.[0]?.delta?.content;
+        if (piece) { text += piece; req.onText!(text); }
+      });
+    } catch (err) {
+      throw new LlmError((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError" ? "timeout" : "server", 0, 0, String((err as Error).message).slice(0, 80));
+    }
+  } else {
+    const json = (await res.json()) as { choices?: { message?: { content?: string; tool_calls?: { function?: { arguments?: string } }[] } }[] };
+    const msg = json.choices?.[0]?.message;
+    args = msg?.tool_calls?.[0]?.function?.arguments;
+    text = msg?.content ?? "";
+  }
   if (useTool) { const out = args ? safeParse(args) : parseJson(text); if (!out) throw new LlmError("bad_output", 200); return { out, text }; }
   if (wantJson || req.tool) { const out = parseJson(text); if (!out) throw new LlmError("bad_output", 200); return { out, text }; }
   if (!text.trim()) throw new LlmError("bad_output", 200);
@@ -73,13 +94,28 @@ export async function callGemini(e: Endpoint, req: LlmRequest, fetcher: typeof f
   };
   let res: Response;
   try {
-    res = await fetcher(`${e.baseUrl}/models/${e.model}:generateContent`, { method: "POST", signal: AbortSignal.timeout(req.timeoutMs ?? 40000), headers: { "Content-Type": "application/json", "x-goog-api-key": e.key }, body: JSON.stringify(body) });
+    res = await fetcher(`${e.baseUrl}/models/${e.model}:${req.onText ? "streamGenerateContent?alt=sse" : "generateContent"}`, { method: "POST", signal: AbortSignal.timeout(req.timeoutMs ?? 40000), headers: { "Content-Type": "application/json", "x-goog-api-key": e.key }, body: JSON.stringify(body) });
   } catch (err) {
     throw new LlmError((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError" ? "timeout" : "server", 0, 0, String((err as Error).message).slice(0, 80));
   }
   if (!res.ok) throw classify(res.status, await res.text().catch(() => ""), Number(res.headers.get("retry-after")) || 0);
-  const json = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-  const text = (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+  let text = "";
+  if (req.onText && res.body) {
+    try {
+      await readSse(res.body, (data) => {
+        if (!data) return;
+        let j: { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+        try { j = JSON.parse(data); } catch { return; }
+        const piece = (j.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+        if (piece) { text += piece; req.onText!(text); }
+      });
+    } catch (err) {
+      throw new LlmError((err as Error).name === "TimeoutError" || (err as Error).name === "AbortError" ? "timeout" : "server", 0, 0, String((err as Error).message).slice(0, 80));
+    }
+  } else {
+    const json = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+    text = (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+  }
   if (wantJson) { const out = parseJson(text); if (!out) throw new LlmError("bad_output", 200); return { out, text }; }
   if (!text.trim()) throw new LlmError("bad_output", 200);
   return { out: text, text };

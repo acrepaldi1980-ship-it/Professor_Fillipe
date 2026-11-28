@@ -30,7 +30,7 @@ import { speakQueue } from "@/lib/voice/speak-queue";
 
 const CUE_STATE = { neutral: "idle", happy: "happy", surprised: "insight", thoughtful: "thinking", empathetic: "empathetic", pointing: "pointing" } as const satisfies Record<string, AvatarState>;
 
-type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse; messageId?: string };
+type Msg = { id: number; role: "user" | "teacher"; text: string; response?: TeacherResponse; messageId?: string; /** the text is still being written (provisional until the answer is checked) */ streaming?: boolean };
 
 const SILENCE_MS = 1200;
 const SPEECH_LEVEL = 0.06;
@@ -184,6 +184,12 @@ export default function StudyPage() {
         const { response, meta } = await teacherTurn({ sessionId: sessionId.current, text: clean, intent, josephus: josRef.current ?? undefined, historian: histRef.current ?? undefined }, undefined, (d) => {
           setFair(!!(d as { fairUse?: boolean }).fairUse);
           if (d.messageId) setMessages((m) => m.map((x) => (x.id === tid ? { ...x, messageId: d.messageId } : x)));
+        }, (partial) => {
+          // streaming: the text appears while the model writes it (provisional); an empty text means the attempt failed and another model starts over
+          setMessages((m) => {
+            if (!partial) return m.filter((x) => !(x.id === tid && x.streaming));
+            return m.some((x) => x.id === tid) ? m.map((x) => (x.id === tid && x.streaming ? { ...x, text: partial } : x)) : [...m, { id: tid, role: "teacher", text: partial, streaming: true }];
+          });
         });
         setFair(!!(meta as { fairUse?: boolean }).fairUse);
         let shown = false;
@@ -192,7 +198,8 @@ export default function StudyPage() {
           if (shown) return;
           shown = true;
           (globalThis as { __pfSync?: unknown[] }).__pfSync?.push({ mark: "reveal", t: performance.now() }); // test hook
-          setMessages((m) => [...m, { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }]);
+          // the checked answer takes the place of the provisional text (or is added, when nothing was streamed)
+          setMessages((m) => { const final: Msg = { id: tid, role: "teacher", text: response.display_markdown || response.speech, response, messageId: meta.messageId }; return m.some((x) => x.id === tid) ? m.map((x) => (x.id === tid ? final : x)) : [...m, final]; });
           // The teacher opened a visual (RF-M08-01): the panel appears while the speech plays, and the map animates for its length.
         if (response.visuals.length) setPanel({ visual: response.visuals[0], durationMs: Math.round((response.speech.split(/\s+/).length / 2.6) * 1000) });
         };
@@ -206,6 +213,7 @@ export default function StudyPage() {
         } else { reveal(); setState(cue); }
       } catch (e) {
         setState("idle");
+        setMessages((m) => m.filter((x) => !x.streaming)); // a half-written provisional text is not kept
         const msg = (e as Error).message;
         if (msg === "api_error_401") return router.replace("/login");
         if (isPlanBlock(e)) return setPlanBlock(e.data as { plan?: string });
@@ -352,7 +360,7 @@ export default function StudyPage() {
           </div>
         )}
         {messages.map((m) => (
-          <Bubble key={m.id} from={m.role} className="flex flex-col">
+          <Bubble key={m.id} from={m.role} className={`flex flex-col ${m.streaming ? "opacity-90" : ""}`} aria-busy={m.streaming || undefined}>
             <MiniMarkdown text={m.text} className="text-[17px] leading-relaxed" />
             {m.response && <TeacherExtras r={m.response} onRef={openRef} onVisual={(v) => setPanel({ visual: v, durationMs: 0 })} onOption={(label, intent) => void send(label, intent)} />}
             {m.messageId && <FlagButton messageId={m.messageId} />}

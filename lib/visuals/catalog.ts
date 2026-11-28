@@ -17,6 +17,19 @@ Linhas do tempo (visuals: {"kind":"timeline","timeline_id":...,"focus_event_id":
 ${lines}`;
 }
 
+/** One line instead of the whole catalog when the question has nothing to show: the catalog is ~1,900 tokens, a third of the prompt, and the free models allow only ~8,000 tokens per minute. */
+export const VISUALS_OFF_NOTE = "VISUAIS: nenhum neste turno (responda com visuals: []).";
+
+const VISUAL_WORDS = /\b(mapa|mapas|rota|rotas|viagem|viagens|viajou|viajar|percurso|caminho|trajeto|onde (fica|foi|era|ficava|estava|nasceu|morreu)|lugar|lugares|cidade|cidades|monte|rio|mar|deserto|vale|regiao|terra prometida|linha do tempo|cronolog\w*|quando (foi|aconteceu|viveu|nasceu)|epoca|seculo|sequencia|ordem dos eventos|3d|modelo|tabernaculo|templo|arca|ilustr\w*|imagem|imagens|desenh\w*|figura|visual|visuais|mostre|mostra|como era|aparencia|geografia)\b/;
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+/** Does this turn need the visuals catalog in the prompt? Guided modes always do; free study only when the question is about places, journeys, time, objects or images. */
+export function needsVisuals(text: string, opts: { mode?: string; placeNamed?: boolean } = {}): boolean {
+  if (opts.mode && opts.mode !== "free") return true;
+  if (opts.placeNamed) return true;
+  return VISUAL_WORDS.test(norm(text));
+}
+
 type Visual = { kind: string; map_id?: string; highlight_place_ids?: string[]; timeline_id?: string; focus_event_id?: string; [k: string]: unknown };
 
 export function sanitizeVisuals<T extends Visual>(visuals: T[]): T[] {

@@ -12,9 +12,9 @@ export class RouterTeacherLlm implements TeacherLlm {
   lastMs = 0;
   /** Diagnostics for the turn metadata: who answered, how long and what failed on the way. */
   info() { return { endpoint: this.lastEndpoint, ms: this.lastMs, log: this.lastLog }; }
-  async generate({ system, messages }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
+  async generate({ system, messages, onText }: Parameters<TeacherLlm["generate"]>[0]): Promise<unknown> {
     try {
-      const r = await route({ task: "teacher", system, messages, tool: { name: "teacher_response", description: "Resposta estruturada do Professor Filipe (contrato da seção 8.5.5).", schema: teacherToolJsonSchema() }, maxTokens: 1200, temperature: 0.4, timeoutMs: 10000, deadlineMs: 30000, hedgeAfterMs: 4500 });
+      const r = await route({ task: "teacher", system, messages, tool: { name: "teacher_response", description: "Resposta estruturada do Professor Filipe (contrato da seção 8.5.5).", schema: teacherToolJsonSchema() }, maxTokens: 1200, temperature: 0.4, timeoutMs: 10000, deadlineMs: 30000, hedgeAfterMs: 4500, onText });
       this.lastLog = r.log ?? [];
       this.lastMs = r.ms;
       this.lastEndpoint = r.endpoint;

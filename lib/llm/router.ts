@@ -64,6 +64,9 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
   const log: string[] = [];
   if (!endpoints.length) throw new LlmError("auth", 0, 0, "no_providers_configured");
 
+  // Streaming: only the endpoint that starts writing first is relayed to the student; if it fails, the text is cleared (empty string) and the next endpoint may take over.
+  let owner: string | null = null;
+  const relay = (id: string) => (req.onText ? (written: string) => { if (owner === null) owner = id; if (owner === id) req.onText!(written); } : undefined);
   const tried = new Set<string>();
   let attempts = 0, waited = 0, bad = 0;
   let last: LlmError | null = null;
@@ -87,7 +90,7 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
       const t0 = now();
       try {
         // each attempt gets what is left of the budget (at most the request's own timeout), so one slow endpoint cannot use it all
-        const raw = await call(ep, { ...req, timeoutMs: Math.max(4000, Math.min(req.timeoutMs ?? 30000, deadline - now())) });
+        const raw = await call(ep, { ...req, onText: relay(ep.id), timeoutMs: Math.max(4000, Math.min(req.timeoutMs ?? 30000, deadline - now())) });
         if (req.validate && !req.validate(raw.out)) throw new LlmError("bad_output", 200, 0, "validation");
         streaks.delete(ep.id);
         store.record(ep.id, true, null, now() - t0);
@@ -95,6 +98,7 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
         return { out: raw.out, text: raw.text, endpoint: ep.id, provider: ep.provider, model: ep.model, ms: now() - t0, attempts, log };
       } catch (e) {
         const err = e instanceof LlmError ? e : new LlmError("other", 0, 0, String((e as Error).message).slice(0, 80));
+        if (owner === ep.id) { owner = null; req.onText?.(""); }
         log.push(`${ep.id}:${err.kind}:${now() - t0}`);
         store.record(ep.id, false, err.kind, now() - t0);
         let cd = cooldownFor(err.kind, err.retryAfter);
@@ -126,6 +130,8 @@ export async function route(req: LlmRequest, deps: RouterDeps = {}): Promise<Llm
       p1.catch(() => undefined);
       const early = await Promise.race([p1.then((r) => ({ r }), (err) => ({ err })), sleep(req.hedgeAfterMs).then(() => null)]);
       if (early) { if ("r" in early) return { ...early.r, attempts, log }; throw early.err; }
+      // words are already arriving from the first endpoint: a second call would only spend quota
+      if (owner !== null) return { ...(await p1), attempts, log };
       const cool2 = await store.cooldowns();
       const alt = order(endpoints.filter((e) => !tried.has(e.id) && (cool2.get(e.id) ?? 0) <= now() && (inflight.get(e.id) ?? 0) < e.concurrency), req, random)[0];
       if (!alt) return { ...(await p1), attempts, log };

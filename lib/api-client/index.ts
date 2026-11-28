@@ -74,8 +74,10 @@ export async function teacherTurn(
   signal?: AbortSignal,
   /** Called when the server finishes saving the answer (the message id arrives here, after the answer itself). */
   onDone?: (meta: TurnMeta) => void,
+  /** Streaming: the speech written so far, while the teacher is still answering ("" = start over). It is provisional: the final answer replaces it. */
+  onDelta?: (speech: string) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
-  const attempt = () => teacherTurnOnce(body, signal ? AbortSignal.any([signal, AbortSignal.timeout(50000)]) : AbortSignal.timeout(50000), onDone);
+  const attempt = () => teacherTurnOnce(body, signal ? AbortSignal.any([signal, AbortSignal.timeout(50000)]) : AbortSignal.timeout(50000), onDone, onDelta);
   try {
     return await attempt();
   } catch (e) {
@@ -92,6 +94,7 @@ async function teacherTurnOnce(
   body: { sessionId: string; text: string; intent?: string; scene?: { env: string; x: number; z: number; yaw: number; hotspot?: string | null; station?: number | null }; josephus?: { work: "ant" | "war" | "life" | "apion"; book: number; chapter: number }; historian?: { id: string; passage?: string; unit?: { work: string; ord: number } }; pano?: { tour: string; scene: string; hotspot?: string | null; yaw?: number; pitch?: number } },
   signal?: AbortSignal,
   onDone?: (meta: TurnMeta) => void,
+  onDelta?: (speech: string) => void,
 ): Promise<{ response: TeacherResponse; meta: TurnMeta }> {
   const res = await apiFetch("/teacher/turn", {
     method: "POST",
@@ -120,7 +123,9 @@ async function teacherTurnOnce(
           const event = /^event: (.+)$/m.exec(block)?.[1];
           const data = /^data: (.+)$/m.exec(block)?.[1];
           if (!event || !data) continue;
-          if (event === "structured") {
+          if (event === "speech_delta") {
+            try { if (!response) onDelta?.((JSON.parse(data) as { speech?: string }).speech ?? ""); } catch { /* a broken piece is skipped */ }
+          } else if (event === "structured") {
             response = JSON.parse(data);
             if (!settled) { settled = true; resolve({ response: response!, meta: { intent: "ask", tier: "fast", words: 0, latencyMs: 0 } }); }
           } else if (event === "done") {

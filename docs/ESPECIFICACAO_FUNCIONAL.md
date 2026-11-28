@@ -1216,7 +1216,7 @@ Todas as rotas abaixo ficam sob o prefixo **`/api/v1`** (ex.: `POST /api/v1/teac
 | `GET/POST/PATCH/DELETE /api/v1/reader/notes` | Anotações de versículos com filtros por livro, capítulo, contexto, etiqueta, data e texto | `{ version_id, ref_start, ref_end?, text, context?, tags?, color? }` | `{ notes, contexts, tags, books }` |
 | `GET/POST /api/v1/reader/help` | Ajuda do trecho (pessoas e lugares com verbete, palavras no original, textos relacionados) e explicação do professor | `?version=&ref=&to=`; `{ version_id, ref_start, ref_end?, locale }` | ajuda; `{ text, citations, cached }` |
 | `POST /api/v1/sessions` | Cria sessão | `{ mode, topic? }` | `{ sessionId }` |
-| `POST /api/v1/teacher/turn` | Um turno do professor (streaming SSE) | `{ sessionId, text, intent? }` | eventos: `speech_delta`, `structured`, `done`, `error` |
+| `POST /api/v1/teacher/turn` | Um turno do professor (streaming SSE) | `{ sessionId, text, intent? }` | eventos: `speech_delta` (texto da fala escrito até agora, provisório; vazio = recomeçar), `structured` (a resposta final, já conferida), `done`, `error` |
 | `POST /api/v1/voice/transcribe` | Transcrição | áudio | `{ text, confidence }` |
 | `POST /api/v1/voice/speak` | Síntese em streaming | `{ text, voiceId }` | áudio em blocos |
 | `POST /api/v1/sessions/:id/close` | Fechamento (M09) | — | `{ summaryAudioUrl, mindMap, cards[] }` |

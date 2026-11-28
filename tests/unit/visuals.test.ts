@@ -69,3 +69,16 @@ describe("visuals from the model", () => {
     expect(out[1]).toMatchObject({ timeline_id: "early_church", focus_event_id: "council" });
   });
 });
+
+import { needsVisuals, VISUALS_OFF_NOTE } from "../../lib/visuals/catalog";
+describe("visuals catalog only when needed", () => {
+  it("free study asks for it only about places, journeys, time, objects and images", () => {
+    for (const q of ["Mostre a rota de Paulo", "Onde fica Belém?", "Em que época viveu Davi?", "Quero ver o tabernáculo em 3D", "Faça uma linha do tempo do Êxodo", "Como era a arca?"]) expect(needsVisuals(q), q).toBe(true);
+    for (const q of ["Quem foi Zaqueu?", "O que é a graça?", "Explique Romanos 8", "Me fale sobre oração"]) expect(needsVisuals(q), q).toBe(false);
+  });
+  it("guided modes and a named place always get it", () => {
+    expect(needsVisuals("Explique", { mode: "lesson" })).toBe(true);
+    expect(needsVisuals("Fale de Jericó", { placeNamed: true })).toBe(true);
+    expect(VISUALS_OFF_NOTE).toContain("visuals: []");
+  });
+});

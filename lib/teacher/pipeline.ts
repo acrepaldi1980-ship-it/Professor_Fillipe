@@ -16,7 +16,9 @@ import { injectionResponse, leaksPrompt, screenInput } from "../security/injecti
 import type { WebRequest, WebSource } from "../websearch/types";
 import type { WebResult } from "../websearch";
 import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
-import { entityHints } from "../knowledge/entities";
+import { entityHints, findEntities } from "../knowledge/entities";
+import { speechFromPartialJson } from "../llm/stream";
+import { needsVisuals } from "../visuals/catalog";
 import { foreignChunk, wrongLanguage } from "./language";
 import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
 
@@ -26,11 +28,14 @@ export interface TeacherLlm {
   /** Optional diagnostics of the last call: endpoint, ms and the attempts log. */
   info?(): { endpoint: string; ms: number; log: string[] };
   stats?(): { calls: number; input: number; output: number; cacheRead: number; cacheWrite: number; blocks?: string };
-  generate(args: { system: string; systemParts?: { stable: string; dynamic: string }; messages: ChatMessage[]; tier: "fast" | "deep" }): Promise<unknown>;
+  /** `onText`: everything written so far (raw JSON), for models that can stream; ignored by the others. */
+  generate(args: { system: string; systemParts?: { stable: string; dynamic: string }; messages: ChatMessage[]; tier: "fast" | "deep"; onText?: (written: string) => void }): Promise<unknown>;
 }
 
 export interface TurnDeps {
   llm: TeacherLlm;
+  /** Streaming: called with the speech written so far while the model is still answering ("" when the attempt failed and another model takes over). The final answer still goes through every check. */
+  onSpeech?: (speech: string) => void;
   search(query: string | string[], opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
   getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
   /** Context budget in tokens for retrieved chunks (spec: ~6000; smaller for free-tier prototype models). */
@@ -257,17 +262,20 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const notice = () => noticeFor(external); // read at each use: the outside research may arrive after the first attempt
   const small = !!deps.contextTokens && deps.contextTokens < 4000;
   const maxChunkChars = small ? 1300 : undefined;
-  let parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+  // The visuals catalog is ~1,900 tokens: it goes into the prompt only when the question can use it (free models: ~8,000 tokens per minute)
+  const wantVisuals = needsVisuals(searchText === input.text ? input.text : `${input.text} ${searchText}`, { mode: input.mode, placeNamed: findEntities(input.text, 3, false).some((e) => e.kind === "place") });
+  let parts = buildSystemParts({ visuals: wantVisuals, student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
   const joined = () => `${parts.stable}\n\n---\n\n${parts.dynamic}`;
   // On "request too large" (free-tier token limits) retry once with half of the retrieved context.
   let lastRaw: unknown = null;
-  const generate = async (msgs: ChatMessage[]) => {
+  const generate = async (msgs: ChatMessage[], stream = false) => {
+    const onText = stream && deps.onSpeech ? (written: string) => deps.onSpeech!(written ? speechFromPartialJson(written) : "") : undefined;
     try {
-      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
+      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier, onText }), bible.main_version_id));
     } catch (e) {
       if (!/413/.test((e as Error).message)) throw e;
-      parts = buildSystemParts({ student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice: notice(), maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
-      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier }), bible.main_version_id));
+      parts = buildSystemParts({ visuals: wantVisuals, student, bible, chunks: chunks.slice(0, Math.max(2, Math.ceil(chunks.length / 2))), verses: verses.slice(0, 10), notice: notice(), maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+      return (lastRaw = normalizeRaw(await deps.llm.generate({ system: joined(), systemParts: parts, messages: msgs, tier, onText }), bible.main_version_id));
     }
   };
   const history = priorHistory.slice(-(deps.historyMessages ?? 24));
@@ -286,7 +294,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   let schemaRetries = 0;
   let parsed;
   try {
-    parsed = teacherResponseSchema.safeParse(await generate(messages));
+    parsed = teacherResponseSchema.safeParse(await generate(messages, true));
   } catch (e) {
     const response = fallbackResponse(student.preferred_name, verses, chunks);
     return { response, retrieved: [], meta: { ...baseMeta, intent, tier, pastoral: false, words: countWords(response.speech), overWordLimit: false, latencyMs: Date.now() - t0, degraded: true, degradedReason: (e as Error).message.slice(0, 80), retrievalMs, trace, route: deps.llm.info?.() } };
@@ -336,7 +344,7 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   if (canWeb && !externalTried && (parsed.data.sources_sufficient === false || looksUnanswered(parsed.data.speech))) {
     await runWeb();
     if (external.length) {
-      parts = buildSystemParts({ student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
+      parts = buildSystemParts({ visuals: wantVisuals, student, bible, chunks, verses, notice: [notice(), input.extraSources].filter(Boolean).join("\n\n") || undefined, maxChunkChars, layers, mode: input.mode, modeContext: input.modeContext, sermonTypeDefinition: input.sermonTypeDefinition });
       const againRaw = await tryGenerate(messages);
       const again = againRaw ? teacherResponseSchema.safeParse(againRaw) : null;
       if (again?.success) parsed = again;

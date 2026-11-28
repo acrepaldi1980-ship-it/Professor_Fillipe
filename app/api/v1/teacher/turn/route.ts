@@ -108,7 +108,16 @@ export async function POST(req: Request) {
         const pkg = parsed.data.scene ? getPackage(parsed.data.scene.env) : undefined;
         const tour = parsed.data.pano ? getTour(parsed.data.pano.tour) : undefined;
         const scene = pkg && parsed.data.scene ? sceneContext(pkg, parsed.data.scene) : tour && parsed.data.pano ? panoContext(tour, parsed.data.pano) : parsed.data.josephus ? await josephusContext(parsed.data.josephus) : parsed.data.historian ? await historianContext(parsed.data.historian) : null;
-        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, createTurnDeps());
+        // Streaming: the speech goes to the screen while the model writes it (a "speech_delta" event); the final, verified answer ("structured") replaces it.
+        const deps = createTurnDeps();
+        let lastSent = "", lastAt = 0;
+        deps.onSpeech = (text) => {
+          const at = Date.now();
+          if (text === lastSent || (text !== "" && at - lastAt < 70 && text.length - lastSent.length < 12)) return; // not more than ~14 updates per second
+          lastSent = text; lastAt = at;
+          try { controller.enqueue(enc.encode(sse("speech_delta", { speech: text }))); } catch { /* the student left */ }
+        };
+        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, deps);
 
         // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.
         let response = baseResponse;

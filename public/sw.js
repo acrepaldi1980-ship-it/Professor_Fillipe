@@ -4,7 +4,7 @@
 //    (/api/v1/notebook, /api/v1/review/due) and the visual catalog: network first, falling back to the last answer saved.
 // Private data is dropped when the student signs out (message "clear"). Nothing else under /api is cached.
 const SHELL = "pf-shell-v3"; // v3: pages are fetched from the network first, so a new deploy never meets an old cached page
-const DATA = "pf-data-v2";
+const DATA = "pf-data-v3"; // v3: the Bible text is served from the saved copy first
 const DATA_PATHS = [/^\/api\/v1\/me$/, /^\/api\/v1\/preferences$/, /^\/api\/v1\/bible\//, /^\/api\/v1\/notebook(\?|$)/, /^\/api\/v1\/review\/due/, /^\/api\/v1\/visuals\//, /^\/api\/v1\/sessions\?/];
 
 self.addEventListener("install", () => self.skipWaiting());
@@ -31,6 +31,14 @@ async function networkFirst(req) {
   }
 }
 
+// Public, practically immutable catalog data (the Bible text and its helps): the saved copy is shown at once and refreshed in the background.
+async function savedThenRefresh(req) {
+  const cache = await caches.open(DATA);
+  const hit = await cache.match(req.url);
+  const net = fetch(req).then((res) => { if (res.ok) cache.put(req.url, res.clone()); return res; }).catch(() => hit || new Response(JSON.stringify({ error: "offline" }), { status: 503, headers: { "Content-Type": "application/json" } }));
+  return hit || net;
+}
+
 // Pages (navigation): network first, the saved copy only when offline. An old page would point at script files that no longer exist after a deploy.
 async function networkFirstPage(req) {
   const cache = await caches.open(SHELL);
@@ -55,6 +63,7 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (/^\/api\/v1\/bible\//.test(url.pathname)) return e.respondWith(savedThenRefresh(req));
   if (DATA_PATHS.some((re) => re.test(url.pathname + url.search))) return e.respondWith(networkFirst(req));
   if (url.pathname.startsWith("/api/")) return; // everything else in the API is never cached
   if (req.mode === "navigate") return e.respondWith(networkFirstPage(req));
