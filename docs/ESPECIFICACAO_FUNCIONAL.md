@@ -192,6 +192,7 @@ Professor por voz numa tela única, com a Bíblia e uma enciclopédia por trás.
 | M12 Planos e pagamentos | Sim |
 | M14 Admin | Sim |
 | M15 Notificações | Web push básico |
+| M25 Teologia Sistemática | Ao lado do Aprofundar: o aluno escolhe a matéria e o tema e tem a aula do professor, a base bíblica, as visões das tradições, o acervo de fontes, o glossário, exercícios e as fontes, em 4 idiomas (8.25) |
 | M24 Leitor da Bíblia | Ler a Bíblia no app em qualquer das 25 versões, marcar o que já leu, planos de leitura, compartilhar versículos, ajuda dinâmica por versículo e anotações por livro, data e contexto (8.24) |
 | M21 Historiadores | Seção com Josefo, Eusébio, Tácito, Plínio, Suetônio e Fílon, testemunhos fora da Bíblia e estudo com o professor (8.21) |
 | M20 Flávio Josefo | Os 30 livros de Josefo (Whiston), leitor por capítulo, resumos, paralelos com a Bíblia e estudo guiado pelo professor (8.20) |
@@ -1001,6 +1002,19 @@ Aprovado pelo dono: filme = **mini-filme animado** (vídeo MP4 de 1 a 2 minutos 
 - **Portabilidade (10.6):** a tela usa só `lib/api-client`, `lib/platform` (compartilhar, armazenamento local) e `lib/entitlements`; API em `/api/v1/reader/*`.
 - **CA:** (1) abrir João 3 em três versões diferentes mostra o texto de cada uma; (2) marcar o capítulo lido atualiza a barra do livro e persiste ao reabrir; (3) um plano de 90 dias do Novo Testamento cobre os 260 capítulos sem repetir nem pular, e marcar o dia marca os capítulos; (4) anotar o versículo, filtrar por livro, data e contexto e achá-lo; (5) a ajuda de "Zaqueu" em Lucas 19:2 mostra o verbete de Zacchaeus e a palavra original; (6) com a IA sem cota, os itens 1 a 3 da ajuda continuam aparecendo.
 
+### 8.25 M25 — Teologia Sistemática (P0, pedido do dono em 28/11/2026)
+
+- **Objetivo:** o aluno escolhe uma **matéria** (ex.: Escatologia) e um **tema** (ex.: Arrebatamento) e tem tudo sobre ele: a aula do Professor Filipe, a base bíblica na versão que escolheu, o acervo de fontes, a comparação entre as tradições, o glossário, exercícios e as fontes. No mesmo padrão do Aprofundar.
+- **Navegação:** Grupo → Matéria → Tema → Subtema (opcional) → Aula. Entradas: botão "Teologia Sistemática" ao lado de "Aprofundar" (rótulos nos 4 idiomas), "Temas relacionados" a partir de um versículo (leitor e Aprofundar) e busca livre. Trilha por matéria em ordem didática, com progresso.
+- **Níveis:** Iniciante, Intermediário, Avançado (seminário) e Ministerial (pastores e professores de EBD: esboço de aula e de sermão); herdado do perfil e ajustável no módulo.
+- **Taxonomia:** dado versionado em `seed/taxonomia/*.json` (grupos A a H do pedido: Teologia Sistemática, Bíblica, Histórica e História da Igreja, Exegese e Línguas, Mundo Bíblico, Apologética e Pensamento Cristão, Teologia Prática e Pastoral, Pentecostal e Carismática), com nome e resumo nos 4 idiomas, versículos-chave, palavras-chave, nível mínimo e pré-requisitos.
+- **A aula (modo de sessão `systematic`):** gancho, definição simples (termo original e Strong), base bíblica, desenvolvimento, na história, na linha do aluno, outras visões (as mais fortes de cada uma, com os textos que usam), aplicação (no nível Ministerial, esboço de aula de EBD e de sermão), verificação (3 a 5 perguntas), resumo, próximo tema e "Fontes desta aula". Blocos curtos com pausas; o professor só cita o que veio da busca (RA-09); neutralidade respeitosa (RA-14): primeiro a linha do aluno, depois as outras. Pergunta e resposta 100% no idioma do aluno, com glossário teológico fixo por idioma. Aulas guardadas em cache por tema × idioma × nível × linhas × versão da Bíblia.
+- **Acervo:** obras de domínio público ou licença aberta que passam pelo portão de licença (8.10.9; proibidos NC, ND e copyright ativo; domínio público exige as duas regras: EUA até 1930 e autor falecido há mais de 70 anos; dúvida = `pendente_revisao` e a obra não é usada; CC BY-SA marca as derivações). Núcleo curado de 60 a 80 mil trechos (D-30), classificados por tema, tradição e visão por vetores e regras, com painel de cobertura.
+- **Multilíngue:** o trecho é indexado no idioma original e a busca é multilíngue (vetores); a tradução é sob demanda com cache permanente; citações bíblicas dentro das obras são trocadas pelo texto da versão do aluno; "Ver original" e selo "Traduzido de". Narração sempre no idioma do aluno.
+- **Fontes e licenças:** tela pública com autor, ano, licença, origem e atribuição de cada obra e versão; derivações BY-SA indicadas.
+- **Planos:** a aula conta como mensagem de texto do dia; leitura de acervo e glossário são gratuitos.
+- **CA:** os critérios de aceite do pedido (botão nos 4 idiomas; navegação e trilhas; taxonomia completa; versículo↔tema nos dois sentidos; nenhuma obra NC/ND; busca multilíngue; citações trocadas pela versão do aluno; ver original; novas Bíblias com comparação; aula com a estrutura acima e áudio no idioma; comparativo testado em Milênio e Batismo no Espírito Santo; tela de Fontes; testes do portão, do parser e da tradução/cache).
+
 ## 9. Modelo de dados
 
 Postgres (Supabase), com Row Level Security em **todas** as tabelas de usuário. Tipos simplificados; o Claude Code escreve as migrations completas com índices, chaves estrangeiras e `created_at` e `updated_at`.
@@ -1409,7 +1423,7 @@ Definida com o esquema JSON da seção 8.5.5. O modelo é obrigado a chamá-la (
 | RNF-07 | Offline | Bíblia principal, caderno e cartões do dia disponíveis sem internet |
 | RNF-08 | Custo | Custo médio de IA, voz e imagem por usuário ativo pagante ≤ 35% da receita dele |
 | RNF-09 | Escala | Suportar 1.000 sessões de voz simultâneas sem degradar RNF-01 |
-| RNF-10 | Internacionalização | 100% das strings via i18n; espanhol preparado na Fase 2 |
+| RNF-10 | Internacionalização | 100% das strings via i18n; **quatro idiomas nativos: português (BR), inglês, espanhol e italiano** (decisão D-29, 28/11/2026): telas, textos, passagens, explicações e narração no idioma escolhido |
 | RNF-11 | Observabilidade | Erros no Sentry; latência e custo por turno registrados |
 | RNF-12 | Backup | Backup diário do banco, retenção de 30 dias |
 | RNF-13 | Portabilidade para as lojas | Build estático do app passando no CI; nenhuma chamada direta a API do navegador fora de `lib/platform`; API só em `/api/v1` com token no cabeçalho (seção 10.6) |

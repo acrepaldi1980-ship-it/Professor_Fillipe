@@ -95,6 +95,12 @@ Em 22/11/2026: Fases 0, 1 (MVP em PWA publicado, beta pendente de itens do dono)
 
 | ID | Escolha | Data |
 | --- | --- | --- |
+| D-26 | **Leitor da Bíblia:** leitura, marcação, planos, anotações e compartilhar gratuitos em todos os planos; a explicação do professor conta como mensagem de texto do dia | 2026-11-28 |
+| D-27 | **Banco: opção A (manter o híbrido e otimizar).** Emenda aprovada em 28/11: a busca central (janelas da Bíblia e Easton) passou do Supabase para o Neon, por estabilidade | 2026-11-28 |
+| D-29 | **Idiomas: os 4 (pt, en, es, it) desde já** (28/11, resposta do dono ao relatório da Fase 0 de Teologia Sistemática). Altera o RNF-10 (era pt e es) | 2026-11-28 |
+| D-30 | **Acervo: núcleo curado de 60 a 80 mil trechos**, gratuito, em novas partições do Neon | 2026-11-28 |
+| D-31 | **Entrega total** do módulo Teologia Sistemática (todas as fases), sem parar a cada fase; relatório ao final de cada etapa | 2026-11-28 |
+| D-32 | **Bíblias: incluir tudo o que for possível** (livres do eBible, Almeida de domínio público, deuterocanônicos da Mundial, Diodati e Riveduta, edições antigas por OCR quando a licença for confirmada) | 2026-11-28 |
 | D-25 | **Escatologia em português (24/11):** o dono escolheu as TRÊS frentes juntas: (A) traduzir o que já existe no acervo (Strong parte VIII e comentários do Apocalipse, tradução automática local); (B) pesquisar fontes de domínio público em português (resultado: só a *História do Futuro*, de Vieira, na Wikisource; o Gutenberg em português não tem escatologia); (C) conteúdo próprio do app, 20 verbetes com as visões lado a lado (RA-14), com revisão doutrinária do dono pendente | 2026-11-24 |
 | D-01 | **Preços confirmados** (21/11): Grátis R$ 0; Plus R$ 29,90/mês ou R$ 287/ano; Premium R$ 49,90/mês ou R$ 479/ano, com teste grátis de 7 dias; limites da tabela 8.12, editáveis na tabela `plans` | 2026-11-21 |
 | D-12 | **Encarregado de dados: o próprio dono**; nome e e-mail de contato a publicar na Política de Privacidade antes de abrir ao público (item do BETA_CHECKLIST) | 2026-11-21 |
