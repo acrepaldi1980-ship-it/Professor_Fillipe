@@ -1,6 +1,6 @@
 // POST /api/v1/billing/checkout { plan, cycle, method } -> { checkoutUrl, trial }: creates the subscription at the provider.
 import { z } from "zod";
-import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
+import { errorResponse, HttpError, requireUserStrict } from "@/lib/auth/server";
 import { track } from "@/lib/analytics/track";
 import { loadAccess } from "@/lib/entitlements/server";
 import { startCheckout } from "@/lib/payments/service";
@@ -11,7 +11,7 @@ const body = z.object({ plan: z.enum(["plus", "premium"]), cycle: z.enum(["month
 
 export async function POST(req: Request) {
   try {
-    const { user, db } = await requireUser(req);
+    const { user, db } = await requireUserStrict(req);
     const parsed = body.safeParse(await req.json().catch(() => null));
     if (!parsed.success) throw new HttpError(400, "invalid_request");
     // a minor needs a guardian to subscribe (D-08)

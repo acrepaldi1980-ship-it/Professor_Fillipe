@@ -2,6 +2,7 @@
 import { getVerses } from "@/lib/knowledge/search";
 
 export const runtime = "nodejs";
+const CACHE = { "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800" }; // public, immutable catalog data: served from the CDN and the browser, not from the database
 
 export async function GET(_req: Request, ctx: { params: Promise<{ version: string; ref: string }> }) {
   const { version, ref } = await ctx.params;
@@ -10,5 +11,5 @@ export async function GET(_req: Request, ctx: { params: Promise<{ version: strin
   }
   const verses = await getVerses(version, [ref]);
   if (!verses.length) return Response.json({ error: "not_found" }, { status: 404 });
-  return Response.json({ version, ref, verses });
+  return Response.json({ version, ref, verses }, { headers: CACHE });
 }

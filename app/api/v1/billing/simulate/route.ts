@@ -2,7 +2,7 @@
 // provider would send for the student's OWN subscription (payment confirmed, overdue, canceled), through the same path as production.
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { errorResponse, HttpError, requireUser } from "@/lib/auth/server";
+import { errorResponse, HttpError, requireUserStrict } from "@/lib/auth/server";
 import { applyEvent } from "@/lib/payments/service";
 import { SimulatedProvider, SIM_TOKEN_HEADER, simToken } from "@/lib/payments/simulated";
 
@@ -13,7 +13,7 @@ const body = z.object({ ref: z.string().startsWith("sim_"), event: z.enum(["PAYM
 export async function POST(req: Request) {
   try {
     if ((process.env.PAYMENT_PROVIDER ?? "simulated") !== "simulated") throw new HttpError(404, "not_found");
-    const { db } = await requireUser(req);
+    const { db } = await requireUserStrict(req);
     const parsed = body.safeParse(await req.json().catch(() => null));
     if (!parsed.success) throw new HttpError(400, "invalid_request");
     const { data: own } = await db.from("subscriptions").select("id").eq("provider", "simulated").eq("provider_ref", parsed.data.ref).maybeSingle();

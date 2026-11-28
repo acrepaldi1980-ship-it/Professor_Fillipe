@@ -40,6 +40,13 @@ export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<
   return (await res.json()) as T;
 }
 
+/** Public catalog data (Bible text, original words, cross-references): no token is sent, so the CDN can answer from its cache (a request with a token always goes to the server). */
+export async function publicJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { headers: { "X-App-Version": APP_VERSION, "X-Platform": getPlatform().name } });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+  return (await res.json()) as T;
+}
+
 // ---- Teacher, voice and Bible endpoints (spec 10.5) ----
 import type { TeacherResponse } from "@/lib/teacher/schema";
 
@@ -186,7 +193,7 @@ export function answerVoice(): (sentence: string, index: number) => Promise<Blob
 }
 
 export async function getBibleVerses(version: string, ref: string) {
-  return apiJson<{ version: string; ref: string; verses: { ref: string; text: string }[] }>(`/bible/${version}/${ref}`);
+  return publicJson<{ version: string; ref: string; verses: { ref: string; text: string }[] }>(`/bible/${version}/${ref}`);
 }
 
 // ---- Account, profile and sessions ----

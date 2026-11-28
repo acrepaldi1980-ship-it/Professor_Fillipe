@@ -5,6 +5,23 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_STATIC ? { output: "export" as const, images: { unoptimized: true } } : {}),
   // The local embedding model (transformers.js + ONNX) runs inside the API function: keep it out of the bundler
   // and ship only the Linux binaries (the other platforms would exceed the function size limit).
+  // Security headers on every response (architecture review, 28/11/2026). The CSP here is the part that cannot break a page (no framing, no plugins, no <base> trick);
+  // a script/style policy needs a measured rollout (Report-Only first) because of the map, 3D and WebAssembly parts.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), geolocation=(), payment=(), usb=(), microphone=(self), xr-spatial-tracking=(self)" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
+        ],
+      },
+    ];
+  },
   serverExternalPackages: ["@huggingface/transformers", "onnxruntime-node", "onnxruntime-common", "sharp", "pdfkit", "sherpa-onnx-node", "sherpa-onnx-linux-x64"],
   // The tracer cannot see the native ONNX runtime (loaded dynamically): include it explicitly, Linux x64 only.
   outputFileTracingIncludes: {

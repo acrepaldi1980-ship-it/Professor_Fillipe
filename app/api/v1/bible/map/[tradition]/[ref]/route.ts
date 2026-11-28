@@ -3,13 +3,14 @@
 import { refQuery } from "@/lib/knowledge/reference-db";
 
 export const runtime = "nodejs";
+const CACHE = { "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800" }; // public, immutable catalog data: served from the CDN and the browser, not from the database
 
 export async function GET(_req: Request, ctx: { params: Promise<{ tradition: string; ref: string }> }) {
   const { tradition, ref } = await ctx.params;
   if (!["heb", "lat", "grc"].includes(tradition) || !/^[A-Z0-9]{3}\.\d+\.\d+$/.test(ref)) return Response.json({ error: "invalid_ref" }, { status: 400 });
   try {
     const rows = await refQuery<{ eng_ref: string }>("select eng_ref from verse_map where tradition = $1 and ref = $2", [tradition, ref]);
-    return Response.json({ tradition, ref, english: rows[0]?.eng_ref ?? ref, differs: rows.length > 0 });
+    return Response.json({ tradition, ref, english: rows[0]?.eng_ref ?? ref, differs: rows.length > 0 }, { headers: CACHE });
   } catch {
     return Response.json({ error: "map_failed" }, { status: 503 });
   }

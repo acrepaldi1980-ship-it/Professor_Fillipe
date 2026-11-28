@@ -1133,6 +1133,8 @@ Campos sensíveis criptografados em nível de coluna (pgcrypto ou criptografia n
 [Jobs] Vercel Cron: limpeza de dados, cartões do dia, notificações, ingestões agendadas
 ```
 
+**Segurança e desempenho na borda (revisão de 28/11/2026, `docs/ARQUITETURA_ANALISE.md`):** toda resposta leva `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` e uma CSP de `frame-ancestors 'none'; base-uri 'self'; object-src 'none'`. O token do aluno é verificado **localmente** com a chave pública do projeto (ES256, JWKS); administração, conta e cobrança consultam o servidor de login (`requireUserStrict`). Os dados públicos da Bíblia (`/api/v1/bible/*`) são servidos pelo CDN (`s-maxage`) e o cliente os pede **sem token** para poder usar o cache. Dados pessoais só no Supabase com RLS; os bancos Neon guardam conhecimento público, somente leitura.
+
 ### 10.3 Estrutura de pastas
 
 ```
