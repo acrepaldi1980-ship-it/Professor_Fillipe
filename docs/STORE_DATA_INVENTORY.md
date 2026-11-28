@@ -96,3 +96,6 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 - Tabela `answer_cache` no Neon (partição 2), acessada por um papel próprio (`cache_rw`) que só enxerga essa tabela. Guarda a **resposta já conferida** a uma pergunta avulsa de estudo livre, com chave = hash (SHA-256) do assunto e das configurações que mudam a resposta (idioma, versão, lentes, nível, menor de idade). **Não guarda o texto da pergunta, o nome do aluno, nem o histórico.**
 - Antes de guardar: o nome vira um marcador; respostas que repetem metas, função ministerial ou o resumo de sessões anteriores do aluno **não são guardadas**; tampouco as de aluno cujo nome é nome bíblico, as degradadas, as pastorais, as com pesquisa fora do app e as sem fonte citada. Validade de 14 dias (limpeza após 30).
 - Desligar: variável `ANSWER_CACHE=off`. Limpar tudo: `delete from answer_cache`.
+
+## Busca central no Neon (28/11/2026)
+- Tabelas `core_works` e `core_chunks` (partição 2 do Neon): janelas da Bíblia (domínio público ou licença aberta, já fichadas) e verbetes do Easton (CC BY-SA 4.0, crédito em `docs/LICENSES.md`). **Conteúdo público; nenhum dado pessoal.** Acesso do app só por leitura (`app_reader`).
