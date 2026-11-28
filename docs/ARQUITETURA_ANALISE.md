@@ -102,3 +102,23 @@ Recomendação: **A agora**, e **D** (primeiro crédito da Anthropic, depois Ver
 select cron.unschedule('app-warmup');
 select cron.schedule('app-warmup', '*/4 * * * *', $$select net.http_get('https://professor-filipe.vercel.app/api/v1/warmup', timeout_milliseconds := 60000)$$);
 ```
+
+### 7.1 O que a investigação achou de verdade (28/11/2026)
+O atraso da primeira pergunta depois de uma pausa **não é o modelo de busca** (2 s). Medindo dentro da Vercel, chamada por chamada (`/api/v1/warmup?bench=1`):
+
+| Etapa numa instância nova | Tempo |
+| --- | --- |
+| Carregar o modelo de busca | 2,1 s |
+| Consulta simples ao Supabase | 0,2 a 0,8 s |
+| **Primeira busca híbrida no Supabase** (`api_search_chunks`) | **3 a 5,6 s** (tempo até a resposta chegar, medido com a requisição crua; o corpo vem em 2 ms) |
+| Segunda busca em diante | 0,5 a 1,0 s |
+| Primeira consulta ao Neon | 0,6 a 1,0 s |
+
+- Repetir a requisição depois de 1,1 s (tentativa de "segunda chamada") **não ajuda**: a segunda também demora. Por isso essa tentativa foi removida do código.
+- Não depende só de a instância ser nova: depois de 25 s parado a primeira busca levou 2,8 s; depois de 50 s, 0,6 s. É um comportamento do lado do Supabase (plano gratuito, computação compartilhada).
+- **O que o dono pode testar no SQL Editor do Supabase** (baixo risco, reversível): desligar a compilação JIT do Postgres, que costuma deixar a primeira execução de consultas vetoriais lenta:
+```sql
+alter database postgres set jit = off;
+```
+  Depois, rodar `https://professor-filipe.vercel.app/api/v1/warmup?bench=1&novoice=1` duas ou três vezes (esperando 30 s entre elas) e comparar o campo `raw_search`: se o primeiro `headers_ms` cair de 3 a 5 s para menos de 1 s, a causa era essa. Para desfazer: `alter database postgres reset jit;`.
+- Se não resolver, o próximo passo é rodar `explain (analyze, buffers)` da função de busca, para ver se o tempo é leitura de disco do índice vetorial (então a solução seria um plano pago com mais memória) ou outro ponto.
