@@ -19,6 +19,7 @@ import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toRespon
 import { entityHints, findEntities } from "../knowledge/entities";
 import { cacheKey, depersonalize, eligibleQuestion, personalize, worthKeeping, type AnswerCache } from "./answer-cache";
 import { speechFromPartialJson } from "../llm/stream";
+import { LANG_INFO, toLang } from "../i18n/languages";
 import { needsVisuals } from "../visuals/catalog";
 import { foreignChunk, wrongLanguage } from "./language";
 import { offTopicResponse, topicGate, type TopicVerdict } from "./topic";
@@ -346,10 +347,10 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
     if (shorter?.success && countWords(shorter.data.speech) <= countWords(parsed.data.speech)) parsed = shorter;
   }
   // 6a) The teacher speaks the student's language. A free model sometimes drifts into Italian/English/Latin after reading foreign passages: one correction, then the plain fallback.
-  const want = student.locale === "es" ? "es" : "pt";
+  const want = LANG_INFO[toLang(student.locale)].short;
   let drift = wrongLanguage(`${parsed.data.speech}\n${parsed.data.display_markdown ?? ""}`, want);
   if (drift) {
-    const hint = `Sua resposta saiu em outro idioma (${drift}). Refaça TODA a resposta (speech, display_markdown e opções) em ${want === "es" ? "espanhol" : "português do Brasil"}, explicando com suas palavras o que os trechos dizem, sem copiar frases de outra língua e sem escrever ids de trechos.`;
+    const hint = `Sua resposta saiu em outro idioma (${drift}). Refaça TODA a resposta (speech, display_markdown e opções) em ${LANG_INFO[toLang(student.locale)].promptName}, explicando com suas palavras o que os trechos dizem, sem copiar frases de outra língua e sem escrever ids de trechos.`;
     const fixedRaw = await tryGenerate([...messages, { role: "user", content: hint }]);
     const fixed = fixedRaw ? teacherResponseSchema.safeParse(fixedRaw) : null;
     if (fixed?.success) parsed = fixed;

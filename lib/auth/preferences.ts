@@ -1,3 +1,4 @@
+import { LANG_INFO, toLang } from "../i18n/languages";
 // Study preferences: lenses (sensitive, encrypted, only with the religious-data consent) and Bible versions (server only).
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptField, encryptField, isEncrypted } from "../security/field-crypto";
@@ -27,9 +28,10 @@ export async function loadBibleSettings(db: SupabaseClient, userId: string): Pro
     if (ch && !lenses.length && consents.sensitive_religious?.granted) lenses = ((ch.default_lenses as string[] | null) ?? []).filter((l) => (LENSES as readonly string[]).includes(l));
     if (ch?.default_version_id && !p?.main_version_id) churchVersion = ch.default_version_id as string;
   }
-  // a Spanish-speaking student with no version of their own starts with the Reina-Valera 1909
+  // a student of another language with no version of their own starts with that language's default (Reina-Valera 1909, World English Bible, Diodati 1885)
   const { data: prof } = await db.from("profiles").select("locale").eq("user_id", userId).maybeSingle();
-  const base = prof?.locale === "es" ? "spa_rv_1909" : DEFAULT_BIBLE.main_version_id;
+  const lang = toLang(prof?.locale);
+  const base = lang === "pt-BR" ? DEFAULT_BIBLE.main_version_id : LANG_INFO[lang].defaultVersion;
   const ids = [p?.main_version_id ?? churchVersion ?? base, ...(p?.compare_version_ids ?? [])];
   const { data: names } = await db.from("bible_versions").select("id,name").in("id", ids);
   const nameOf = (id: string) => names?.find((n) => n.id === id)?.name ?? id;

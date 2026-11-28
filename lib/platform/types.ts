@@ -90,7 +90,7 @@ export interface SpeechOptions {
 export interface Speech {
   isSupported(): boolean;
   /** The language of the voice to pick on the device ("pt" by default). */
-  setLanguage?(lang: "pt" | "es"): void;
+  setLanguage?(lang: "pt" | "en" | "es" | "it"): void;
   /** Must be called from a user gesture (iOS blocks speech otherwise). */
   unlock(): void;
   /** Speaks one sentence with the best pt-BR voice of the device; resolves when it ends. onLevel drives the mouth. */

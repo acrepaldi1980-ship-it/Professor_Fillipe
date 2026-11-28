@@ -1,3 +1,4 @@
+import { toLang, type Lang } from "../i18n/languages";
 // Profile and consent logic shared by the API routes (server only).
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decryptField, encryptField, isEncrypted } from "../security/field-crypto";
@@ -39,7 +40,7 @@ export interface ProfileInput {
   birth_date?: string;
   guardian_email?: string | null;
   timezone?: string;
-  locale?: "pt-BR" | "es";
+  locale?: Lang;
   ui_prefs?: Record<string, unknown>;
 }
 
@@ -88,7 +89,7 @@ export async function studentForPrompt(db: SupabaseClient, userId: string): Prom
     ministry_role: role,
     preferred_formats: p?.preferred_formats ?? [],
     is_minor: !!p?.is_minor,
-    locale: p?.locale === "es" ? "es" : "pt-BR",
+    locale: toLang(p?.locale),
     last_summaries: (sums ?? []).map((x) => x.summary as string),
   };
 }

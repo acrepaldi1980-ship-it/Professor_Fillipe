@@ -19,7 +19,7 @@ export function languageScores(text: string): Record<string, number> {
 }
 
 /** True when the text is clearly NOT in the wanted language (pt or es): another language scores much higher, with enough words to be sure. */
-export function wrongLanguage(text: string, want: "pt" | "es" = "pt"): string | null {
+export function wrongLanguage(text: string, want: "pt" | "en" | "es" | "it" = "pt"): string | null {
   const s = languageScores(text);
   const mine = s[want];
   // Portuguese and Spanish (and Italian) share many words: compare against the best OTHER language with a margin.

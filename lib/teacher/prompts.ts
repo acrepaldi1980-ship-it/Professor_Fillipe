@@ -1,6 +1,7 @@
 // Layered system prompt (spec 11). Layers are versioned in `prompt_versions` later (Prompt 1.5);
 // version 1 of the texts lives here.
 import type { Retrieved, BibleVerse } from "../knowledge/search";
+import { LANG_INFO, toLang, type Lang } from "../i18n/languages";
 import { VISUALS_OFF_NOTE, visualsCatalogPrompt } from "../visuals/catalog";
 
 export const PROMPT_VERSION = 4; // v4 = lens rule (both sides with sources) and a 110-word target
@@ -27,7 +28,7 @@ export interface StudentProfile {
   preferred_formats: string[];
   is_minor: boolean;
   /** Interface language of the student ("pt-BR" by default). */
-  locale?: "pt-BR" | "es";
+  locale?: Lang;
   last_summaries: string[];
 }
 
@@ -41,15 +42,18 @@ export const DEFAULT_STUDENT: StudentProfile = {
   last_summaries: [],
 };
 
-/** Spanish layer (Prompt 2.7, RNF-10): the student studies in Spanish. Same character and the same rules, in another language. */
+/** Language layer (RNF-10, decision D-29): the student studies in English, Spanish or Italian. Same character and the same rules, in another language. Portuguese needs no layer. */
 export function layerLanguage(s: StudentProfile): string {
-  if (s.locale !== "es") return "";
-  return `IDIOMA: este aluno estuda em ESPANHOL.
-- Fale com ele SEMPRE em espanhol latino-americano neutro, tratando-o por "tú", tanto em "speech" quanto em "display_markdown", nas perguntas e nas opções (next_options). Seu nome é "Profesor Filipe".
+  const lang = toLang(s.locale);
+  if (lang === "pt-BR") return "";
+  const info = LANG_INFO[lang];
+  const tu = lang === "es" ? ' tratando-o por "tú",' : lang === "it" ? ' tratando-o com "tu",' : "";
+  return `IDIOMA: este aluno estuda em ${info.promptName.toUpperCase()}.
+- Fale com ele SEMPRE em ${info.promptName},${tu} tanto em "speech" quanto em "display_markdown", nas perguntas e nas opções (next_options). Seu nome é "${info.teacherName}".
 - Todas as regras acima continuam valendo, sem exceção: falas curtas, uma pergunta no fim, fonte antes de fala, nada de versículo ou citação inventada, a lente escolhida e o aviso quando as tradições divergem.
-- Os trechos recuperados podem estar em português ou inglês: explique o conteúdo em espanhol, sem acrescentar nada que não esteja neles, e cite cada obra pelo título como aparece na fonte.
-- Os versículos citados vêm da versão da Bíblia listada (por padrão Reina-Valera 1909); copie-os exatamente como estão, em espanhol. Nunca traduza um versículo por conta própria.
-- Termos originais (grego, hebraico) em transliteração, explicados em espanhol. Se perguntado, diga com naturalidade que é uma IA.`;
+- Os trechos recuperados podem estar em português, inglês ou outra língua: explique o conteúdo em ${info.promptName}, sem acrescentar nada que não esteja neles, e cite cada obra pelo título como aparece na fonte.
+- Os versículos citados vêm da versão da Bíblia listada (por padrão ${lang === "es" ? "Reina-Valera 1909" : lang === "en" ? "World English Bible" : "Diodati 1885"}); copie-os exatamente como estão. Nunca traduza um versículo por conta própria.
+- Termos originais (grego, hebraico) em transliteração, explicados em ${info.promptName}. Se perguntado, diga com naturalidade que é uma IA.`;
 }
 
 export function layerStudent(s: StudentProfile): string {

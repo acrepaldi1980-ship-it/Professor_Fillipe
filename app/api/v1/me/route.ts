@@ -1,5 +1,6 @@
 // GET /api/v1/me: profile + consent state. PUT /api/v1/me: create/update the profile (age rules enforced, RN-09).
 import { z } from "zod";
+import { LANGS, type Lang } from "@/lib/i18n/languages";
 import { track } from "@/lib/analytics/track";
 import { errorResponse, requireUser } from "@/lib/auth/server";
 import { loadConsents, loadProfile, saveProfile, TERMS_VERSION } from "@/lib/auth/profile";
@@ -32,7 +33,7 @@ const putBody = z.object({
   guardian_ack: z.boolean().optional(),
   guardian_email: z.string().email().nullable().optional(),
   timezone: z.string().max(64).optional(),
-  locale: z.enum(["pt-BR", "es"]).optional(),
+  locale: z.enum(LANGS as [Lang, ...Lang[]]).optional(),
   ui_prefs: z.record(z.string(), z.unknown()).optional(),
 });
 

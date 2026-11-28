@@ -12,7 +12,7 @@ import { Toast } from "@/components/ui/Toast";
 import { deleteAccount, exportMyData, getLenses, getMe, getNotificationPrefs, getRecentSessions, getReferral, registerPushDevice, saveConsent, saveMe, saveLensesApi, saveNotificationPrefs, type MeResponse, type NotificationPrefs, type ReferralStatus } from "@/lib/api-client";
 import Link from "next/link";
 import { signOut } from "@/lib/auth/client";
-import { getLanguage, LANGS, t, type Lang } from "@/lib/i18n";
+import { getLanguage, LANG_INFO, LANGS, t, type Lang } from "@/lib/i18n";
 import { applyLanguage, loadLanguage, saveLanguage } from "@/lib/i18n/lang";
 import { getPlatform } from "@/lib/platform";
 import { applyPrefs, DEFAULT_PREFS, loadPrefs, savePrefs, type Prefs, type Theme } from "@/lib/prefs";
@@ -33,9 +33,9 @@ function LanguageCard() {
       <h2 className="text-lg">{t("lang.title")}</h2>
       <p className="text-sm text-muted">{t("lang.help")}</p>
       <div role="group" aria-label={t("lang.title")} className="flex gap-2">
-        {LANGS.map((l) => <button key={l} type="button" aria-pressed={lang === l} onClick={() => void choose(l)} className={`min-h-10 rounded-control border px-4 ${lang === l ? "border-primary bg-primary text-primary-ink" : "border-line"}`}>{t(`lang.${l}` as "lang.es")}</button>)}
+        {LANGS.map((l) => <button key={l} type="button" aria-pressed={lang === l} onClick={() => void choose(l)} className={`min-h-10 rounded-control border px-4 ${lang === l ? "border-primary bg-primary text-primary-ink" : "border-line"}`}>{LANG_INFO[l].ownName}</button>)}
       </div>
-      {lang === "es" && <p className="text-xs text-muted">{t("lang.note.es")}</p>}
+      {lang !== "pt-BR" && <p className="text-xs text-muted">{t("lang.note.partial")}</p>}
     </Card>
   );
 }

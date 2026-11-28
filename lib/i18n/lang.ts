@@ -1,6 +1,6 @@
 // The student's interface language (Prompt 2.7): kept through lib/platform and mirrored on the profile (profiles.locale) for the server.
 import { getPlatform } from "@/lib/platform";
-import { isLang, setLanguage, type Lang } from "./index";
+import { isLang, LANG_INFO, setLanguage, type Lang } from "./index";
 
 const KEY = "pf-lang";
 
@@ -14,5 +14,5 @@ export async function saveLanguage(lang: Lang): Promise<void> {
 /** Applies the language to the interface strings and to the device voice. */
 export function applyLanguage(lang: Lang) {
   setLanguage(lang);
-  getPlatform().speech.setLanguage?.(lang === "es" ? "es" : "pt");
+  getPlatform().speech.setLanguage?.(LANG_INFO[lang].short);
 }

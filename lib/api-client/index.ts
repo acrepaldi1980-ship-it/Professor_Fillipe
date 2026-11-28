@@ -1,6 +1,6 @@
 // The only path from app screens to data (spec 10.6.1). All routes live under /api/v1,
 // authenticated with a Bearer token (no cookies), and every call sends X-App-Version / X-Platform.
-import { getLanguage } from "@/lib/i18n";
+import { getLanguage, LANG_INFO, type Lang } from "@/lib/i18n";
 import { getPlatform } from "@/lib/platform";
 
 export const API_BASE = "/api/v1";
@@ -143,7 +143,7 @@ async function teacherTurnOnce(
 export async function transcribeAudio(audio: Blob): Promise<{ text: string; confidence?: number }> {
   const form = new FormData();
   form.set("audio", audio, "audio.webm");
-  form.set("lang", getLanguage() === "es" ? "es" : "pt");
+  form.set("lang", LANG_INFO[getLanguage()].short);
   const res = await apiFetch("/voice/transcribe", { method: "POST", body: form });
   if (!res.ok) throw new Error(`api_error_${res.status}`);
   return res.json();
@@ -576,4 +576,4 @@ export interface VerseHelp {
   related: string[]; sources: { work_id: string; label: string }[];
 }
 export const getVerseHelp = (version: string, ref: string, to?: string) => apiJson<VerseHelp>(`/reader/help?version=${version}&ref=${ref}${to && to !== ref ? `&to=${to}` : ""}`);
-export const explainVerses = (b: { version_id: string; ref_start: string; ref_end?: string; locale?: "pt-BR" | "es"; refresh?: boolean }) => apiJson<{ text: string; citations: { work_id: string; label: string }[]; cached: boolean }>("/reader/help", { method: "POST", body: JSON.stringify(b) });
+export const explainVerses = (b: { version_id: string; ref_start: string; ref_end?: string; locale?: Lang; refresh?: boolean }) => apiJson<{ text: string; citations: { work_id: string; label: string }[]; cached: boolean }>("/reader/help", { method: "POST", body: JSON.stringify(b) });

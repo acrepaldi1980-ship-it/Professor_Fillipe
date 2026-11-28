@@ -1,5 +1,6 @@
 // Shapes of the reader API (spec 8.24), validated at the border with Zod.
 import { z } from "zod";
+import { LANGS, type Lang } from "../i18n/languages";
 
 export const verseRef = z.string().regex(/^[0-9A-Z]{3}\.\d+\.\d+$/);
 export const chapterRef = z.string().regex(/^[0-9A-Z]{3}\.\d+$/);
@@ -35,7 +36,7 @@ export const NoteInput = z.object({
 });
 export const NotePatch = NoteInput.partial().extend({ id: z.string().uuid() });
 
-export const ExplainInput = z.object({ version_id: versionId, ref_start: verseRef, ref_end: verseRef.optional(), locale: z.enum(["pt-BR", "es"]).default("pt-BR"), refresh: z.boolean().optional() });
+export const ExplainInput = z.object({ version_id: versionId, ref_start: verseRef, ref_end: verseRef.optional(), locale: z.enum(LANGS as [Lang, ...Lang[]]).default("pt-BR"), refresh: z.boolean().optional() });
 
 /** Verse references from `a` to `b` in the same chapter (a to b inclusive); across chapters, only the two ends are used (a short selection is the normal case). */
 export function rangeRefs(a: string, b?: string, cap = 40): string[] {

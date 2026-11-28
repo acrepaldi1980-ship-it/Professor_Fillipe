@@ -40,11 +40,20 @@ export const isMaleVoice = (v: { name: string; voiceURI?: string }) => {
   return MALE.test(id) && !FEMALE.test(id);
 };
 
-function score(v: SpeechSynthesisVoice, lang: "pt" | "es" = "pt"): number {
+type SpeechLang = "pt" | "en" | "es" | "it";
+/** Preferred regional voices of each language (score 100), then any voice of the language. */
+const PREFERRED: Record<SpeechLang, { best: RegExp; any: RegExp; anyScore: number; tag: string }> = {
+  pt: { best: /pt[-_]BR/i, any: /^pt/i, anyScore: 40, tag: "pt-BR" },
+  en: { best: /en[-_](US|GB)/i, any: /^en/i, anyScore: 80, tag: "en-US" },
+  es: { best: /es[-_](MX|US|419|AR|CO)/i, any: /^es/i, anyScore: 80, tag: "es-MX" },
+  it: { best: /it[-_]IT/i, any: /^it/i, anyScore: 80, tag: "it-IT" },
+};
+
+function score(v: SpeechSynthesisVoice, lang: SpeechLang = "pt"): number {
   let s = 0;
-  if (lang === "es") { if (/es[-_](MX|US|419|AR|CO)/i.test(v.lang)) s += 100; else if (/^es/i.test(v.lang)) s += 80; else return -1; }
-  else if (/pt[-_]BR/i.test(v.lang)) s += 100;
-  else if (/^pt/i.test(v.lang)) s += 40;
+  const pref = PREFERRED[lang];
+  if (pref.best.test(v.lang)) s += 100;
+  else if (pref.any.test(v.lang)) s += pref.anyScore;
   else return -1;
   if (MALE.test(v.name)) s += 60; // the teacher is a mature man: a male voice fits the character
   if (FEMALE.test(v.name)) s -= 30;
@@ -57,10 +66,10 @@ export class WebSpeech implements Speech {
   private voice: SpeechSynthesisVoice | null = null;
   private list: SpeechSynthesisVoice[] | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
-  private lang: "pt" | "es" = "pt";
+  private lang: SpeechLang = "pt";
 
   /** Language of the teacher's voice on this device (the student's interface language). */
-  setLanguage(lang: "pt" | "es") {
+  setLanguage(lang: SpeechLang) {
     if (lang === this.lang) return;
     this.lang = lang; this.list = null; this.voice = null;
   }
@@ -126,7 +135,7 @@ export class WebSpeech implements Speech {
     }
     return new Promise<void>((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = voice?.lang ?? (this.lang === "es" ? "es-MX" : "pt-BR");
+      u.lang = voice?.lang ?? PREFERRED[this.lang].tag;
       if (voice) u.voice = voice;
       // Calm, slightly lower voice: a mature teacher, not an announcer.
       u.rate = opts.rate ?? 0.93;

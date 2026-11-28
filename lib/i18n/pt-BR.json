@@ -1272,5 +1272,8 @@
   "plans.back": "Voltar à Bíblia",
   "plans.chapters": "Capítulos do dia",
   "plans.confirm.delete": "Apagar este plano? As marcações de leitura continuam.",
-  "nb.kind.verse_note": "Anotação de versículo"
+  "nb.kind.verse_note": "Anotação de versículo",
+  "lang.note.partial": "Nas outras línguas, a interface e o professor mudam de idioma; as trilhas, os mapas, os modelos 3D e alguns textos de estudo ainda estão em português ou espanhol e vão sendo traduzidos.",
+  "lang.en": "English",
+  "lang.it": "Italiano"
 }

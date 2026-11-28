@@ -1,6 +1,7 @@
 // Builds (or changes) ONE section of the session's document with deep research: the Bible text, the original words, the library and
 // other traditions are gathered once per session (research.ts) and are the only ground the model may use (RA-09).
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { LANG_INFO, toLang, type Lang } from "../i18n/languages";
 import { readLenses } from "../auth/preferences";
 import { addUsage } from "../entitlements/guard";
 import { getStore } from "../knowledge/db";
@@ -20,8 +21,9 @@ export function describeDoc(mode: DocMode, doc: Record<string, unknown>) {
   const d = DeepStudy.parse(doc); const g = deepGaps(d); return { doc: d, gaps: g.map((x) => x.text), gapKeys: g.map((x) => x.key) };
 }
 
-/** Added to the instructions of every document section for a Spanish-speaking student. */
-export const SPANISH_DOC = "\n\nIDIOMA: o aluno estuda em espanhol. Escreva TODO o conteúdo textual do documento em espanhol latino-americano neutro (títulos, resumos, perguntas, ilustrações, explicações, aplicação). Mantenha as chaves do JSON e as referências bíblicas (como ACT.8.30) exatamente como pedido. Não traduza nomes de obras nem de autores.";
+/** Added to the instructions of every document section for a student who studies in English, Spanish or Italian. */
+export const languageDoc = (lang: Lang) => lang === "pt-BR" ? "" : `\n\nIDIOMA: o aluno estuda em ${LANG_INFO[lang].promptName}. Escreva TODO o conteúdo textual do documento em ${LANG_INFO[lang].promptName} (títulos, resumos, perguntas, ilustrações, explicações, aplicação). Mantenha as chaves do JSON e as referências bíblicas (como ACT.8.30) exatamente como pedido. Não traduza nomes de obras nem de autores.`;
+export const SPANISH_DOC = languageDoc("es");
 
 export async function buildSection(db: SupabaseClient, userId: string, sm: SessionMode, section: string, instruction?: string) {
   const mode = sm.mode as DocMode;
@@ -35,7 +37,8 @@ export async function buildSection(db: SupabaseClient, userId: string, sm: Sessi
   const research = await gatherResearch(db, sm.id, mode, sm.context, lenses).catch(() => null);
   // a Spanish-speaking student gets the document written in Spanish (Prompt 2.7)
   const { data: prof } = await db.from("profiles").select("locale").eq("user_id", userId).maybeSingle();
-  const llm: typeof callJsonLlm = prof?.locale === "es" ? (system, user) => callJsonLlm(system + SPANISH_DOC, user) : callJsonLlm;
+  const docLang = toLang(prof?.locale);
+  const llm: typeof callJsonLlm = docLang !== "pt-BR" ? (system, user) => callJsonLlm(system + languageDoc(docLang), user) : callJsonLlm;
 
   let nextDoc: Record<string, unknown> | null = null;
   if (deterministic) {

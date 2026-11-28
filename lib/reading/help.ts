@@ -8,6 +8,7 @@ import { getOriginalWords } from "../knowledge/original";
 import { refQuery } from "../knowledge/reference-db";
 import { expandRefs, formatRefPt } from "../knowledge/refs-parser";
 import { getStore } from "../knowledge/db";
+import { LANG_INFO, type Lang } from "../i18n/languages";
 import { completeText } from "../llm/router";
 import { wrongLanguage } from "../teacher/language";
 
@@ -53,7 +54,7 @@ export async function buildHelp(versionId: string, refs: string[]): Promise<Help
   return { version: versionId, refs, verses, entities, words, related, sources };
 }
 
-const SYSTEM = (locale: "pt-BR" | "es", lens: string[]) => `Você é o Professor Filipe, professor de Bíblia, uma IA acolhedora e didática. Explique o trecho bíblico para quem está LENDO a Bíblia, em ${locale === "es" ? "espanhol" : "português do Brasil"}, em linguagem simples.
+const SYSTEM = (locale: Lang, lens: string[]) => `Você é o Professor Filipe, professor de Bíblia, uma IA acolhedora e didática. Explique o trecho bíblico para quem está LENDO a Bíblia, em ${LANG_INFO[locale].promptName}, em linguagem simples.
 Regras:
 - Use SOMENTE as FONTES abaixo (o texto bíblico, os verbetes, as palavras no original, os textos relacionados). Nunca invente versículo, citação, autor, data ou número de Strong.
 - No máximo 110 palavras. Diga o que o trecho significa, o contexto (quem fala, a quem, onde) quando as fontes mostram, e um ponto de aplicação. Explique termos difíceis.
@@ -63,7 +64,7 @@ Regras:
 - Responda só com o texto da explicação, sem títulos nem listas.`;
 
 /** The teacher's short explanation of the passage; null when no model answered or the answer came out in the wrong language. */
-export async function explainPassage(help: Help, opts: { locale: "pt-BR" | "es"; lens: string[] }): Promise<{ text: string; citations: { work_id: string; label: string }[] } | null> {
+export async function explainPassage(help: Help, opts: { locale: Lang; lens: string[] }): Promise<{ text: string; citations: { work_id: string; label: string }[] } | null> {
   if (!help.verses.length) return null;
   const parts = [
     `PASSAGEM (${help.refs.map(formatRefPt).join(", ")}):\n${help.verses.map((v) => `${v.ref.split(".").slice(1).join(":")} ${v.text}`).join("\n")}`,
@@ -78,7 +79,7 @@ export async function explainPassage(help: Help, opts: { locale: "pt-BR" | "es";
   } catch {
     return null;
   }
-  if (text.length < 40 || wrongLanguage(text, opts.locale === "es" ? "es" : "pt")) return null;
+  if (text.length < 40 || wrongLanguage(text, LANG_INFO[opts.locale].short)) return null;
   const citations = [...help.sources];
   return { text, citations: [...new Map(citations.map((c) => [c.work_id, c])).values()] };
 }
