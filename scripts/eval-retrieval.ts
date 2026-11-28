@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { collectAppContent } from "../lib/appcontent/collect";
 import { getVerses, searchChunks } from "../lib/knowledge/search";
-import { sql } from "./db.mjs";
+import { nsql } from "./neon.mjs";
 
 const QUICK = process.argv.includes("--quick");
 const TOP = 12;
@@ -64,11 +64,17 @@ async function main() {
   await check("app content (every record, by title)", (QUICK ? app.slice(0, 60) : app).map((r) => ({ id: r.id, query: r.title.replace(/^.*> /, "") })), 0.9);
 
   // 2) library chunks of every database: a random sample by its own title
-  const lib = await sql("select id, title_path from chunks where title_path is not null order by random() limit 60");
+  // the core search tables (Bible windows and Easton) live on Neon since 28/11/2026 (shard 2: NEON_SHARD=2)
+  const lib = await nsql("select id, title_path from core_chunks where title_path is not null order by random() limit 60");
   await check("main database chunks (Bible windows, dictionary)", lib.map((r: Record<string, string>) => ({ id: r.id, query: r.title_path.split(">").pop()!.trim() })), 0.7);
 
   // 3) exact verses: a random sample of (version, reference) must come back with text
-  const verses = await sql(`select version_id, ref from bible_verses order by random() limit ${QUICK ? 40 : 150}`);
+  const verses: { version_id: string; ref: string }[] = [];
+  for (let i = 0; i < (QUICK ? 40 : 150); i++) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/bible_verses?select=version_id,ref&limit=1&offset=${Math.floor(Math.random() * 700000)}`, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! } });
+    const row = ((await res.json().catch(() => [])) as { version_id: string; ref: string }[])[0];
+    if (row) verses.push(row);
+  }
   let missing = 0;
   await pool(verses as Record<string, string>[], CONCURRENCY, async (v) => { const r = await getVerses(v.version_id, [v.ref]).catch(() => []); if (!r.some((x) => x.ref === v.ref && x.text)) missing++; });
   results.push({ name: "exact verses", ok: verses.length - missing, total: verses.length, min: 1, misses: [] });
