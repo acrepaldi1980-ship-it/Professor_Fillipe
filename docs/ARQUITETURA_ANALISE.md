@@ -122,3 +122,12 @@ alter database postgres set jit = off;
 ```
   Depois, rodar `https://professor-filipe.vercel.app/api/v1/warmup?bench=1&novoice=1` duas ou três vezes (esperando 30 s entre elas) e comparar o campo `raw_search`: se o primeiro `headers_ms` cair de 3 a 5 s para menos de 1 s, a causa era essa. Para desfazer: `alter database postgres reset jit;`.
 - Se não resolver, o próximo passo é rodar `explain (analyze, buffers)` da função de busca, para ver se o tempo é leitura de disco do índice vetorial (então a solução seria um plano pago com mais memória) ou outro ponto.
+
+### 7.2 Resultado do teste do JIT (28/11/2026): não era o JIT
+Com `jit = off`, quatro medições seguidas (35 s entre elas) deram, para a primeira busca crua: **5,7 s, 0,57 s, 0,61 s e 3,8 s**. A lentidão continua aparecendo de vez em quando (2 de 4), e não depende de a instância da Vercel ser nova (as medições rápidas e lentas ocorreram nos dois casos). Depois da primeira, a busca leva sempre 0,5 a 0,7 s; o Neon fica estável em 0,53 s.
+
+**Hipótese seguinte:** o índice vetorial é tirado da memória do banco entre uma chamada e outra (computação pequena e compartilhada do plano gratuito), e a primeira leitura volta do disco. Teste, sem custo e reversível, no SQL Editor: uma tarefa dentro do próprio banco que faz a busca a cada minuto, para manter as páginas do índice quentes (não passa pela Vercel):
+```sql
+select cron.schedule('db-warm-search', '* * * * *', $$ select count(*) from api_search_chunks((select embedding from chunks where embedding is not null limit 1), 'aquecimento', '{}', 3, null) $$);
+```
+Depois de uns 10 minutos, rodar `/api/v1/warmup?bench=1&novoice=1` quatro vezes (35 s entre elas). Se o primeiro `headers_ms` ficar sempre abaixo de 1 s, está resolvido. Para desfazer: `select cron.unschedule('db-warm-search');`. Se continuar intermitente, a causa é o próprio plano do Supabase (computação e memória), e a saída é o plano pago ou mover a busca da Bíblia para o Neon (opção B da seção 6), que no teste ficou estável em 0,53 s.
