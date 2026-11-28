@@ -131,3 +131,12 @@ Com `jit = off`, quatro medições seguidas (35 s entre elas) deram, para a prim
 select cron.schedule('db-warm-search', '* * * * *', $$ select count(*) from api_search_chunks((select embedding from chunks where embedding is not null limit 1), 'aquecimento', '{}', 3, null) $$);
 ```
 Depois de uns 10 minutos, rodar `/api/v1/warmup?bench=1&novoice=1` quatro vezes (35 s entre elas). Se o primeiro `headers_ms` ficar sempre abaixo de 1 s, está resolvido. Para desfazer: `select cron.unschedule('db-warm-search');`. Se continuar intermitente, a causa é o próprio plano do Supabase (computação e memória), e a saída é o plano pago ou mover a busca da Bíblia para o Neon (opção B da seção 6), que no teste ficou estável em 0,53 s.
+
+### 7.3 Resultado do aquecimento dentro do banco (28/11/2026): não resolveu
+Com a tarefa `db-warm-search` rodando a cada minuto, 12 medições da primeira busca crua no Supabase deram: 2,0 / 3,9 / 0,9 / 0,55 / 0,61 / 0,53 / 0,71 / 0,64 / **3,8 / 6,5 / 3,7** / 0,51 s. Ou seja, **5 de 12 (42%) ainda levam de 2 a 6,5 s**, mesmo com o índice mantido quente por outra via. Não é o JIT (7.2) nem a saída de memória do índice. Resta o próprio Supabase gratuito (conexões do PostgREST, CPU compartilhada), que daqui não consigo diagnosticar sem acesso ao painel dele.
+No mesmo teste, o Neon (a mesma busca, 3 vezes em cada rodada) ficou em **0,52 a 0,55 s em todas as rodadas, sem uma única lentidão**.
+
+**Efeito na resposta do aluno:** a busca do Supabase tem limite de 3,2 s na pergunta; quando a primeira chamada leva 3 a 6 s, o resultado é descartado e a busca é repetida com mais paciência. É exatamente a origem das respostas com 8 a 12 s de busca depois de uma pausa.
+
+**Proposta (decisão do dono, D-27 emenda):** mover só a **busca** dos textos bíblicos, dos verbetes (Easton) e das notas próprias para o Neon (partição 2, que tem espaço), mantendo no Supabase o login, os dados dos alunos e a segurança por usuário. É a opção B da seção 6, restrita ao que se mostrou lento. Ganho esperado: busca estável em ~0,55 s, sem a cauda de 3 a 6 s. Custo: R$ 0. Risco: a ordem dos resultados pode mudar um pouco; por isso rodo antes a avaliação (`scripts/eval-retrieval.ts`) e só troco se a qualidade se mantiver.
+Para desfazer o teste que não ajudou: `select cron.unschedule('db-warm-search');`.
