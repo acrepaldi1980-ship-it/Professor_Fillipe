@@ -46,6 +46,7 @@ async function setEnv(project) {
     ["NEXT_PUBLIC_APP_VERSION", "0.1.0", "plain"],
     ["GROQ_API_KEY", envFile.GROQ_API_KEY, "sensitive"],
     ["REFERENCE_DATABASE_URL", envFile.REFERENCE_DATABASE_URL, "sensitive"],
+    ["CACHE_DATABASE_URL", envFile.CACHE_DATABASE_URL, "sensitive"],
     ["GEMINI_API_KEY", envFile.GEMINI_API_KEY, "sensitive"],
     ["VOICE_PROVIDER", envFile.VOICE_PROVIDER ?? "gemini", "plain"],
     ["REMOTE_TTS_URL", envFile.REMOTE_TTS_URL, "plain"],
@@ -70,7 +71,7 @@ async function setEnv(project) {
   const LLM_RE = /^(GROQ|CEREBRAS|OPENROUTER|MISTRAL|SAMBANOVA|NVIDIA|GITHUB_MODELS|GEMINI_LLM)_(API_KEYS?|TOKENS?|MODELS)$|^LLM_(EXTRA|ONLY)$/;
   for (const [k, val] of Object.entries(envFile)) if (LLM_RE.test(k) && k !== "GROQ_API_KEY") vars.push([k, val, /MODELS|ONLY/.test(k) ? "plain" : "sensitive"]);
   if (!has("FIELD_ENCRYPTION_KEY")) vars.push(["FIELD_ENCRYPTION_KEY", randomBytes(32).toString("base64"), "sensitive"]);
-  const body = vars.filter(([k, val]) => val && (!has(k) || LLM_RE.test(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k.startsWith("REMOTE_TTS") || k === "VOICE_API_KEY" || k === "BILLING_SERVER_SECRET" || k === "PAYMENT_PROVIDER" || k === "PAYMENT_WEBHOOK_TOKEN" || k === "ASAAS_API_KEY" || k === "ASAAS_ENV")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
+  const body = vars.filter(([k, val]) => val && (!has(k) || LLM_RE.test(k) || k.startsWith("NEXT_PUBLIC") || k === "GROQ_API_KEY" || k === "REFERENCE_DATABASE_URL" || k === "CACHE_DATABASE_URL" || k === "GEMINI_API_KEY" || k === "VOICE_PROVIDER" || k.startsWith("REMOTE_TTS") || k === "VOICE_API_KEY" || k === "BILLING_SERVER_SECRET" || k === "PAYMENT_PROVIDER" || k === "PAYMENT_WEBHOOK_TOKEN" || k === "ASAAS_API_KEY" || k === "ASAAS_ENV")).map(([key, value, type]) => ({ key, value, type, target: ["production", "preview"] }));
   await post(`/v10/projects/${project.id}/env?upsert=true`, body);
   console.log("env vars set:", body.map((b) => b.key).join(", "));
 }

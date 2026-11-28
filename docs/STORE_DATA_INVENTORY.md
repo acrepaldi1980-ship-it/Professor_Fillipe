@@ -91,3 +91,8 @@ Atualizar a cada módulo novo (regra de portabilidade f). Situação: **protóti
 - **Dados pessoais novos (religiosos por natureza):** versão e posição de leitura (`reader_state`), versículos lidos (`bible_reads`), planos de leitura (`reading_plans`), anotações de versículos com contexto e etiquetas (`verse_notes`) e explicações guardadas por aluno (`verse_help`). Todos com Row Level Security por usuário, exclusão em cascata com a conta e inclusão na exportação de dados.
 - **Compartilhar versículo:** o texto vai pelo compartilhamento do aparelho (ou é copiado); nada é enviado ao servidor do app.
 - **Sem coleta nova de terceiros.** A explicação do professor usa o mesmo provedor de IA do estudo (RA-09: só com as fontes do acervo).
+
+## Cache compartilhado de respostas (28/11/2026)
+- Tabela `answer_cache` no Neon (partição 2), acessada por um papel próprio (`cache_rw`) que só enxerga essa tabela. Guarda a **resposta já conferida** a uma pergunta avulsa de estudo livre, com chave = hash (SHA-256) do assunto e das configurações que mudam a resposta (idioma, versão, lentes, nível, menor de idade). **Não guarda o texto da pergunta, o nome do aluno, nem o histórico.**
+- Antes de guardar: o nome vira um marcador; respostas que repetem metas, função ministerial ou o resumo de sessões anteriores do aluno **não são guardadas**; tampouco as de aluno cujo nome é nome bíblico, as degradadas, as pastorais, as com pesquisa fora do app e as sem fonte citada. Validade de 14 dias (limpeza após 30).
+- Desligar: variável `ANSWER_CACHE=off`. Limpar tudo: `delete from answer_cache`.

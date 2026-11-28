@@ -117,7 +117,7 @@ export async function POST(req: Request) {
           lastSent = text; lastAt = at;
           try { controller.enqueue(enc.encode(sse("speech_delta", { speech: text }))); } catch { /* the student left */ }
         };
-        const { response: baseResponse, meta } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, deps);
+        const { response: baseResponse, meta, cacheEntry } = await runTurn({ ...parsed.data, student, bible, history, lastRefs: scene ? [...scene.refs, ...lastRefs].slice(0, 12) : lastRefs, mode, modeContext: sm?.context, sermonTypeDefinition: typeDef, extraSources: [extraSources, scene?.text].filter(Boolean).join("\n\n") || undefined, forceFast: fairUse }, deps);
 
         // After the document was delivered, a change request in the conversation ("refaça a introdução") rewrites that section for real.
         let response = baseResponse;
@@ -141,6 +141,8 @@ export async function POST(req: Request) {
 
         // The answer goes out NOW; saving it, the usage meter and the analytics happen after (the student must not wait for the database to start hearing it).
         controller.enqueue(enc.encode(sse("structured", response)));
+        // a clean, impersonal answer goes into the shared cache for the next student who asks the same (after the answer was sent)
+        if (cacheEntry && !meta.degraded && response === baseResponse) await deps.answerCache?.put(cacheEntry.key, cacheEntry.response);
 
         let messageId: string | undefined;
         if (response.pastoral_flag) {

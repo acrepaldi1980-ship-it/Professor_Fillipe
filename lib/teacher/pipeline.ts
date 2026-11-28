@@ -17,6 +17,7 @@ import type { WebRequest, WebSource } from "../websearch/types";
 import type { WebResult } from "../websearch";
 import { assessCoverage, externalPrompt, looksUnanswered, outsideLabel, toResponseSources, UNSURE_NOTICE, ungroundedNumbers, usesOutside } from "./external";
 import { entityHints, findEntities } from "../knowledge/entities";
+import { cacheKey, depersonalize, eligibleQuestion, personalize, worthKeeping, type AnswerCache } from "./answer-cache";
 import { speechFromPartialJson } from "../llm/stream";
 import { needsVisuals } from "../visuals/catalog";
 import { foreignChunk, wrongLanguage } from "./language";
@@ -36,6 +37,8 @@ export interface TurnDeps {
   llm: TeacherLlm;
   /** Streaming: called with the speech written so far while the model is still answering ("" when the attempt failed and another model takes over). The final answer still goes through every check. */
   onSpeech?: (speech: string) => void;
+  /** Shared cache of checked answers to standalone questions (absent = no cache). */
+  answerCache?: AnswerCache;
   search(query: string | string[], opts?: SearchOptions): Promise<{ chunks: Retrieved[]; refs: string[] }>;
   getVerses(versionId: string, refs: string[]): Promise<BibleVerse[]>;
   /** Context budget in tokens for retrieved chunks (spec: ~6000; smaller for free-tier prototype models). */
@@ -73,6 +76,8 @@ export interface TurnInput {
 
 export interface TurnResult {
   response: TeacherResponse;
+  /** A clean, impersonal answer the caller should store in the shared cache (after the answer has been sent to the student). */
+  cacheEntry?: { key: string; response: TeacherResponse };
   /** Retrieved sources of this turn (used by the evals; never sent to the client). */
   retrieved: { id: string; work_id: string; title_path: string | null; text: string }[];
   meta: {
@@ -91,6 +96,8 @@ export interface TurnResult {
     latencyMs: number;
     /** True when the model failed for good and a friendly fallback answer was returned instead. */
     degraded?: boolean;
+    /** "hit": the answer came from the shared cache (no model was called). */
+    cache?: "hit";
     /** Short technical code of the failure (never user text). */
     degradedReason?: string;
     /** Topic guardrail: what it decided and why (never the student's text). */
@@ -193,6 +200,19 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   const priorHistory = input.history ?? memory.get(input.sessionId);
   // Follow-ups ("aprofunde esse texto", "e o irmão mais velho?") carry no subject of their own: borrow it from the conversation.
   const { searchText, carriedRefs } = resolveSearch({ text: input.text, intent, mentioned, history: priorHistory, lastRefs: input.lastRefs });
+
+  // 3b) Shared cache: the same standalone question was already answered and checked for someone else (nothing personal is kept in it).
+  const canCache = !!deps.answerCache && process.env.ANSWER_CACHE !== "off" && eligibleQuestion({ text: input.text, intent, historyLength: priorHistory.length, mode: input.mode, hasModeContext: !!input.modeContext && Object.keys(input.modeContext).length > 0, hasExtraSources: !!input.extraSources });
+  const ckey = canCache ? cacheKey({ text: input.text, locale: student.locale ?? "pt-BR", versionId: bible.main_version_id, lenses: bible.lenses, level: student.level, minor: student.is_minor }) : "";
+  if (canCache) {
+    const hit = await deps.answerCache!.get(ckey);
+    if (hit) {
+      const response = personalize(hit, student.preferred_name);
+      memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
+      const words = countWords(response.speech);
+      return { response, retrieved: [], meta: { ...baseMeta, intent, tier: "fast", pastoral: false, words, overWordLimit: false, latencyMs: Date.now() - t0, cache: "hit" } };
+    }
+  }
 
   // 4) Retrieval.
   const tSearch = Date.now();
@@ -395,8 +415,13 @@ export async function runTurn(input: TurnInput, deps: TurnDeps): Promise<TurnRes
   memory.append(input.sessionId, { role: "user", content: input.text }, { role: "assistant", content: response.speech });
 
   const words = countWords(response.speech);
+  // a clean answer, with nothing personal in it, is offered to the shared cache (the caller stores it after sending it)
+  const stored = canCache && worthKeeping({ degraded: false, pastoral: response.pastoral_flag, externalUsed: usedOutside, textFallback, topicVerdict: gate.verdict, overWordLimit: words > limit, removedCitations: ver.removed.length, answered: !looksUnanswered(response.speech) && parsed.data.sources_sufficient !== false, response })
+    ? depersonalize(response, { preferred_name: student.preferred_name, goals: student.goals, ministry_role: student.ministry_role, last_summaries: student.last_summaries })
+    : null;
   return {
     response,
+    ...(stored ? { cacheEntry: { key: ckey, response: stored } } : {}),
     retrieved: chunks.map((c) => ({ id: c.id, work_id: c.work_id, title_path: c.title_path, text: c.text })),
     meta: {
       intent,

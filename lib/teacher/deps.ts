@@ -9,6 +9,7 @@ import { englishQuery } from "../knowledge/glossary";
 import { findEntities } from "../knowledge/entities";
 import { rewriteQueryToEnglish } from "./groq";
 import type { TurnDeps } from "./pipeline";
+import { NeonAnswerCache } from "./answer-cache";
 import { FallbackLlm, primaryIsDown } from "./fallback-llm";
 import { loadActiveLayers } from "./prompt-store";
 
@@ -28,6 +29,8 @@ export function createTurnDeps(): TurnDeps {
     // Claude first; when it is unavailable (no credit, overload) the free Groq model answers instead of an error.
     // Claude first when there is a key; otherwise (or when Claude is unavailable) the pool of free endpoints, with automatic failover between them.
     llm: teacherProvider() === "anthropic" ? (buildEndpoints().length ? new FallbackLlm(new AnthropicTeacherLlm(), new RouterTeacherLlm()) : new AnthropicTeacherLlm()) : new RouterTeacherLlm(),
+    // shared cache of checked answers to standalone questions (a separate Neon role that can only touch one table)
+    answerCache: process.env.CACHE_DATABASE_URL ? new NeonAnswerCache() : undefined,
     search: (q, opts) => searchChunks(q, opts),
     // research outside the app (spec 8.23): Wikipedia, and a general search when TAVILY_API_KEY is set; off with WEB_SEARCH=off
     webSearch: webSearchEnabled() ? (req) => webSearchDetailed(req) : undefined,
