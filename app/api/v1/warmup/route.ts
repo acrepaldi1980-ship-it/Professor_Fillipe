@@ -1,7 +1,7 @@
 // GET /api/v1/warmup -> wakes the parts a first question needs (embedding model, Neon, Supabase search) so the next
 // real question is fast. Called every few minutes by .github/workflows/warmup.yml. Reads nothing private, writes nothing.
 import { getEmbeddingProvider } from "@/lib/knowledge/embeddings";
-import { getStore } from "@/lib/knowledge/db";
+import { getStore, SupabaseRpcStore } from "@/lib/knowledge/db";
 import { refQuery, shardUrls } from "@/lib/knowledge/reference-db";
 import { getLibraryStore } from "@/lib/knowledge/library-store";
 import { PiperTtsProvider } from "@/lib/voice/providers/piper-tts";
@@ -45,8 +45,9 @@ export async function GET(req: Request) {
     const time = async (f: () => Promise<unknown>) => { const t1 = Date.now(); try { await f(); } catch { /* counted anyway */ } return Date.now() - t1; };
     const q = { embedding: await getEmbeddingProvider().embedQuery("quem foi Davi, o rei de Israel"), text: "quem foi Davi, o rei de Israel", refs: [] as string[], perSignal: 24 };
     const embedMs = await time(() => getEmbeddingProvider().embedQuery("outra pergunta sobre Moisés e o Egito"));
-    const rows: Record<string, number[]> = { supabase_search: [], neon_search: [] };
-    for (let i = 0; i < 3; i++) { rows.supabase_search.push(await time(() => getStore().searchChunks(q))); rows.neon_search.push(await time(() => getLibraryStore()!.searchChunks(q))); }
+    const supabaseDirect = new SupabaseRpcStore();
+    const rows: Record<string, number[]> = { core_search_neon: [], supabase_search: [], library_search_neon: [] };
+    for (let i = 0; i < 3; i++) { rows.core_search_neon.push(await time(() => getStore().searchChunks(q))); rows.supabase_search.push(await time(() => supabaseDirect.searchChunks(q))); rows.library_search_neon.push(await time(() => getLibraryStore()!.searchChunks(q))); }
     timings = { embed_warm: [embedMs], ...rows };
   }
   return Response.json({ ok: true, ms: Date.now() - t0, doneAtMs: parts, instanceAgeMs: Date.now() - bootedAt, ...(embedLoad && Object.keys(embedLoad).length ? { embedLoad } : {}), supabase: a.status, neon: b.status, voice: c.status, shards, ...(timings ? { timings } : {}) });

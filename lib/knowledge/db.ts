@@ -1,6 +1,7 @@
 // Knowledge-base access for the app (server only). It uses the PUBLISHABLE Supabase key and calls restricted
 // database functions (migration 0007); the deployed app never holds an account-level token.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createStore } from "./core-store";
 
 export interface ChunkRow {
   id: string;
@@ -72,7 +73,8 @@ export class SupabaseRpcStore implements KnowledgeStore {
 }
 
 let store: KnowledgeStore | null = null;
+/** The app's store: the core search on Neon (see core-store.ts), everything else on Supabase. */
 export function getStore(): KnowledgeStore {
-  store ??= new SupabaseRpcStore();
+  store ??= createStore();
   return store;
 }
