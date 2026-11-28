@@ -6,9 +6,8 @@ import { entitiesAtRefs, ptNameOf } from "../knowledge/entities";
 import { getLibraryStore } from "../knowledge/library-store";
 import { getOriginalWords } from "../knowledge/original";
 import { refQuery } from "../knowledge/reference-db";
-import { getVerses, searchChunks } from "../knowledge/search";
+import { expandRefs, formatRefPt } from "../knowledge/refs-parser";
 import { getStore } from "../knowledge/db";
-import { formatRefPt } from "../knowledge/refs-parser";
 import { completeText } from "../llm/router";
 import { wrongLanguage } from "../teacher/language";
 
@@ -32,7 +31,9 @@ async function entryFor(en: string): Promise<HelpEntity["entry"]> {
 }
 
 export async function buildHelp(versionId: string, refs: string[]): Promise<Help> {
-  const verses = (await getVerses(versionId, refs).catch(() => [])).map((v) => ({ ref: v.ref, text: v.text }));
+  // exact verses by reference (indexed lookup); this module avoids the search engine (and its embedding model) so the route stays light
+  const verseRefs = expandRefs(refs).filter((r) => r.split(".").length === 3);
+  const verses = (await getStore().bibleVerses(versionId, verseRefs, []).catch(() => [])).map((v) => ({ ref: v.ref, text: v.text }));
   const ents = entitiesAtRefs(refs, 6);
   const [entities, words, related] = await Promise.all([
     Promise.all(ents.map(async (e): Promise<HelpEntity> => ({ id: e.id, name: ptNameOf(e.id) ?? e.en, en: e.en, kind: e.kind as "person" | "place", entry: await entryFor(e.en).catch(() => null), refs: e.refs.length }))),
@@ -64,14 +65,10 @@ Regras:
 /** The teacher's short explanation of the passage; null when no model answered or the answer came out in the wrong language. */
 export async function explainPassage(help: Help, opts: { locale: "pt-BR" | "es"; lens: string[] }): Promise<{ text: string; citations: { work_id: string; label: string }[] } | null> {
   if (!help.verses.length) return null;
-  const query = help.verses.map((v) => v.text).join(" ").slice(0, 400);
-  const found = await searchChunks(query, { maxChunks: 4, maxTokens: 1600 }).catch(() => ({ chunks: [] }));
-  const chunks = found.chunks.filter((c) => c.kind !== "bible_text" && !/^(ws_pt_vieira|jos_|pg_7959|pg_2811)/.test(c.work_id)).slice(0, 3);
   const parts = [
     `PASSAGEM (${help.refs.map(formatRefPt).join(", ")}):\n${help.verses.map((v) => `${v.ref.split(".").slice(1).join(":")} ${v.text}`).join("\n")}`,
     help.entities.length ? `PESSOAS E LUGARES:\n${help.entities.map((e) => `- ${e.name} (${e.kind === "person" ? "pessoa" : "lugar"})${e.entry ? `: ${e.entry.snippet} [${e.entry.source}]` : ""}`).join("\n")}` : "",
     help.words.length ? `PALAVRAS NO ORIGINAL:\n${help.words.slice(0, 6).map((w) => `- ${w.surface} (${w.translit ?? ""}, Strong ${w.strong}): ${w.gloss}`).join("\n")}` : "",
-    chunks.length ? `OUTRAS FONTES:\n${chunks.map((c) => `- [${c.title_path ?? c.work_id}] ${clip(body(c.text, c.title_path), 500)}`).join("\n")}` : "",
     help.related.length ? `TEXTOS RELACIONADOS: ${help.related.slice(0, 6).map(formatRefPt).join("; ")}` : "",
   ].filter(Boolean).join("\n\n");
   let text: string;
@@ -82,6 +79,6 @@ export async function explainPassage(help: Help, opts: { locale: "pt-BR" | "es";
     return null;
   }
   if (text.length < 40 || wrongLanguage(text, opts.locale === "es" ? "es" : "pt")) return null;
-  const citations = [...help.sources, ...chunks.map((c) => ({ work_id: c.work_id, label: (c.title_path ?? c.work_id).split(" > ")[0] }))];
+  const citations = [...help.sources];
   return { text, citations: [...new Map(citations.map((c) => [c.work_id, c])).values()] };
 }
